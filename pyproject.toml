@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rental-market-platform"
+version = "0.1.0"
+description = "Regional Rental Market Analytics and Forecasting Platform for New Zealand"
+readme = "README.md"
+requires-python = ">=3.12"
+
+dependencies = [
+    "pandas",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "python-dotenv",
+    "pydantic-settings",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+]
+
+forecasting = [
+    "statsmodels",
+    "xgboost",
+    "scikit-learn",
+]
+
+dashboard = [
+    "streamlit",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100

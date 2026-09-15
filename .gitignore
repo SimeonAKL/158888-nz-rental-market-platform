@@ -216,3 +216,22 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --------------------------------------------------
+# Project data directories
+# --------------------------------------------------
+
+# Raw source snapshots should not be committed
+data/raw/*
+!data/raw/.gitkeep
+
+# Staging data should not be committed
+data/staging/*
+!data/staging/.gitkeep
+
+# Processed/generated data should not be committed
+data/processed/*
+!data/processed/.gitkeep
+
+# Reference data is intentionally NOT ignored.
+# Small canonical mapping/concordance files may be version controlled.
