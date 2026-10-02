@@ -9,6 +9,7 @@ import requests
 from rmp.config import MarketRentSettings, get_market_rent_settings
 
 DEFAULT_TIMEOUT_SECONDS = 120
+MAX_ERROR_RESPONSE_CHARS = 1000
 
 
 class MarketRentAPIError(RuntimeError):
@@ -30,9 +31,13 @@ class MarketRentAPIClient:
         self.session = requests.Session()
         self.session.headers.update(
             {
-                "Ocp-Apim-Subscription-Key": self.settings.subscription_key,
+                "Ocp-Apim-Subscription-Key": (
+                    self.settings.subscription_key
+                ),
                 "Accept": "application/json",
-                "User-Agent": "158888-NZ-Rental-Market-Platform/1.0",
+                "User-Agent": (
+                    "158888-NZ-Rental-Market-Platform/1.0"
+                ),
             }
         )
 
@@ -41,8 +46,30 @@ class MarketRentAPIClient:
         endpoint: str,
         params: dict[str, Any] | None = None,
     ) -> Any:
-        """Send a GET request to the Market Rent API."""
-        url = f"{self.settings.base_url}/{endpoint.lstrip('/')}"
+        """Send a GET request to the Market Rent API.
+
+        Parameters
+        ----------
+        endpoint:
+            API endpoint relative to the configured base URL.
+        params:
+            Optional query parameters.
+
+        Returns
+        -------
+        Any
+            Parsed JSON response.
+
+        Raises
+        ------
+        MarketRentAPIError
+            If the request times out, fails, returns a non-success
+            HTTP status, or does not contain valid JSON.
+        """
+        url = (
+            f"{self.settings.base_url}/"
+            f"{endpoint.lstrip('/')}"
+        )
 
         try:
             response = self.session.get(
@@ -50,6 +77,7 @@ class MarketRentAPIClient:
                 params=params,
                 timeout=self.timeout,
             )
+
             response.raise_for_status()
 
         except requests.Timeout as exc:
@@ -59,14 +87,8 @@ class MarketRentAPIClient:
             ) from exc
 
         except requests.HTTPError as exc:
-            status_code = (
-                exc.response.status_code
-                if exc.response is not None
-                else "unknown"
-            )
-
             raise MarketRentAPIError(
-                f"Market Rent API returned HTTP {status_code}."
+                self._build_http_error_message(exc)
             ) from exc
 
         except requests.RequestException as exc:
@@ -82,6 +104,59 @@ class MarketRentAPIClient:
                 "Market Rent API returned a response "
                 "that was not valid JSON."
             ) from exc
+
+    @staticmethod
+    def _build_http_error_message(
+        exc: requests.HTTPError,
+    ) -> str:
+        """Build a useful HTTP error message without exposing secrets."""
+        response = exc.response
+
+        if response is None:
+            return (
+                "Market Rent API returned an HTTP error "
+                "with no response details."
+            )
+
+        status_code = response.status_code
+
+        request_id = (
+            response.headers.get("x-request-id")
+            or response.headers.get("request-id")
+            or response.headers.get("apim-request-id")
+            or response.headers.get("x-correlation-id")
+            or response.headers.get("correlation-id")
+        )
+
+        response_text = response.text.strip()
+
+        if (
+            len(response_text)
+            > MAX_ERROR_RESPONSE_CHARS
+        ):
+            response_text = (
+                response_text[
+                    :MAX_ERROR_RESPONSE_CHARS
+                ]
+                + "..."
+            )
+
+        message = (
+            f"Market Rent API returned HTTP "
+            f"{status_code}."
+        )
+
+        if request_id:
+            message += (
+                f" Request ID: {request_id}."
+            )
+
+        if response_text:
+            message += (
+                f" Response: {response_text}"
+            )
+
+        return message
 
     def get_area_definitions(self) -> Any:
         """Return geographic area definitions available from the API."""
@@ -132,15 +207,21 @@ class MarketRentAPIClient:
             "num-months": num_months,
             "area-definition": area_definition,
             "include-aggregates": (
-                "true" if include_aggregates else "false"
+                "true"
+                if include_aggregates
+                else "false"
             ),
         }
 
         if area_labels:
-            params["area-labels"] = ",".join(area_labels)
+            params["area-labels"] = ",".join(
+                area_labels
+            )
 
         if area_codes:
-            params["area-codes"] = ",".join(area_codes)
+            params["area-codes"] = ",".join(
+                area_codes
+            )
 
         return self._get(
             "statistics",
