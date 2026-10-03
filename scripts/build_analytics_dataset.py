@@ -8,6 +8,14 @@ import pandas as pd
 from sqlalchemy import create_engine, text
 from sqlalchemy.engine import URL
 
+from rmp.analytics.historical_summary import (
+    build_historical_summary,
+    build_monthly_seasonality_summary,
+    build_recent_history_summary,
+)
+from rmp.analytics.modelling_readiness import (
+    build_modelling_readiness,
+)
 from rmp.analytics.monthly_panel import (
     build_monthly_panel,
 )
@@ -35,7 +43,9 @@ def create_database_engine():
         database=config["database"],
     )
 
-    return create_engine(database_url)
+    return create_engine(
+        database_url
+    )
 
 
 def load_clean_rental_bond() -> pd.DataFrame:
@@ -86,7 +96,7 @@ def save_csv(
 
 
 def main() -> None:
-    """Build Phase 3 analytics datasets."""
+    """Build all Phase 3 analytics datasets."""
 
     print(
         "Loading clean rental bond data..."
@@ -108,6 +118,31 @@ def main() -> None:
 
     quality = build_quality_summary(
         panel
+    )
+
+    historical_summary = (
+        build_historical_summary(
+            panel
+        )
+    )
+
+    monthly_seasonality = (
+        build_monthly_seasonality_summary(
+            panel
+        )
+    )
+
+    recent_history = (
+        build_recent_history_summary(
+            panel,
+            recent_months=24,
+        )
+    )
+
+    readiness = build_modelling_readiness(
+        panel,
+        catalog,
+        quality,
     )
 
     output_dir = (
@@ -140,6 +175,30 @@ def main() -> None:
         / "quality_summary.csv",
     )
 
+    save_csv(
+        historical_summary,
+        output_dir
+        / "historical_summary.csv",
+    )
+
+    save_csv(
+        monthly_seasonality,
+        output_dir
+        / "monthly_seasonality.csv",
+    )
+
+    save_csv(
+        recent_history,
+        output_dir
+        / "recent_history_summary.csv",
+    )
+
+    save_csv(
+        readiness,
+        output_dir
+        / "modelling_readiness.csv",
+    )
+
     print(
         "\n=== Analytics summary ==="
     )
@@ -149,7 +208,7 @@ def main() -> None:
     )
 
     print(
-        f"Series: "
+        "Series: "
         f"{panel['series_id'].nunique()}"
     )
 
@@ -176,6 +235,26 @@ def main() -> None:
         "Quality PASS: "
         f"{int((quality['status'] == 'PASS').sum())}"
         f"/{len(quality)}"
+    )
+
+    print(
+        "Historical summaries: "
+        f"{len(historical_summary)}"
+    )
+
+    print(
+        "Monthly seasonality rows: "
+        f"{len(monthly_seasonality)}"
+    )
+
+    print(
+        "Recent-history summaries: "
+        f"{len(recent_history)}"
+    )
+
+    print(
+        "Modelling ready: "
+        f"{bool(readiness.iloc[0]['dataset_ready'])}"
     )
 
     print(
