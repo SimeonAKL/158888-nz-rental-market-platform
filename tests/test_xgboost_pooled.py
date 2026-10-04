@@ -75,7 +75,7 @@ def test_prepare_training_data() -> None:
     (
         x_train,
         y_train,
-        location_ids,
+        location_keys,
         feature_columns,
     ) = prepare_training_data(
         history
@@ -84,16 +84,17 @@ def test_prepare_training_data() -> None:
     assert not x_train.empty
     assert len(x_train) == len(y_train)
 
-    assert location_ids == [
-        1,
-        2,
-        3,
+    assert location_keys == [
+        "region_1",
+        "region_2",
+        "region_3",
     ]
 
     assert "lag_12" in feature_columns
     assert "rolling_mean_12" in feature_columns
-    assert "location_1" in feature_columns
-    assert "location_3" in feature_columns
+    assert "location_region_1" in feature_columns
+    assert "location_region_2" in feature_columns
+    assert "location_region_3" in feature_columns
 
     assert not x_train.isna().any().any()
 
@@ -252,3 +253,56 @@ def test_rejects_nonconsecutive_future_dates() -> None:
             history,
             future,
         )
+
+
+def test_location_features_distinguish_geography_levels() -> None:
+    """Equal location IDs across geography levels must remain distinct."""
+    periods = pd.date_range(
+        "2020-01-01",
+        periods=36,
+        freq="MS",
+    )
+
+    rows = []
+
+    for geography_level, series_id, location_name in [
+        (
+            "region",
+            "region_1_median_rent",
+            "Region 1",
+        ),
+        (
+            "territorial_authority",
+            "territorial_authority_1_median_rent",
+            "TA 1",
+        ),
+    ]:
+        for index, period in enumerate(periods):
+            rows.append(
+                {
+                    "period_date": period,
+                    "series_id": series_id,
+                    "geography_level": geography_level,
+                    "location_id": 1,
+                    "location_name": location_name,
+                    "metric": "median_rent",
+                    "value": 500.0 + index,
+                }
+            )
+
+    history = pd.DataFrame(rows)
+
+    _, _, location_keys, feature_columns = (
+        prepare_training_data(history)
+    )
+
+    assert set(location_keys) == {
+        "region_1",
+        "territorial_authority_1",
+    }
+
+    assert "location_region_1" in feature_columns
+    assert (
+        "location_territorial_authority_1"
+        in feature_columns
+    )

@@ -41,35 +41,41 @@ def build_xgboost_model() -> XGBRegressor:
 
 
 def _location_feature_names(
-    location_ids: list[int],
+    location_keys: list[str],
 ) -> list[str]:
-    """Return deterministic one-hot location feature names."""
+    """Return deterministic one-hot geography-location feature names."""
 
     return [
-        f"location_{location_id}"
-        for location_id in location_ids
+        f"location_{location_key}"
+        for location_key in location_keys
     ]
 
 
 def _add_location_features(
     frame: pd.DataFrame,
-    location_ids: list[int],
+    location_keys: list[str],
 ) -> pd.DataFrame:
-    """Add fixed one-hot encoded location indicators."""
+    """Add one-hot indicators for unique geography-location identities."""
 
     result = frame.copy()
 
-    numeric_location = pd.to_numeric(
-        result["location_id"],
-        errors="raise",
-    ).astype(int)
+    geography_location = (
+        result["geography_level"].astype(str)
+        + "_"
+        + pd.to_numeric(
+            result["location_id"],
+            errors="raise",
+        )
+        .astype(int)
+        .astype(str)
+    )
 
-    for location_id in location_ids:
+    for location_key in location_keys:
         result[
-            f"location_{location_id}"
+            f"location_{location_key}"
         ] = (
-            numeric_location
-            == location_id
+            geography_location
+            == location_key
         ).astype(float)
 
     return result
@@ -80,7 +86,7 @@ def prepare_training_data(
 ) -> tuple[
     pd.DataFrame,
     pd.Series,
-    list[int],
+    list[str],
     list[str],
 ]:
     """Build leakage-safe pooled training data."""
@@ -88,6 +94,7 @@ def prepare_training_data(
     required = {
         "period_date",
         "series_id",
+        "geography_level",
         "location_id",
         "metric",
         "value",
@@ -125,12 +132,17 @@ def prepare_training_data(
         errors="raise",
     )
 
-    location_ids = sorted(
-        pd.to_numeric(
-            data["location_id"],
-            errors="raise",
+    location_keys = sorted(
+        (
+            data["geography_level"].astype(str)
+            + "_"
+            + pd.to_numeric(
+                data["location_id"],
+                errors="raise",
+            )
+            .astype(int)
+            .astype(str)
         )
-        .astype(int)
         .unique()
         .tolist()
     )
@@ -141,12 +153,12 @@ def prepare_training_data(
 
     featured = _add_location_features(
         featured,
-        location_ids,
+        location_keys,
     )
 
     location_columns = (
         _location_feature_names(
-            location_ids
+            location_keys
         )
     )
 
@@ -195,7 +207,7 @@ def prepare_training_data(
     return (
         x_train,
         y_train,
-        location_ids,
+        location_keys,
         feature_columns,
     )
 
@@ -278,7 +290,7 @@ def pooled_recursive_forecast(
     (
         x_train,
         y_train,
-        location_ids,
+        location_keys,
         feature_columns,
     ) = prepare_training_data(
         data
@@ -367,7 +379,7 @@ def pooled_recursive_forecast(
 
         current = _add_location_features(
             current,
-            location_ids,
+            location_keys,
         )
 
         current = current.sort_values(

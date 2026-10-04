@@ -15,6 +15,10 @@ dependencies = [
     "psycopg2-binary",
     "python-dotenv",
     "requests",
+    "streamlit",
+    "numpy",
+    "statsmodels",
+    "xgboost",
 ]
 
 [project.optional-dependencies]
