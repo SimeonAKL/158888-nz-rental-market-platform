@@ -52,8 +52,8 @@ def make_panel() -> pd.DataFrame:
     )
 
 
-def test_series_catalog_complete_series() -> None:
-    """Complete 60-month series should be eligible."""
+def test_series_catalog_60_month_series_not_eligible() -> None:
+    """A complete 60-month series is insufficient for full evaluation."""
 
     panel = make_panel()
 
@@ -74,6 +74,54 @@ def test_series_catalog_complete_series() -> None:
         row["completeness_rate"]
         == 1.0
     )
+    assert not bool(
+        row[
+            "eligible_for_forecasting"
+        ]
+    )
+
+
+
+def test_series_catalog_77_month_series_is_eligible() -> None:
+    """A complete 77-month series should support full evaluation."""
+
+    periods = pd.date_range(
+        "2020-01-01",
+        periods=77,
+        freq="MS",
+    )
+
+    panel = pd.DataFrame(
+        {
+            "series_id": [
+                "region_1_median_rent"
+            ] * len(periods),
+            "period_date": periods,
+            "geography_level": [
+                "region"
+            ] * len(periods),
+            "location_id": [1] * len(periods),
+            "location_name": [
+                "Test Region"
+            ] * len(periods),
+            "metric": [
+                "median_rent"
+            ] * len(periods),
+            "value": [
+                500.0
+            ] * len(periods),
+            "is_provisional": [
+                False
+            ] * len(periods),
+        }
+    )
+
+    catalog = build_series_catalog(panel)
+
+    row = catalog.iloc[0]
+
+    assert row["continuous_months"] == 77
+    assert row["missing_months"] == 0
     assert bool(
         row[
             "eligible_for_forecasting"

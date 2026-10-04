@@ -101,7 +101,7 @@ def sample_clean_data() -> pd.DataFrame:
 def test_select_core_geographies(
     sample_clean_data: pd.DataFrame,
 ) -> None:
-    """Only valid Regions and Auckland TA should remain."""
+    """All valid Regions and Territorial Authorities remain."""
 
     result = select_core_geographies(
         sample_clean_data
@@ -109,7 +109,7 @@ def test_select_core_geographies(
 
     assert set(
         result["location_id"]
-    ) == {2, 76}
+    ) == {2, 60, 76}
 
     assert -99 not in set(
         result["location_id"]
@@ -119,9 +119,6 @@ def test_select_core_geographies(
         result["location_id"]
     )
 
-    assert 60 not in set(
-        result["location_id"]
-    )
 
 
 def test_build_monthly_panel(
@@ -133,7 +130,7 @@ def test_build_monthly_panel(
         sample_clean_data
     )
 
-    assert len(panel) == 8
+    assert len(panel) == 10
 
     assert set(
         panel["metric"]
@@ -144,7 +141,7 @@ def test_build_monthly_panel(
 
     assert panel[
         "series_id"
-    ].nunique() == 4
+    ].nunique() == 6
 
     assert pd.api.types.is_datetime64_any_dtype(
         panel["period_date"]

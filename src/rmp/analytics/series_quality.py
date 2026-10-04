@@ -5,6 +5,15 @@ from __future__ import annotations
 import pandas as pd
 
 MIN_HISTORY_MONTHS = 60
+FORECAST_HORIZON = 6
+N_ROLLING_ORIGINS = 12
+
+REQUIRED_CONTINUOUS_MONTHS = (
+    MIN_HISTORY_MONTHS
+    + FORECAST_HORIZON
+    + N_ROLLING_ORIGINS
+    - 1
+)
 
 
 def build_series_catalog(
@@ -68,6 +77,23 @@ def build_series_catalog(
             observed_periods
         )
 
+        observed_set = set(observed_periods)
+
+        continuous_start = end_period
+
+        for period in reversed(expected_periods):
+            if period in observed_set:
+                continuous_start = period
+            else:
+                break
+
+        continuous_months = (
+            (end_period.year - continuous_start.year) * 12
+            + end_period.month
+            - continuous_start.month
+            + 1
+        )
+
         n_observations = len(group)
 
         expected_observations = len(
@@ -117,12 +143,19 @@ def build_series_catalog(
                 "completeness_rate": (
                     completeness_rate
                 ),
+                "continuous_start": (
+                    continuous_start
+                ),
+                "continuous_months": (
+                    continuous_months
+                ),
                 "eligible_for_forecasting": (
-                    n_observations
-                    >= MIN_HISTORY_MONTHS
-                    and len(missing_periods) == 0
-                    and group[
-                        "value"
+                    continuous_months
+                    >= REQUIRED_CONTINUOUS_MONTHS
+                    and group.loc[
+                        group["period_date"]
+                        >= continuous_start,
+                        "value",
                     ].notna().all()
                 ),
             }

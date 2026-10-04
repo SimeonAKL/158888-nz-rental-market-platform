@@ -47,6 +47,10 @@ def make_inputs():
                 0,
                 0,
             ],
+            "continuous_months": [
+                120,
+                120,
+            ],
             "eligible_for_forecasting": [
                 True,
                 True,
@@ -71,7 +75,7 @@ def make_inputs():
 
 
 def test_ready_dataset() -> None:
-    """Complete high-quality series should be modelling-ready."""
+    """Eligible high-quality series should be modelling-ready."""
 
     panel, catalog, quality = make_inputs()
 
@@ -89,21 +93,45 @@ def test_ready_dataset() -> None:
 
     assert row["n_series"] == 2
     assert row["complete_series"] == 2
+
     assert (
         row["forecast_eligible_series"]
         == 2
     )
-    assert row["quality_pass_series"] == 2
+
+    assert (
+        row["quality_pass_series"]
+        == 2
+    )
+
+    assert (
+        row["eligible_quality_pass_series"]
+        == 2
+    )
+
+    assert (
+        row[
+            "minimum_eligible_continuous_months"
+        ]
+        == 120
+    )
+
+    assert (
+        row["required_continuous_months"]
+        == 77
+    )
+
     assert bool(
         row["rolling_origin_ready"]
     )
+
     assert bool(
         row["feature_history_ready"]
     )
 
 
-def test_incomplete_series_not_ready() -> None:
-    """Missing months should prevent readiness."""
+def test_ineligible_series_does_not_block_ready_subset() -> None:
+    """Analytics-only series should not block a valid forecast subset."""
 
     panel, catalog, quality = make_inputs()
 
@@ -111,6 +139,11 @@ def test_incomplete_series_not_ready() -> None:
         catalog["series_id"] == "series_b",
         "missing_months",
     ] = 1
+
+    catalog.loc[
+        catalog["series_id"] == "series_b",
+        "continuous_months",
+    ] = 50
 
     catalog.loc[
         catalog["series_id"] == "series_b",
@@ -123,13 +156,39 @@ def test_incomplete_series_not_ready() -> None:
         quality,
     )
 
-    assert not bool(
-        result.iloc[0]["dataset_ready"]
+    row = result.iloc[0]
+
+    assert bool(
+        row["dataset_ready"]
+    )
+
+    assert row["n_series"] == 2
+    assert row["complete_series"] == 1
+
+    assert (
+        row["forecast_eligible_series"]
+        == 1
+    )
+
+    assert (
+        row["eligible_quality_pass_series"]
+        == 1
+    )
+
+    assert (
+        row[
+            "minimum_eligible_continuous_months"
+        ]
+        == 120
+    )
+
+    assert bool(
+        row["rolling_origin_ready"]
     )
 
 
 def test_failed_quality_not_ready() -> None:
-    """A failed quality series should prevent readiness."""
+    """Failed quality in an eligible series should prevent readiness."""
 
     panel, catalog, quality = make_inputs()
 
@@ -144,6 +203,60 @@ def test_failed_quality_not_ready() -> None:
         quality,
     )
 
+    row = result.iloc[0]
+
     assert not bool(
-        result.iloc[0]["dataset_ready"]
+        row["dataset_ready"]
+    )
+
+    assert (
+        row["forecast_eligible_series"]
+        == 2
+    )
+
+    assert (
+        row["eligible_quality_pass_series"]
+        == 1
+    )
+
+
+def test_no_forecast_eligible_series_not_ready() -> None:
+    """Dataset should not be ready when no series can be forecast."""
+
+    panel, catalog, quality = make_inputs()
+
+    catalog[
+        "eligible_for_forecasting"
+    ] = False
+
+    catalog[
+        "continuous_months"
+    ] = 50
+
+    result = build_modelling_readiness(
+        panel,
+        catalog,
+        quality,
+    )
+
+    row = result.iloc[0]
+
+    assert not bool(
+        row["dataset_ready"]
+    )
+
+    assert (
+        row["forecast_eligible_series"]
+        == 0
+    )
+
+    assert (
+        row[
+            "minimum_eligible_continuous_months"
+        ]
+        == 0
+    )
+
+    assert not bool(
+        row["rolling_origin_ready"]
     )

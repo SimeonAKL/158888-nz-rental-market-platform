@@ -14,9 +14,6 @@ EXCLUDED_LOCATION_IDS = {
     -1,   # NA / unknown
 }
 
-AUCKLAND_TA_LOCATION_ID = 76
-
-
 def select_core_geographies(
     df: pd.DataFrame,
 ) -> pd.DataFrame:
@@ -24,7 +21,7 @@ def select_core_geographies(
 
     Core scope:
     - all valid New Zealand Regions
-    - Auckland Territorial Authority only
+    - all valid Territorial Authorities
 
     Aggregate and unknown geography rows are excluded.
     """
@@ -42,26 +39,24 @@ def select_core_geographies(
             f"{sorted(missing)}"
         )
 
-    valid_regions = (
-        (df["geography_level"] == "region")
-        & ~df["location_id"].isin(
-            EXCLUDED_LOCATION_IDS
-        )
+    valid_geography_level = df[
+        "geography_level"
+    ].isin(
+        {
+            "region",
+            "territorial_authority",
+        }
     )
 
-    auckland_ta = (
-        (
-            df["geography_level"]
-            == "territorial_authority"
-        )
-        & (
-            df["location_id"]
-            == AUCKLAND_TA_LOCATION_ID
-        )
+    valid_location = ~df[
+        "location_id"
+    ].isin(
+        EXCLUDED_LOCATION_IDS
     )
 
     result = df.loc[
-        valid_regions | auckland_ta
+        valid_geography_level
+        & valid_location
     ].copy()
 
     return result

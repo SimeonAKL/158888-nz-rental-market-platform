@@ -26,6 +26,10 @@ INPUT_PATH = Path(
     "data/processed/analytics/monthly_panel.csv"
 )
 
+CATALOG_PATH = Path(
+    "data/processed/analytics/series_catalog.csv"
+)
+
 OUTPUT_DIR = Path(
     "data/processed/forecasting"
 )
@@ -107,6 +111,45 @@ def load_monthly_panel() -> pd.DataFrame:
             "period_date",
         ]
     ).reset_index(drop=True)
+
+
+
+def load_series_catalog() -> pd.DataFrame:
+    """Load Phase 3 forecasting-eligibility metadata."""
+
+    if not CATALOG_PATH.exists():
+        raise FileNotFoundError(
+            f"Input file not found: {CATALOG_PATH}"
+        )
+
+    catalog = pd.read_csv(
+        CATALOG_PATH,
+        parse_dates=["continuous_start"],
+    )
+
+    required = {
+        "series_id",
+        "continuous_start",
+        "continuous_months",
+        "eligible_for_forecasting",
+    }
+
+    missing = required.difference(
+        catalog.columns
+    )
+
+    if missing:
+        raise ValueError(
+            "Series catalog is missing required columns: "
+            f"{sorted(missing)}"
+        )
+
+    if catalog.empty:
+        raise ValueError(
+            "Series catalog is empty."
+        )
+
+    return catalog
 
 
 def run_forecasts(
@@ -483,8 +526,12 @@ def validate_predictions(
 def main() -> None:
     """Run complete seasonal naive baseline evaluation."""
 
+    panel = load_monthly_panel()
+    catalog = load_series_catalog()
+
     panel = select_forecasting_series(
-        load_monthly_panel()
+        panel,
+        catalog,
     )
 
     predictions = run_forecasts(

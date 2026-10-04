@@ -9,6 +9,13 @@ DEFAULT_SEASONAL_PERIOD = 12
 DEFAULT_N_ORIGINS = 12
 DEFAULT_MIN_HISTORY_MONTHS = 60
 
+REQUIRED_CONTINUOUS_MONTHS = (
+    DEFAULT_MIN_HISTORY_MONTHS
+    + DEFAULT_FORECAST_HORIZON
+    + DEFAULT_N_ORIGINS
+    - 1
+)
+
 
 def build_modelling_readiness(
     panel: pd.DataFrame,
@@ -32,6 +39,7 @@ def build_modelling_readiness(
         "series_id",
         "n_observations",
         "missing_months",
+        "continuous_months",
         "eligible_for_forecasting",
     }
 
@@ -98,41 +106,57 @@ def build_modelling_readiness(
         catalog["n_observations"].min()
     )
 
-    required_for_evaluation = (
-        DEFAULT_MIN_HISTORY_MONTHS
-        + DEFAULT_FORECAST_HORIZON
-        + DEFAULT_N_ORIGINS
-        - 1
+    eligible_catalog = catalog.loc[
+        catalog["eligible_for_forecasting"]
+    ].copy()
+
+    if eligible_catalog.empty:
+        minimum_eligible_continuous_months = 0
+    else:
+        minimum_eligible_continuous_months = int(
+            eligible_catalog[
+                "continuous_months"
+            ].min()
+        )
+
+    eligible_series_ids = set(
+        eligible_catalog["series_id"]
+    )
+
+    quality_pass_series_ids = set(
+        quality.loc[
+            quality["status"] == "PASS",
+            "series_id",
+        ]
+    )
+
+    eligible_quality_pass_series = len(
+        eligible_series_ids
+        & quality_pass_series_ids
     )
 
     rolling_origin_ready = (
-        minimum_observations
-        >= required_for_evaluation
+        eligible_series > 0
+        and minimum_eligible_continuous_months
+        >= REQUIRED_CONTINUOUS_MONTHS
     )
 
     feature_history_ready = (
-        minimum_observations
+        eligible_series > 0
+        and minimum_eligible_continuous_months
         > DEFAULT_SEASONAL_PERIOD
     )
 
-    all_series_complete = (
-        complete_series == n_series
-    )
-
-    all_series_eligible = (
-        eligible_series == n_series
-    )
-
-    all_quality_pass = (
-        quality_pass_series == n_series
+    eligible_quality_ready = (
+        eligible_series > 0
+        and eligible_quality_pass_series
+        == eligible_series
     )
 
     dataset_ready = (
-        all_series_complete
-        and all_series_eligible
-        and all_quality_pass
-        and rolling_origin_ready
+        rolling_origin_ready
         and feature_history_ready
+        and eligible_quality_ready
     )
 
     return pd.DataFrame(
@@ -147,8 +171,14 @@ def build_modelling_readiness(
                 "quality_pass_series": (
                     quality_pass_series
                 ),
+                "eligible_quality_pass_series": (
+                    eligible_quality_pass_series
+                ),
                 "minimum_observations": (
                     minimum_observations
+                ),
+                "minimum_eligible_continuous_months": (
+                    minimum_eligible_continuous_months
                 ),
                 "start_period": (
                     data["period_date"].min()
@@ -167,6 +197,9 @@ def build_modelling_readiness(
                 ),
                 "minimum_history_months": (
                     DEFAULT_MIN_HISTORY_MONTHS
+                ),
+                "required_continuous_months": (
+                    REQUIRED_CONTINUOUS_MONTHS
                 ),
                 "rolling_origin_ready": (
                     rolling_origin_ready
