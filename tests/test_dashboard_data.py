@@ -73,6 +73,11 @@ def test_load_monthly_panel_parses_dates_and_sorts(
                 610.0,
                 1000.0,
             ],
+            "source_snapshot_provisional": [
+                True,
+                True,
+                True,
+            ],
         }
     )
 
@@ -254,8 +259,8 @@ def test_load_final_forward_forecasts_parses_dates_and_sorts(
             ],
             "model": [
                 "ets_additive_damped",
-                "seasonal_naive",
-                "seasonal_naive",
+                "ets_additive_damped",
+                "ets_additive_damped",
             ],
             "forecast_origin": [
                 "2026-07-01",
@@ -287,6 +292,11 @@ def test_load_final_forward_forecasts_parses_dates_and_sorts(
                 4.0,
                 2.0,
                 2.0,
+            ],
+            "forecast_policy": [
+                "fixed_ets_v1",
+                "fixed_ets_v1",
+                "fixed_ets_v1",
             ],
         }
     )
@@ -339,5 +349,93 @@ def test_load_final_forward_forecasts_rejects_invalid_schema(
     with pytest.raises(
         ValueError,
         match="Final forecast file is missing required columns",
+    ):
+        dashboard_data.load_final_forward_forecasts()
+
+
+def test_load_final_forward_forecasts_rejects_wrong_model(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Production forecast loader should reject stale winner-model output."""
+    monkeypatch.setattr(
+        dashboard_data,
+        "FORECASTING_DIR",
+        tmp_path,
+    )
+
+    source = pd.DataFrame(
+        {
+            "series_id": ["series_a"],
+            "metric": ["median_rent"],
+            "geography_level": ["region"],
+            "location_id": [1],
+            "location_name": ["Auckland"],
+            "model": ["xgboost_pooled_recursive"],
+            "forecast_origin": ["2026-07-01"],
+            "forecast_period": ["2026-08-01"],
+            "horizon_step": [1],
+            "predicted": [650.0],
+            "backtest_mae": [10.0],
+            "backtest_rmse": [15.0],
+            "backtest_smape": [2.0],
+            "forecast_policy": ["fixed_ets_v1"],
+        }
+    )
+
+    source.to_csv(
+        tmp_path / "final_forward_forecasts.csv",
+        index=False,
+    )
+
+    _clear_cache(dashboard_data.load_final_forward_forecasts)
+
+    with pytest.raises(
+        ValueError,
+        match="fixed ETS production model",
+    ):
+        dashboard_data.load_final_forward_forecasts()
+
+
+def test_load_final_forward_forecasts_rejects_wrong_policy(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Production forecast loader should reject an unknown policy."""
+    monkeypatch.setattr(
+        dashboard_data,
+        "FORECASTING_DIR",
+        tmp_path,
+    )
+
+    source = pd.DataFrame(
+        {
+            "series_id": ["series_a"],
+            "metric": ["median_rent"],
+            "geography_level": ["region"],
+            "location_id": [1],
+            "location_name": ["Auckland"],
+            "model": ["ets_additive_damped"],
+            "forecast_origin": ["2026-07-01"],
+            "forecast_period": ["2026-08-01"],
+            "horizon_step": [1],
+            "predicted": [650.0],
+            "backtest_mae": [10.0],
+            "backtest_rmse": [15.0],
+            "backtest_smape": [2.0],
+            "forecast_policy": ["unexpected_policy"],
+        }
+    )
+
+    source.to_csv(
+        tmp_path / "final_forward_forecasts.csv",
+        index=False,
+    )
+
+    _clear_cache(dashboard_data.load_final_forward_forecasts)
+
+    with pytest.raises(
+        ValueError,
+        match="fixed_ets_v1",
     ):
         dashboard_data.load_final_forward_forecasts()

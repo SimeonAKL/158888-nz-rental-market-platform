@@ -813,7 +813,7 @@ render_html(
 # Source status
 # ---------------------------------------------------------------------
 
-if series["is_provisional"].fillna(False).any():
+if series["source_snapshot_provisional"].fillna(False).any():
     render_html(
         """
         <div class="overview-source-note">

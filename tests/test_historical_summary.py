@@ -31,7 +31,7 @@ def sample_panel() -> pd.DataFrame:
             "location_name": ["Auckland Region"] * 24,
             "metric": ["median_rent"] * 24,
             "value": values,
-            "is_provisional": [True] * 24,
+            "source_snapshot_provisional": [True] * 24,
             "source_snapshot_id": [4] * 24,
         }
     )

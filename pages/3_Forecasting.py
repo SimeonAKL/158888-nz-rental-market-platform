@@ -162,7 +162,7 @@ render_page_hero(
     "Forecasting",
     (
         "Six-month forward forecasts generated from "
-        "the selected winner model for each "
+        "the fixed ETS production model for each "
         "forecast-eligible rental-market series."
     ),
     HERO_IMAGE_PATH,
@@ -273,7 +273,7 @@ render_series_header(
     ),
 )
 
-if history["is_provisional"].fillna(False).any():
+if history["source_snapshot_provisional"].fillna(False).any():
     render_source_note()
 
 
@@ -430,7 +430,15 @@ series_forecast = series_forecast.sort_values("horizon_step").reset_index(drop=T
 
 winner = series_winner.iloc[0]
 
-winner_model = str(winner["best_model"])
+research_winner_model = str(winner["best_model"])
+
+production_models = series_forecast["model"].dropna().unique()
+
+if len(production_models) != 1:
+    st.error("The production forecast does not resolve to exactly one model.")
+    st.stop()
+
+production_model = str(production_models[0])
 
 forecast_origin = pd.Timestamp(series_forecast["forecast_origin"].iloc[0])
 
@@ -460,7 +468,7 @@ with st.container(
     render_card_header(
         "Final 6-Month Forward Forecast",
         (
-            "The selected winner model is refitted "
+            "The fixed ETS production model is refitted "
             "using all available observations through "
             "the forecast origin before producing "
             "the six-month future projection."
@@ -478,9 +486,9 @@ with st.container(
             "",
         ),
         (
-            "Winner Model",
-            model_label(winner_model),
-            ("Selected by rolling-origin validation"),
+            "Production Model",
+            model_label(production_model),
+            ("Fixed policy selected after held-out validation"),
             "",
         ),
         (
@@ -533,7 +541,7 @@ with st.container(
         "Observed History and 6-Month Forecast",
         (
             "Historical observations are shown alongside "
-            "the final winner-model forecast. The shaded "
+            "the fixed-ETS production forecast. The shaded "
             "area marks the future forecast period."
         ),
     )
@@ -744,7 +752,7 @@ with st.container(
     with forecast_title_col:
         render_card_header(
             "Forecast Values",
-            (f"Six monthly predictions from the {model_label(winner_model)} model."),
+            (f"Six monthly predictions from the {model_label(production_model)} model."),
         )
 
     download_data = (
@@ -909,10 +917,10 @@ with st.container(
     render_card_header(
         "Model Evaluation",
         (
-            "Winner-model performance from historical "
+            "Research winner-model performance from historical "
             "rolling-origin out-of-sample validation. "
-            "These metrics are evaluation evidence and "
-            "are separate from the future forecast above."
+            "These metrics are comparative evaluation evidence and "
+            "are separate from the fixed-ETS production forecast above."
         ),
     )
 
@@ -963,7 +971,7 @@ with st.container(
 
 winner_backtest = backtest_predictions.loc[
     (backtest_predictions["series_id"] == series_id)
-    & (backtest_predictions["model"] == winner_model)
+    & (backtest_predictions["model"] == research_winner_model)
 ].copy()
 
 if not winner_backtest.empty:
@@ -1152,10 +1160,19 @@ Models are evaluated using **rolling-origin validation** with a
 six-month forecast horizon. MAE, RMSE and sMAPE are used as
 forecast-error measures.
 
-A winner model is selected separately for each forecast-eligible
-series. The winner is then refitted using all available historical
-observations through the final forecast origin before generating
-the six-month forward forecast.
+A descriptive winner model is retained for each forecast-eligible
+series as part of the comparative research layer. These winner results
+summarise historical rolling-origin performance and are not used to
+select the production model for each series.
+
+For production forecasting, a fixed **ETS (Additive Damped)** policy
+is used for every forecast-eligible series. This policy was adopted
+after strict temporally separated validation showed better held-out
+sMAPE and greater stability than per-series model selection.
+
+The ETS production model is refitted using all available historical
+observations through the final forecast origin before generating the
+six-month forward forecast.
 
 The forward forecast is therefore a **genuine future projection**
 and is separate from the historical rolling-origin backtest

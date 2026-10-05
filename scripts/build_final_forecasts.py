@@ -1,4 +1,4 @@
-"""Build final six-month winner-model forward forecasts."""
+"""Build final six-month forecasts under the production policy."""
 
 from __future__ import annotations
 
@@ -8,8 +8,11 @@ import pandas as pd
 
 from rmp.forecasting.final_forecast import (
     DEFAULT_FORWARD_HORIZON,
-    build_all_model_forward_forecasts,
-    select_winner_forward_forecasts,
+    build_production_forward_forecasts,
+)
+from rmp.forecasting.policy import (
+    FORECAST_POLICY,
+    PRODUCTION_MODEL,
 )
 from rmp.forecasting.selection import (
     select_forecasting_series,
@@ -19,13 +22,13 @@ PANEL_PATH = Path("data/processed/analytics/monthly_panel.csv")
 
 CATALOG_PATH = Path("data/processed/analytics/series_catalog.csv")
 
-WINNERS_PATH = Path("data/processed/forecasting/series_model_winners.csv")
+METRICS_PATH = Path("data/processed/forecasting/metrics_by_series.csv")
 
 OUTPUT_PATH = Path("data/processed/forecasting/final_forward_forecasts.csv")
 
 
 def main() -> None:
-    """Build and save final forward forecasts."""
+    """Build and save final production forward forecasts."""
     panel = pd.read_csv(
         PANEL_PATH,
         parse_dates=["period_date"],
@@ -36,21 +39,16 @@ def main() -> None:
         parse_dates=["continuous_start"],
     )
 
-    winners = pd.read_csv(WINNERS_PATH)
+    metrics_by_series = pd.read_csv(METRICS_PATH)
 
     history = select_forecasting_series(
         panel,
         catalog,
     )
 
-    all_forecasts = build_all_model_forward_forecasts(
+    final = build_production_forward_forecasts(
         history,
-        horizon=DEFAULT_FORWARD_HORIZON,
-    )
-
-    final = select_winner_forward_forecasts(
-        all_forecasts,
-        winners,
+        metrics_by_series,
         horizon=DEFAULT_FORWARD_HORIZON,
     )
 
@@ -64,8 +62,10 @@ def main() -> None:
         index=False,
     )
 
-    print("Final forward forecasting complete.")
+    print("Final production forecasting complete.")
     print()
+    print(f"Forecast policy: {FORECAST_POLICY}")
+    print(f"Production model: {PRODUCTION_MODEL}")
     print(f"Forecast origin: {final['forecast_origin'].iloc[0]}")
     print(f"Forecast period: {final['forecast_period'].min()} to {final['forecast_period'].max()}")
     print(f"Series: {final['series_id'].nunique()}")
@@ -73,7 +73,7 @@ def main() -> None:
     print(f"Horizon: {final['horizon_step'].nunique()} months")
 
     print()
-    print("=== WINNER MODELS ===")
+    print("=== PRODUCTION MODELS ===")
     print(
         final[
             [

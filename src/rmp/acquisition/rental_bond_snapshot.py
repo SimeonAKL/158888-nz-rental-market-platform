@@ -29,6 +29,14 @@ TLA_URL = (
     "detailed-monthly-tla-tenancy-september.csv"
 )
 
+RENTAL_BOND_PROVISIONAL = True
+
+RENTAL_BOND_PROVISIONAL_SOURCE = (
+    "https://www.tenancy.govt.nz/about-tenancy-services/data-and-statistics/rental-bond-data/"
+)
+
+RENTAL_BOND_PROVISIONAL_CHECKED = "2026-10-06"
+
 RentalBondDataset = Literal[
     "region",
     "territorial_authority",
@@ -151,12 +159,14 @@ def acquire_rental_bond_snapshot(
         "raw_file": raw_path.name,
         "file_size_bytes": len(content),
         "sha256": checksum,
-        "provisional": True,
+        "provisional": RENTAL_BOND_PROVISIONAL,
+        "provisional_status_source": RENTAL_BOND_PROVISIONAL_SOURCE,
+        "provisional_status_checked": RENTAL_BOND_PROVISIONAL_CHECKED,
         "notes": (
-            "Tenancy Services states that Rental Bond "
-            "data remains provisional during migration "
-            "to the new bond management system and may "
-            "be revised."
+            "Tenancy Services states that migration to the new bond "
+            "management system is continuing. Rental Bond data remains "
+            "provisional, may be incomplete or revised, and recent data "
+            "may not be directly comparable with earlier periods."
         ),
     }
 

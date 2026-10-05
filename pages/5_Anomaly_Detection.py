@@ -340,7 +340,10 @@ render_series_header(
 )
 
 
-if "is_provisional" in series.columns and series["is_provisional"].fillna(False).any():
+if (
+    "source_snapshot_provisional" in series.columns
+    and series["source_snapshot_provisional"].fillna(False).any()
+):
     render_source_note()
 
 

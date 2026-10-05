@@ -26,7 +26,7 @@ def make_panel() -> pd.DataFrame:
             "location_name": ["Auckland Region"] * 60,
             "metric": ["median_rent"] * 60,
             "value": list(range(500, 560)),
-            "is_provisional": [True] * 60,
+            "source_snapshot_provisional": [True] * 60,
             "source_snapshot_id": [4] * 60,
         }
     )
@@ -67,7 +67,7 @@ def test_series_catalog_77_month_series_is_eligible() -> None:
             "location_name": ["Test Region"] * len(periods),
             "metric": ["median_rent"] * len(periods),
             "value": [500.0] * len(periods),
-            "is_provisional": [False] * len(periods),
+            "source_snapshot_provisional": [False] * len(periods),
         }
     )
 
@@ -106,6 +106,8 @@ def test_quality_summary_passes_clean_series() -> None:
     assert row["null_values"] == 0
     assert row["negative_values"] == 0
     assert row["zero_values"] == 0
+    assert bool(row["source_snapshot_provisional"])
+    assert "provisional_observations" not in summary.columns
     assert row["status"] == "PASS"
 
 

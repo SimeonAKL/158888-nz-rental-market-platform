@@ -42,12 +42,17 @@ def load_monthly_panel() -> pd.DataFrame:
         "location_id",
         "location_name",
         "value",
+        "source_snapshot_provisional",
     }
 
     missing = required.difference(data.columns)
 
     if missing:
-        raise ValueError(f"Monthly panel is missing required columns: {sorted(missing)}")
+        raise ValueError(
+            "Monthly panel is missing required columns: "
+            f"{sorted(missing)}. "
+            "Re-run scripts/build_analytics_dataset.py."
+        )
 
     return data.sort_values(
         [
@@ -208,7 +213,7 @@ def load_series_model_winners() -> pd.DataFrame:
 
 @st.cache_data(show_spinner=False)
 def load_final_forward_forecasts() -> pd.DataFrame:
-    """Load final six-month winner-model forecasts."""
+    """Load final six-month production-policy forecasts."""
     path = FORECASTING_DIR / "final_forward_forecasts.csv"
 
     _require_file(path)
@@ -235,12 +240,29 @@ def load_final_forward_forecasts() -> pd.DataFrame:
         "backtest_mae",
         "backtest_rmse",
         "backtest_smape",
+        "forecast_policy",
     }
 
     missing = required.difference(data.columns)
 
     if missing:
         raise ValueError(f"Final forecast file is missing required columns: {sorted(missing)}")
+
+    models = set(data["model"].dropna().unique())
+
+    if models != {"ets_additive_damped"}:
+        raise ValueError(
+            "Final forecast file does not use the fixed ETS "
+            "production model. Re-run scripts/build_final_forecasts.py."
+        )
+
+    policies = set(data["forecast_policy"].dropna().unique())
+
+    if policies != {"fixed_ets_v1"}:
+        raise ValueError(
+            "Final forecast file does not use forecast policy "
+            "'fixed_ets_v1'. Re-run scripts/build_final_forecasts.py."
+        )
 
     return data.sort_values(
         [

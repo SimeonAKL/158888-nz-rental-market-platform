@@ -9,6 +9,10 @@ from rmp.forecasting.ets import (
     DEFAULT_SEASONAL_PERIOD,
     ets_forecast,
 )
+from rmp.forecasting.policy import (
+    FORECAST_POLICY,
+    PRODUCTION_MODEL,
+)
 from rmp.forecasting.xgboost_pooled import (
     pooled_recursive_forecast,
 )
@@ -52,6 +56,11 @@ FINAL_FORECAST_COLUMNS = [
     "backtest_mae",
     "backtest_rmse",
     "backtest_smape",
+]
+
+PRODUCTION_FORECAST_COLUMNS = [
+    *FINAL_FORECAST_COLUMNS,
+    "forecast_policy",
 ]
 
 
@@ -422,6 +431,131 @@ def select_winner_forward_forecasts(
 
     return (
         selected[FINAL_FORECAST_COLUMNS]
+        .sort_values(
+            [
+                "series_id",
+                "horizon_step",
+            ]
+        )
+        .reset_index(drop=True)
+    )
+
+
+def build_production_forward_forecasts(
+    history: pd.DataFrame,
+    metrics_by_series: pd.DataFrame,
+    horizon: int = DEFAULT_FORWARD_HORIZON,
+) -> pd.DataFrame:
+    """Build fixed-ETS production forecasts with ETS backtest metrics."""
+    required_metrics = {
+        "model",
+        "series_id",
+        "mae",
+        "rmse",
+        "smape",
+    }
+
+    missing = required_metrics.difference(metrics_by_series.columns)
+
+    if missing:
+        raise ValueError(f"Series metrics are missing columns: {sorted(missing)}")
+
+    if PRODUCTION_MODEL != ETS_MODEL:
+        raise ValueError(
+            "Configured production model must be ETS for this production forecast implementation."
+        )
+
+    origin, forecast_periods = build_future_periods(
+        history,
+        horizon=horizon,
+    )
+
+    forecasts = build_ets_forward_forecasts(
+        history,
+        origin,
+        forecast_periods,
+    )
+
+    expected_series = set(history["series_id"].unique())
+
+    observed_series = set(forecasts["series_id"].unique())
+
+    if observed_series != expected_series:
+        raise ValueError("Production forecasts do not cover exactly the forecast-eligible series.")
+
+    ets_metrics = metrics_by_series.loc[
+        metrics_by_series["model"] == PRODUCTION_MODEL,
+        [
+            "series_id",
+            "mae",
+            "rmse",
+            "smape",
+        ],
+    ].copy()
+
+    if ets_metrics["series_id"].duplicated().any():
+        raise ValueError("ETS backtest metrics contain duplicate series.")
+
+    metric_series = set(ets_metrics["series_id"])
+
+    if metric_series != expected_series:
+        missing_series = sorted(expected_series.difference(metric_series))
+
+        extra_series = sorted(metric_series.difference(expected_series))
+
+        raise ValueError(
+            "ETS backtest metrics do not align with "
+            "forecast-eligible series. "
+            f"Missing: {missing_series}; "
+            f"extra: {extra_series}"
+        )
+
+    ets_metrics = ets_metrics.rename(
+        columns={
+            "mae": "backtest_mae",
+            "rmse": "backtest_rmse",
+            "smape": "backtest_smape",
+        }
+    )
+
+    result = forecasts.merge(
+        ets_metrics,
+        on="series_id",
+        how="left",
+        validate="many_to_one",
+    )
+
+    counts = result.groupby("series_id")["horizon_step"].count()
+
+    if not counts.eq(horizon).all():
+        raise ValueError(f"Each production series must have exactly {horizon} forward forecasts.")
+
+    numeric_columns = [
+        "predicted",
+        "backtest_mae",
+        "backtest_rmse",
+        "backtest_smape",
+    ]
+
+    numeric_values = (
+        result[numeric_columns]
+        .apply(
+            pd.to_numeric,
+            errors="coerce",
+        )
+        .to_numpy(dtype=float)
+    )
+
+    if not np.isfinite(numeric_values).all():
+        raise ValueError("Production forecasts contain non-finite predictions or backtest metrics.")
+
+    if set(result["model"].unique()) != {PRODUCTION_MODEL}:
+        raise ValueError("Production forecasts contain an unexpected model.")
+
+    result["forecast_policy"] = FORECAST_POLICY
+
+    return (
+        result[PRODUCTION_FORECAST_COLUMNS]
         .sort_values(
             [
                 "series_id",

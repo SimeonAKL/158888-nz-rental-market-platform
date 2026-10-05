@@ -312,7 +312,7 @@ render_series_header(
 )
 
 
-if series["is_provisional"].fillna(False).any():
+if series["source_snapshot_provisional"].fillna(False).any():
     render_source_note()
 
 

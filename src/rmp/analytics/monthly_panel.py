@@ -14,6 +14,10 @@ EXCLUDED_LOCATION_IDS = {
     -1,  # NA / unknown
 }
 
+# Snapshot-level source provenance carried into the analytics layer.
+# This flag describes the source snapshot, not individual monthly observations.
+SNAPSHOT_PROVISIONAL_COLUMN = "source_snapshot_provisional"
+
 
 def select_core_geographies(
     df: pd.DataFrame,
@@ -86,6 +90,12 @@ def reshape_metrics(
         value_name="value",
     )
 
+    panel = panel.rename(
+        columns={
+            "is_provisional": SNAPSHOT_PROVISIONAL_COLUMN,
+        }
+    )
+
     panel["period_date"] = pd.to_datetime(panel["period_date"])
 
     panel["value"] = pd.to_numeric(
@@ -117,7 +127,7 @@ def validate_monthly_panel(
         "location_name",
         "metric",
         "value",
-        "is_provisional",
+        SNAPSHOT_PROVISIONAL_COLUMN,
         "source_snapshot_id",
     }
 
@@ -171,7 +181,7 @@ def build_monthly_panel(
             "location_name",
             "metric",
             "value",
-            "is_provisional",
+            SNAPSHOT_PROVISIONAL_COLUMN,
             "source_snapshot_id",
         ]
     ]

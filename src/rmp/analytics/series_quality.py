@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from rmp.analytics.monthly_panel import SNAPSHOT_PROVISIONAL_COLUMN
+
 MIN_HISTORY_MONTHS = 60
 FORECAST_HORIZON = 6
 N_ROLLING_ORIGINS = 12
@@ -131,7 +133,7 @@ def build_quality_summary(
         "period_date",
         "metric",
         "value",
-        "is_provisional",
+        SNAPSHOT_PROVISIONAL_COLUMN,
     }
 
     missing = required_columns.difference(panel.columns)
@@ -157,7 +159,9 @@ def build_quality_summary(
 
         zero_values = int((group["value"] == 0).sum())
 
-        provisional_observations = int(group["is_provisional"].fillna(False).sum())
+        source_snapshot_provisional = bool(
+            group[SNAPSHOT_PROVISIONAL_COLUMN].fillna(False).astype(bool).any()
+        )
 
         if duplicate_periods == 0 and null_values == 0 and negative_values == 0:
             status = "PASS"
@@ -172,7 +176,7 @@ def build_quality_summary(
                 "null_values": (null_values),
                 "negative_values": (negative_values),
                 "zero_values": (zero_values),
-                "provisional_observations": (provisional_observations),
+                "source_snapshot_provisional": (source_snapshot_provisional),
                 "status": status,
             }
         )

@@ -175,8 +175,8 @@ with row1_col2, st.container(border=True):
 with row1_col3, st.container(border=True):
     st.markdown("### 🔮 Forecasting")
     st.write(
-        "View six-month forward forecasts produced from the selected "
-        "winner model for each forecast-eligible series."
+        "View six-month forward forecasts produced using the fixed "
+        "ETS production model for each forecast-eligible series."
     )
     st.page_link(
         "pages/3_Forecasting.py",

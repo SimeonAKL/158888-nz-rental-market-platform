@@ -124,6 +124,10 @@ def test_build_monthly_panel(
 
     assert pd.api.types.is_datetime64_any_dtype(panel["period_date"])
 
+    assert "source_snapshot_provisional" in panel.columns
+    assert "is_provisional" not in panel.columns
+    assert panel["source_snapshot_provisional"].all()
+
 
 def test_panel_has_no_duplicate_periods(
     sample_clean_data: pd.DataFrame,
