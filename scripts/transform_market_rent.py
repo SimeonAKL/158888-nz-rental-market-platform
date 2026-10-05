@@ -19,18 +19,12 @@ def find_latest_raw_snapshot() -> Path:
     """Return the most recent Market Rent raw JSON snapshot."""
     files = [
         path
-        for path in DEFAULT_RAW_ROOT.rglob(
-            "statistics_*.json"
-        )
-        if not path.name.endswith(
-            ".metadata.json"
-        )
+        for path in DEFAULT_RAW_ROOT.rglob("statistics_*.json")
+        if not path.name.endswith(".metadata.json")
     ]
 
     if not files:
-        raise FileNotFoundError(
-            "No Market Rent raw snapshots were found."
-        )
+        raise FileNotFoundError("No Market Rent raw snapshots were found.")
 
     return max(files)
 
@@ -38,19 +32,13 @@ def find_latest_raw_snapshot() -> Path:
 def build_parser() -> argparse.ArgumentParser:
     """Create the command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Transform a validated Market Rent "
-            "raw snapshot into staging CSV."
-        )
+        description=("Transform a validated Market Rent raw snapshot into staging CSV.")
     )
 
     parser.add_argument(
         "--input",
         type=Path,
-        help=(
-            "Path to a Market Rent raw JSON snapshot. "
-            "If omitted, the latest snapshot is used."
-        ),
+        help=("Path to a Market Rent raw JSON snapshot. If omitted, the latest snapshot is used."),
     )
 
     return parser
@@ -63,11 +51,7 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        raw_path = (
-            args.input
-            if args.input is not None
-            else find_latest_raw_snapshot()
-        )
+        raw_path = args.input if args.input is not None else find_latest_raw_snapshot()
 
         print("=" * 60)
         print("Market Rent staging transformation")
@@ -77,11 +61,7 @@ def main() -> int:
         print()
         print("Validating and transforming data...")
 
-        output_path = (
-            write_market_rent_staging_csv(
-                raw_path
-            )
-        )
+        output_path = write_market_rent_staging_csv(raw_path)
 
     except (
         FileNotFoundError,

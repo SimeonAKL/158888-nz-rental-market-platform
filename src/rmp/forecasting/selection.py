@@ -40,51 +40,29 @@ def select_forecasting_series(
         "eligible_for_forecasting",
     }
 
-    missing_panel = required_panel_columns.difference(
-        panel.columns
-    )
+    missing_panel = required_panel_columns.difference(panel.columns)
 
-    missing_catalog = required_catalog_columns.difference(
-        catalog.columns
-    )
+    missing_catalog = required_catalog_columns.difference(catalog.columns)
 
     if missing_panel:
-        raise ValueError(
-            "Panel is missing required columns: "
-            f"{sorted(missing_panel)}"
-        )
+        raise ValueError(f"Panel is missing required columns: {sorted(missing_panel)}")
 
     if missing_catalog:
-        raise ValueError(
-            "Catalog is missing required columns: "
-            f"{sorted(missing_catalog)}"
-        )
+        raise ValueError(f"Catalog is missing required columns: {sorted(missing_catalog)}")
 
     data = panel.copy()
     metadata = catalog.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
-    metadata["continuous_start"] = pd.to_datetime(
-        metadata["continuous_start"]
-    )
+    metadata["continuous_start"] = pd.to_datetime(metadata["continuous_start"])
 
-    eligible = metadata.loc[
-        metadata["eligible_for_forecasting"]
-    ].copy()
+    eligible = metadata.loc[metadata["eligible_for_forecasting"]].copy()
 
-    eligible = eligible.loc[
-        ~eligible["series_id"].isin(
-            EXCLUDED_FORECAST_SERIES
-        )
-    ].copy()
+    eligible = eligible.loc[~eligible["series_id"].isin(EXCLUDED_FORECAST_SERIES)].copy()
 
     if eligible.empty:
-        raise ValueError(
-            "No forecast-eligible series remain after selection."
-        )
+        raise ValueError("No forecast-eligible series remain after selection.")
 
     selected = data.merge(
         eligible[
@@ -99,16 +77,10 @@ def select_forecasting_series(
         validate="many_to_one",
     )
 
-    selected = selected.loc[
-        selected["period_date"]
-        >= selected["continuous_start"]
-    ].copy()
+    selected = selected.loc[selected["period_date"] >= selected["continuous_start"]].copy()
 
     if selected.empty:
-        raise ValueError(
-            "No forecasting observations remain after "
-            "continuous-history filtering."
-        )
+        raise ValueError("No forecasting observations remain after continuous-history filtering.")
 
     # Structural safety check: every selected series must form one
     # complete monthly sequence after truncation.
@@ -116,11 +88,7 @@ def select_forecasting_series(
         "series_id",
         sort=True,
     ):
-        periods = pd.DatetimeIndex(
-            group["period_date"]
-            .drop_duplicates()
-            .sort_values()
-        )
+        periods = pd.DatetimeIndex(group["period_date"].drop_duplicates().sort_values())
 
         expected = pd.date_range(
             start=periods.min(),
@@ -129,10 +97,7 @@ def select_forecasting_series(
         )
 
         if not periods.equals(expected):
-            raise ValueError(
-                f"{series_id} is not continuous after "
-                "forecasting selection."
-            )
+            raise ValueError(f"{series_id} is not continuous after forecasting selection.")
 
     return (
         selected.drop(

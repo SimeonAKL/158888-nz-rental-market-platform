@@ -21,15 +21,10 @@ def _validate_panel_columns(
         "value",
     }
 
-    missing = required_columns.difference(
-        panel.columns
-    )
+    missing = required_columns.difference(panel.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required historical summary columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required historical summary columns: {sorted(missing)}")
 
 
 def build_historical_summary(
@@ -52,9 +47,7 @@ def build_historical_summary(
 
     data = panel.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
     data["value"] = pd.to_numeric(
         data["value"],
@@ -67,49 +60,30 @@ def build_historical_summary(
         "series_id",
         sort=True,
     ):
-        group = group.sort_values(
-            "period_date"
-        ).reset_index(drop=True)
+        group = group.sort_values("period_date").reset_index(drop=True)
 
         values = group["value"]
 
         first = group.iloc[0]
         latest = group.iloc[-1]
 
-        latest_value = float(
-            latest["value"]
-        )
+        latest_value = float(latest["value"])
 
         change_1m = np.nan
 
         if len(group) >= 2:
-            change_1m = float(
-                latest_value
-                - group.iloc[-2]["value"]
-            )
+            change_1m = float(latest_value - group.iloc[-2]["value"])
 
         change_12m = np.nan
         pct_change_12m = np.nan
 
         if len(group) >= 13:
-            value_12m_ago = float(
-                group.iloc[-13]["value"]
-            )
+            value_12m_ago = float(group.iloc[-13]["value"])
 
-            change_12m = float(
-                latest_value
-                - value_12m_ago
-            )
+            change_12m = float(latest_value - value_12m_ago)
 
             if value_12m_ago != 0:
-                pct_change_12m = float(
-                    (
-                        latest_value
-                        - value_12m_ago
-                    )
-                    / value_12m_ago
-                    * 100.0
-                )
+                pct_change_12m = float((latest_value - value_12m_ago) / value_12m_ago * 100.0)
 
         monthly_change = values.diff()
 
@@ -117,49 +91,23 @@ def build_historical_summary(
             {
                 "series_id": series_id,
                 "metric": first["metric"],
-                "geography_level": (
-                    first["geography_level"]
-                ),
-                "location_id": int(
-                    first["location_id"]
-                ),
-                "location_name": (
-                    first["location_name"]
-                ),
-                "start_period": (
-                    group["period_date"].min()
-                ),
-                "end_period": (
-                    group["period_date"].max()
-                ),
+                "geography_level": (first["geography_level"]),
+                "location_id": int(first["location_id"]),
+                "location_name": (first["location_name"]),
+                "start_period": (group["period_date"].min()),
+                "end_period": (group["period_date"].max()),
                 "n_observations": len(group),
-                "mean": float(
-                    values.mean()
-                ),
-                "median": float(
-                    values.median()
-                ),
-                "std": float(
-                    values.std()
-                ),
-                "minimum": float(
-                    values.min()
-                ),
-                "maximum": float(
-                    values.max()
-                ),
+                "mean": float(values.mean()),
+                "median": float(values.median()),
+                "std": float(values.std()),
+                "minimum": float(values.min()),
+                "maximum": float(values.max()),
                 "latest_value": latest_value,
                 "change_1m": change_1m,
                 "change_12m": change_12m,
-                "pct_change_12m": (
-                    pct_change_12m
-                ),
-                "mean_monthly_change": float(
-                    monthly_change.mean()
-                ),
-                "std_monthly_change": float(
-                    monthly_change.std()
-                ),
+                "pct_change_12m": (pct_change_12m),
+                "mean_monthly_change": float(monthly_change.mean()),
+                "std_monthly_change": float(monthly_change.std()),
             }
         )
 
@@ -187,58 +135,51 @@ def build_monthly_seasonality_summary(
 
     data = panel.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
     data["value"] = pd.to_numeric(
         data["value"],
         errors="coerce",
     )
 
-    data["month"] = (
-        data["period_date"].dt.month
-    )
+    data["month"] = data["period_date"].dt.month
 
-    summary = (
-        data.groupby(
-            [
-                "series_id",
-                "metric",
-                "geography_level",
-                "location_id",
-                "location_name",
-                "month",
-            ],
-            as_index=False,
-            sort=True,
-        )
-        .agg(
-            mean_value=(
-                "value",
-                "mean",
-            ),
-            median_value=(
-                "value",
-                "median",
-            ),
-            std_value=(
-                "value",
-                "std",
-            ),
-            minimum_value=(
-                "value",
-                "min",
-            ),
-            maximum_value=(
-                "value",
-                "max",
-            ),
-            n_observations=(
-                "value",
-                "count",
-            ),
-        )
+    summary = data.groupby(
+        [
+            "series_id",
+            "metric",
+            "geography_level",
+            "location_id",
+            "location_name",
+            "month",
+        ],
+        as_index=False,
+        sort=True,
+    ).agg(
+        mean_value=(
+            "value",
+            "mean",
+        ),
+        median_value=(
+            "value",
+            "median",
+        ),
+        std_value=(
+            "value",
+            "std",
+        ),
+        minimum_value=(
+            "value",
+            "min",
+        ),
+        maximum_value=(
+            "value",
+            "max",
+        ),
+        n_observations=(
+            "value",
+            "count",
+        ),
     )
 
     return summary.sort_values(
@@ -263,17 +204,13 @@ def build_recent_history_summary(
     """
 
     if recent_months < 1:
-        raise ValueError(
-            "recent_months must be at least 1."
-        )
+        raise ValueError("recent_months must be at least 1.")
 
     _validate_panel_columns(panel)
 
     data = panel.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
     data["value"] = pd.to_numeric(
         data["value"],
@@ -286,13 +223,9 @@ def build_recent_history_summary(
         "series_id",
         sort=True,
     ):
-        group = group.sort_values(
-            "period_date"
-        ).reset_index(drop=True)
+        group = group.sort_values("period_date").reset_index(drop=True)
 
-        recent = group.tail(
-            recent_months
-        )
+        recent = group.tail(recent_months)
 
         first = group.iloc[0]
 
@@ -300,46 +233,28 @@ def build_recent_history_summary(
             {
                 "series_id": series_id,
                 "metric": first["metric"],
-                "geography_level": (
-                    first["geography_level"]
-                ),
-                "location_id": int(
-                    first["location_id"]
-                ),
-                "location_name": (
-                    first["location_name"]
-                ),
-                "recent_start_period": (
-                    recent["period_date"].min()
-                ),
-                "recent_end_period": (
-                    recent["period_date"].max()
-                ),
-                "recent_observations": (
-                    len(recent)
-                ),
-                "recent_mean": float(
-                    recent["value"].mean()
-                ),
-                "recent_median": float(
-                    recent["value"].median()
-                ),
-                "recent_std": float(
-                    recent["value"].std()
-                ),
-                "recent_minimum": float(
-                    recent["value"].min()
-                ),
-                "recent_maximum": float(
-                    recent["value"].max()
-                ),
+                "geography_level": (first["geography_level"]),
+                "location_id": int(first["location_id"]),
+                "location_name": (first["location_name"]),
+                "recent_start_period": (recent["period_date"].min()),
+                "recent_end_period": (recent["period_date"].max()),
+                "recent_observations": (len(recent)),
+                "recent_mean": float(recent["value"].mean()),
+                "recent_median": float(recent["value"].median()),
+                "recent_std": float(recent["value"].std()),
+                "recent_minimum": float(recent["value"].min()),
+                "recent_maximum": float(recent["value"].max()),
             }
         )
 
-    return pd.DataFrame(rows).sort_values(
-        [
-            "metric",
-            "geography_level",
-            "location_id",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "geography_level",
+                "location_id",
+            ]
+        )
+        .reset_index(drop=True)
+    )

@@ -36,12 +36,8 @@ def make_staging_dataframe() -> pd.DataFrame:
                 "upper_quartile_rent": 750,
                 "lower_quartile_rent": 520,
                 "log_std_dev_weekly_rent": 0.3667,
-                "source_snapshot": (
-                    "rental_bond_region_example.csv"
-                ),
-                "retrieved_at_utc": (
-                    "2026-10-03T06:37:38+00:00"
-                ),
+                "source_snapshot": ("rental_bond_region_example.csv"),
+                "retrieved_at_utc": ("2026-10-03T06:37:38+00:00"),
                 "is_provisional": True,
             },
             {
@@ -57,12 +53,8 @@ def make_staging_dataframe() -> pd.DataFrame:
                 "upper_quartile_rent": 700,
                 "lower_quartile_rent": 449,
                 "log_std_dev_weekly_rent": 0.4271,
-                "source_snapshot": (
-                    "rental_bond_region_example.csv"
-                ),
-                "retrieved_at_utc": (
-                    "2026-10-03T06:37:38+00:00"
-                ),
+                "source_snapshot": ("rental_bond_region_example.csv"),
+                "retrieved_at_utc": ("2026-10-03T06:37:38+00:00"),
                 "is_provisional": True,
             },
         ]
@@ -73,33 +65,13 @@ def test_infer_raw_snapshot_path(
     tmp_path: Path,
 ) -> None:
     """Staging path should map to equivalent raw CSV path."""
-    staging_root = (
-        tmp_path
-        / "staging"
-        / "rental_bond"
-    )
+    staging_root = tmp_path / "staging" / "rental_bond"
 
-    raw_root = (
-        tmp_path
-        / "raw"
-        / "rental_bond"
-    )
+    raw_root = tmp_path / "raw" / "rental_bond"
 
-    staging_path = (
-        staging_root
-        / "2026"
-        / "10"
-        / "03"
-        / "rental_bond_region_example.csv"
-    )
+    staging_path = staging_root / "2026" / "10" / "03" / "rental_bond_region_example.csv"
 
-    expected = (
-        raw_root
-        / "2026"
-        / "10"
-        / "03"
-        / "rental_bond_region_example.csv"
-    ).resolve()
+    expected = (raw_root / "2026" / "10" / "03" / "rental_bond_region_example.csv").resolve()
 
     result = infer_raw_snapshot_path(
         staging_path,
@@ -116,24 +88,16 @@ def test_read_staging_preserves_na_location(
     """Official NA geography must remain a string."""
     dataframe = make_staging_dataframe()
 
-    path = (
-        tmp_path
-        / "rental_bond.csv"
-    )
+    path = tmp_path / "rental_bond.csv"
 
     dataframe.to_csv(
         path,
         index=False,
     )
 
-    result = read_rental_bond_staging(
-        path
-    )
+    result = read_rental_bond_staging(path)
 
-    assert (
-        result.columns.tolist()
-        == OUTPUT_COLUMNS
-    )
+    assert result.columns.tolist() == OUTPUT_COLUMNS
 
     assert (
         result.loc[
@@ -146,9 +110,7 @@ def test_read_staging_preserves_na_location(
 
 def test_prepare_rental_bond_records() -> None:
     """Staging rows should convert to database-ready records."""
-    dataframe = (
-        make_staging_dataframe()
-    )
+    dataframe = make_staging_dataframe()
 
     retrieved_at = datetime(
         2026,
@@ -170,52 +132,26 @@ def test_prepare_rental_bond_records() -> None:
 
     first = records[0]
 
-    assert (
-        first["period_date"].isoformat()
-        == "2026-07-01"
-    )
+    assert first["period_date"].isoformat() == "2026-07-01"
 
-    assert (
-        first["geography_level"]
-        == "region"
-    )
+    assert first["geography_level"] == "region"
 
-    assert (
-        first["location_id"]
-        == 2
-    )
+    assert first["location_id"] == 2
 
-    assert (
-        first["location_name"]
-        == "Auckland Region"
-    )
+    assert first["location_name"] == "Auckland Region"
 
-    assert (
-        first["bonds_lodged"]
-        == 5592
-    )
+    assert first["bonds_lodged"] == 5592
 
-    assert (
-        first["median_rent"]
-        == 640
-    )
+    assert first["median_rent"] == 640
 
-    assert (
-        first["is_provisional"]
-        is True
-    )
+    assert first["is_provisional"] is True
 
-    assert (
-        first["retrieved_at"]
-        == retrieved_at
-    )
+    assert first["retrieved_at"] == retrieved_at
 
 
 def test_prepare_preserves_na_location() -> None:
     """Official NA location should survive database preparation."""
-    dataframe = (
-        make_staging_dataframe()
-    )
+    dataframe = make_staging_dataframe()
 
     retrieved_at = datetime(
         2026,
@@ -235,22 +171,14 @@ def test_prepare_preserves_na_location() -> None:
 
     second = records[1]
 
-    assert (
-        second["location_id"]
-        == -1
-    )
+    assert second["location_id"] == -1
 
-    assert (
-        second["location_name"]
-        == "NA"
-    )
+    assert second["location_name"] == "NA"
 
 
 def test_invalid_period_date_fails() -> None:
     """Invalid staging period dates should fail."""
-    dataframe = (
-        make_staging_dataframe()
-    )
+    dataframe = make_staging_dataframe()
 
     dataframe.loc[
         0,
@@ -280,9 +208,7 @@ def test_invalid_period_date_fails() -> None:
 
 def test_invalid_geography_level_fails() -> None:
     """Unsupported geography levels should fail."""
-    dataframe = (
-        make_staging_dataframe()
-    )
+    dataframe = make_staging_dataframe()
 
     dataframe.loc[
         0,

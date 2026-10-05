@@ -39,35 +39,25 @@ def test_valid_dataframe_passes() -> None:
     """A correctly structured Rental Bond dataset should pass."""
     dataframe = make_valid_dataframe()
 
-    result = validate_rental_bond_dataframe(
-        dataframe
-    )
+    result = validate_rental_bond_dataframe(dataframe)
 
     assert len(result) == 1
-    assert (
-        result.loc[0, "location"]
-        == "Auckland Region"
-    )
+    assert result.loc[0, "location"] == "Auckland Region"
 
 
 def test_missing_column_fails() -> None:
     """Missing official columns should fail validation."""
-    dataframe = (
-        make_valid_dataframe()
-        .drop(
-            columns=[
-                "MedianRent",
-            ]
-        )
+    dataframe = make_valid_dataframe().drop(
+        columns=[
+            "MedianRent",
+        ]
     )
 
     with pytest.raises(
         RentalBondValidationError,
         match="schema",
     ):
-        validate_rental_bond_dataframe(
-            dataframe
-        )
+        validate_rental_bond_dataframe(dataframe)
 
 
 def test_invalid_timeframe_fails() -> None:
@@ -83,9 +73,7 @@ def test_invalid_timeframe_fails() -> None:
         RentalBondValidationError,
         match="invalid TimeFrame",
     ):
-        validate_rental_bond_dataframe(
-            dataframe
-        )
+        validate_rental_bond_dataframe(dataframe)
 
 
 def test_blank_location_fails() -> None:
@@ -101,19 +89,14 @@ def test_blank_location_fails() -> None:
         RentalBondValidationError,
         match="blank location",
     ):
-        validate_rental_bond_dataframe(
-            dataframe
-        )
+        validate_rental_bond_dataframe(dataframe)
 
 
 def test_valid_file_passes(
     tmp_path: Path,
 ) -> None:
     """A valid CSV file should pass validation."""
-    path = (
-        tmp_path
-        / "rental_bond.csv"
-    )
+    path = tmp_path / "rental_bond.csv"
 
     dataframe = make_valid_dataframe()
 
@@ -122,8 +105,6 @@ def test_valid_file_passes(
         index=False,
     )
 
-    result = validate_rental_bond_file(
-        path
-    )
+    result = validate_rental_bond_file(path)
 
     assert len(result) == 1

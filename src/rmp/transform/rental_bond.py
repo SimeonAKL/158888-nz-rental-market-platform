@@ -19,12 +19,7 @@ from rmp.validation.rental_bond import (
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-DEFAULT_STAGING_ROOT = (
-    PROJECT_ROOT
-    / "data"
-    / "staging"
-    / "rental_bond"
-)
+DEFAULT_STAGING_ROOT = PROJECT_ROOT / "data" / "staging" / "rental_bond"
 
 
 SUPPORTED_DATASETS = {
@@ -88,14 +83,11 @@ def parse_timeframe(
         TypeError,
         ValueError,
     ) as exc:
-        raise RentalBondTransformError(
-            f"Invalid Rental Bond TimeFrame: {value}"
-        ) from exc
+        raise RentalBondTransformError(f"Invalid Rental Bond TimeFrame: {value}") from exc
 
     if parsed.day != 1:
         raise RentalBondTransformError(
-            "Rental Bond TimeFrame must represent "
-            "the first day of a month."
+            "Rental Bond TimeFrame must represent the first day of a month."
         )
 
     return parsed.isoformat()
@@ -105,101 +97,67 @@ def get_metadata_path(
     raw_path: Path,
 ) -> Path:
     """Return the metadata path paired with a raw snapshot."""
-    return raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    return raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
 
 def load_snapshot_metadata(
     raw_path: Path,
 ) -> dict[str, Any]:
     """Load and validate Rental Bond snapshot metadata."""
-    metadata_path = get_metadata_path(
-        raw_path
-    )
+    metadata_path = get_metadata_path(raw_path)
 
     if not metadata_path.exists():
-        raise RentalBondTransformError(
-            "Rental Bond metadata file does not exist: "
-            f"{metadata_path}"
-        )
+        raise RentalBondTransformError(f"Rental Bond metadata file does not exist: {metadata_path}")
 
     try:
-        metadata = json.loads(
-            metadata_path.read_text(
-                encoding="utf-8"
-            )
-        )
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
     except (
         OSError,
         json.JSONDecodeError,
     ) as exc:
         raise RentalBondTransformError(
-            "Unable to read Rental Bond metadata: "
-            f"{metadata_path}"
+            f"Unable to read Rental Bond metadata: {metadata_path}"
         ) from exc
 
-    raw_file = metadata.get(
-        "raw_file"
-    )
+    raw_file = metadata.get("raw_file")
 
     if raw_file != raw_path.name:
         raise RentalBondTransformError(
-            "Rental Bond metadata raw_file does not "
-            "match the raw snapshot filename."
+            "Rental Bond metadata raw_file does not match the raw snapshot filename."
         )
 
-    dataset = metadata.get(
-        "dataset"
-    )
+    dataset = metadata.get("dataset")
 
     if dataset not in SUPPORTED_DATASETS:
-        raise RentalBondTransformError(
-            "Rental Bond metadata contains an unsupported dataset."
-        )
+        raise RentalBondTransformError("Rental Bond metadata contains an unsupported dataset.")
 
-    retrieved_at = metadata.get(
-        "retrieved_at_utc"
-    )
+    retrieved_at = metadata.get("retrieved_at_utc")
 
     if not isinstance(
         retrieved_at,
         str,
     ):
-        raise RentalBondTransformError(
-            "Rental Bond metadata is missing retrieved_at_utc."
-        )
+        raise RentalBondTransformError("Rental Bond metadata is missing retrieved_at_utc.")
 
     try:
-        parsed_retrieved_at = datetime.fromisoformat(
-            retrieved_at
-        )
+        parsed_retrieved_at = datetime.fromisoformat(retrieved_at)
 
     except ValueError as exc:
         raise RentalBondTransformError(
-            "Rental Bond metadata contains an invalid "
-            "retrieved_at_utc timestamp."
+            "Rental Bond metadata contains an invalid retrieved_at_utc timestamp."
         ) from exc
 
     if parsed_retrieved_at.tzinfo is None:
-        raise RentalBondTransformError(
-            "Rental Bond retrieved_at_utc must be "
-            "timezone-aware."
-        )
+        raise RentalBondTransformError("Rental Bond retrieved_at_utc must be timezone-aware.")
 
-    provisional = metadata.get(
-        "provisional"
-    )
+    provisional = metadata.get("provisional")
 
     if not isinstance(
         provisional,
         bool,
     ):
-        raise RentalBondTransformError(
-            "Rental Bond metadata provisional flag "
-            "must be boolean."
-        )
+        raise RentalBondTransformError("Rental Bond metadata provisional flag must be boolean.")
 
     return metadata
 
@@ -214,18 +172,14 @@ def transform_rental_bond_dataframe(
 ) -> pd.DataFrame:
     """Transform a validated Rental Bond dataframe."""
     if dataset not in SUPPORTED_DATASETS:
-        raise RentalBondTransformError(
-            f"Unsupported Rental Bond dataset: {dataset}"
-        )
+        raise RentalBondTransformError(f"Unsupported Rental Bond dataset: {dataset}")
 
     transformed = dataframe.copy()
 
     transformed.insert(
         0,
         "period_date",
-        transformed["TimeFrame"].map(
-            parse_timeframe
-        ),
+        transformed["TimeFrame"].map(parse_timeframe),
     )
 
     transformed.insert(
@@ -234,37 +188,22 @@ def transform_rental_bond_dataframe(
         dataset,
     )
 
-    transformed = transformed.rename(
-        columns=COLUMN_MAPPING
-    )
+    transformed = transformed.rename(columns=COLUMN_MAPPING)
 
-    transformed[
-        "source_snapshot"
-    ] = source_snapshot
+    transformed["source_snapshot"] = source_snapshot
 
-    transformed[
-        "retrieved_at_utc"
-    ] = retrieved_at_utc
+    transformed["retrieved_at_utc"] = retrieved_at_utc
 
-    transformed[
-        "is_provisional"
-    ] = is_provisional
+    transformed["is_provisional"] = is_provisional
 
-    missing_columns = [
-        column
-        for column in OUTPUT_COLUMNS
-        if column not in transformed.columns
-    ]
+    missing_columns = [column for column in OUTPUT_COLUMNS if column not in transformed.columns]
 
     if missing_columns:
         raise RentalBondTransformError(
-            "Rental Bond transformation is missing "
-            f"columns: {', '.join(missing_columns)}"
+            f"Rental Bond transformation is missing columns: {', '.join(missing_columns)}"
         )
 
-    return transformed[
-        OUTPUT_COLUMNS
-    ].copy()
+    return transformed[OUTPUT_COLUMNS].copy()
 
 
 def transform_rental_bond_file(
@@ -272,33 +211,19 @@ def transform_rental_bond_file(
 ) -> pd.DataFrame:
     """Validate and transform one Rental Bond raw snapshot."""
     try:
-        dataframe = validate_rental_bond_file(
-            raw_path
-        )
+        dataframe = validate_rental_bond_file(raw_path)
 
     except RentalBondValidationError as exc:
-        raise RentalBondTransformError(
-            "Rental Bond raw snapshot failed validation."
-        ) from exc
+        raise RentalBondTransformError("Rental Bond raw snapshot failed validation.") from exc
 
-    metadata = load_snapshot_metadata(
-        raw_path
-    )
+    metadata = load_snapshot_metadata(raw_path)
 
     return transform_rental_bond_dataframe(
         dataframe,
-        dataset=str(
-            metadata["dataset"]
-        ),
+        dataset=str(metadata["dataset"]),
         source_snapshot=raw_path.name,
-        retrieved_at_utc=str(
-            metadata[
-                "retrieved_at_utc"
-            ]
-        ),
-        is_provisional=bool(
-            metadata["provisional"]
-        ),
+        retrieved_at_utc=str(metadata["retrieved_at_utc"]),
+        is_provisional=bool(metadata["provisional"]),
     )
 
 
@@ -310,20 +235,14 @@ def get_staging_path(
 ) -> Path:
     """Return the staging CSV path corresponding to a raw snapshot."""
     try:
-        relative_path = raw_path.resolve().relative_to(
-            raw_root.resolve()
-        )
+        relative_path = raw_path.resolve().relative_to(raw_root.resolve())
 
     except ValueError as exc:
         raise RentalBondTransformError(
-            "Rental Bond raw file is outside the "
-            "configured raw directory."
+            "Rental Bond raw file is outside the configured raw directory."
         ) from exc
 
-    return (
-        staging_root.resolve()
-        / relative_path
-    ).with_suffix(".csv")
+    return (staging_root.resolve() / relative_path).with_suffix(".csv")
 
 
 def write_rental_bond_staging_csv(
@@ -333,9 +252,7 @@ def write_rental_bond_staging_csv(
     staging_root: Path = DEFAULT_STAGING_ROOT,
 ) -> Path:
     """Transform one Rental Bond raw file and write staging CSV."""
-    dataframe = transform_rental_bond_file(
-        raw_path
-    )
+    dataframe = transform_rental_bond_file(raw_path)
 
     staging_path = get_staging_path(
         raw_path,
@@ -349,9 +266,7 @@ def write_rental_bond_staging_csv(
     )
 
     if staging_path.exists():
-        raise FileExistsError(
-            f"Staging file already exists: {staging_path}"
-        )
+        raise FileExistsError(f"Staging file already exists: {staging_path}")
 
     dataframe.to_csv(
         staging_path,

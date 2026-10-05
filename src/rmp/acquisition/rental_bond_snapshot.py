@@ -13,12 +13,7 @@ import requests
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 
-DEFAULT_RAW_ROOT = (
-    PROJECT_ROOT
-    / "data"
-    / "raw"
-    / "rental_bond"
-)
+DEFAULT_RAW_ROOT = PROJECT_ROOT / "data" / "raw" / "rental_bond"
 
 DEFAULT_TIMEOUT_SECONDS = 120
 
@@ -71,9 +66,7 @@ def get_dataset_url(
     if dataset == "territorial_authority":
         return TLA_URL
 
-    raise ValueError(
-        f"Unsupported Rental Bond dataset: {dataset}"
-    )
+    raise ValueError(f"Unsupported Rental Bond dataset: {dataset}")
 
 
 def acquire_rental_bond_snapshot(
@@ -85,39 +78,23 @@ def acquire_rental_bond_snapshot(
     session: requests.Session | None = None,
 ) -> RentalBondSnapshot:
     """Download and store one immutable Rental Bond CSV snapshot."""
-    source_url = get_dataset_url(
-        dataset
-    )
+    source_url = get_dataset_url(dataset)
 
-    retrieval_time = (
-        retrieved_at
-        if retrieved_at is not None
-        else datetime.now(
-            UTC
-        )
-    )
+    retrieval_time = retrieved_at if retrieved_at is not None else datetime.now(UTC)
 
     if retrieval_time.tzinfo is None:
-        raise ValueError(
-            "retrieved_at must be timezone-aware."
-        )
+        raise ValueError("retrieved_at must be timezone-aware.")
 
     owns_session = session is None
 
-    http_session = (
-        session
-        if session is not None
-        else requests.Session()
-    )
+    http_session = session if session is not None else requests.Session()
 
     try:
         response = http_session.get(
             source_url,
             timeout=timeout,
             headers={
-                "User-Agent": (
-                    "158888-nz-rental-market-platform/1.0"
-                ),
+                "User-Agent": ("158888-nz-rental-market-platform/1.0"),
                 "Accept": "text/csv,*/*",
             },
         )
@@ -127,33 +104,24 @@ def acquire_rental_bond_snapshot(
 
         except requests.HTTPError as exc:
             raise RentalBondAcquisitionError(
-                "Rental Bond download failed "
-                f"with HTTP {response.status_code}."
+                f"Rental Bond download failed with HTTP {response.status_code}."
             ) from exc
 
         content = response.content
 
         if not content:
-            raise RentalBondAcquisitionError(
-                "Rental Bond download returned an empty file."
-            )
+            raise RentalBondAcquisitionError("Rental Bond download returned an empty file.")
 
     except requests.RequestException as exc:
-        raise RentalBondAcquisitionError(
-            f"Rental Bond download failed: {exc}"
-        ) from exc
+        raise RentalBondAcquisitionError(f"Rental Bond download failed: {exc}") from exc
 
     finally:
         if owns_session:
             http_session.close()
 
-    checksum = calculate_sha256(
-        content
-    )
+    checksum = calculate_sha256(content)
 
-    timestamp = retrieval_time.strftime(
-        "%Y%m%dT%H%M%S%fZ"
-    )
+    timestamp = retrieval_time.strftime("%Y%m%dT%H%M%S%fZ")
 
     day_directory = (
         raw_root
@@ -167,33 +135,19 @@ def acquire_rental_bond_snapshot(
         exist_ok=True,
     )
 
-    filename = (
-        f"rental_bond_{dataset}_{timestamp}.csv"
-    )
+    filename = f"rental_bond_{dataset}_{timestamp}.csv"
 
-    raw_path = (
-        day_directory
-        / filename
-    )
+    raw_path = day_directory / filename
 
-    metadata_path = raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    metadata_path = raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
     metadata = {
         "metadata_schema_version": 1,
-        "source": (
-            "MBIE / Tenancy Services Rental Bond Data"
-        ),
-        "publisher": (
-            "Ministry of Business, "
-            "Innovation and Employment"
-        ),
+        "source": ("MBIE / Tenancy Services Rental Bond Data"),
+        "publisher": ("Ministry of Business, Innovation and Employment"),
         "dataset": dataset,
         "source_url": source_url,
-        "retrieved_at_utc": (
-            retrieval_time.isoformat()
-        ),
+        "retrieved_at_utc": (retrieval_time.isoformat()),
         "raw_file": raw_path.name,
         "file_size_bytes": len(content),
         "sha256": checksum,
@@ -207,12 +161,8 @@ def acquire_rental_bond_snapshot(
     }
 
     try:
-        with raw_path.open(
-            "xb"
-        ) as file_handle:
-            file_handle.write(
-                content
-            )
+        with raw_path.open("xb") as file_handle:
+            file_handle.write(content)
 
         with metadata_path.open(
             "x",
@@ -225,18 +175,12 @@ def acquire_rental_bond_snapshot(
                 sort_keys=True,
             )
 
-            file_handle.write(
-                "\n"
-            )
+            file_handle.write("\n")
 
     except Exception:
-        raw_path.unlink(
-            missing_ok=True
-        )
+        raw_path.unlink(missing_ok=True)
 
-        metadata_path.unlink(
-            missing_ok=True
-        )
+        metadata_path.unlink(missing_ok=True)
 
         raise
 

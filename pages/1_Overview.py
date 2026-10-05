@@ -50,11 +50,7 @@ render_top_navigation(active_page="Overview")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-OVERVIEW_HERO_PATH = (
-    PROJECT_ROOT
-    / "assets"
-    / "overview_hero.jpg"
-)
+OVERVIEW_HERO_PATH = PROJECT_ROOT / "assets" / "overview_hero.jpg"
 
 
 def hero_image_source() -> str:
@@ -62,14 +58,9 @@ def hero_image_source() -> str:
     if not OVERVIEW_HERO_PATH.exists():
         return HOME_HERO_IMAGE
 
-    encoded = base64.b64encode(
-        OVERVIEW_HERO_PATH.read_bytes()
-    ).decode("ascii")
+    encoded = base64.b64encode(OVERVIEW_HERO_PATH.read_bytes()).decode("ascii")
 
-    return (
-        "data:image/jpeg;base64,"
-        f"{encoded}"
-    )
+    return f"data:image/jpeg;base64,{encoded}"
 
 
 OVERVIEW_HERO_IMAGE = hero_image_source()
@@ -540,9 +531,7 @@ def render_html(
     content: str,
 ) -> None:
     """Render dashboard HTML without Markdown parsing."""
-    st.html(
-        dedent(content).strip()
-    )
+    st.html(dedent(content).strip())
 
 
 # ---------------------------------------------------------------------
@@ -659,14 +648,10 @@ with st.container(
         geography_level=geography_level,
         location_name=location_name,
         metric=metric,
-    ).sort_values(
-        "period_date"
-    )
+    ).sort_values("period_date")
 
     if full_series.empty:
-        st.warning(
-            "No data available."
-        )
+        st.warning("No data available.")
         st.stop()
 
     (
@@ -690,15 +675,10 @@ series = filter_date_range(
     date_column="period_date",
     start_date=start_date,
     end_date=end_date,
-).sort_values(
-    "period_date"
-)
+).sort_values("period_date")
 
 if series.empty:
-    st.warning(
-        "No observations are available "
-        "for the selected date range."
-    )
+    st.warning("No observations are available for the selected date range.")
     st.stop()
 
 
@@ -708,18 +688,11 @@ if series.empty:
 
 latest = series.iloc[-1]
 
-latest_date = pd.Timestamp(
-    latest["period_date"]
-)
+latest_date = pd.Timestamp(latest["period_date"])
 
-latest_value = float(
-    latest["value"]
-)
+latest_value = float(latest["value"])
 
-history_to_latest = full_series[
-    full_series["period_date"]
-    <= latest_date
-].sort_values(
+history_to_latest = full_series[full_series["period_date"] <= latest_date].sort_values(
     "period_date"
 )
 
@@ -728,94 +701,47 @@ history_to_latest = full_series[
 mom_change = None
 
 if len(history_to_latest) >= 2:
-    previous_value = float(
-        history_to_latest.iloc[-2][
-            "value"
-        ]
-    )
+    previous_value = float(history_to_latest.iloc[-2]["value"])
 
     if previous_value != 0:
-        mom_change = (
-            (
-                latest_value
-                - previous_value
-            )
-            / previous_value
-            * 100
-        )
+        mom_change = (latest_value - previous_value) / previous_value * 100
 
 
 # Year-on-year
 yoy_change = None
 
-target_yoy_period = (
-    latest_date
-    - pd.DateOffset(
-        months=12
-    )
-)
+target_yoy_period = latest_date - pd.DateOffset(months=12)
 
-yoy_row = full_series[
-    full_series["period_date"]
-    == target_yoy_period
-]
+yoy_row = full_series[full_series["period_date"] == target_yoy_period]
 
 if not yoy_row.empty:
-    yoy_value = float(
-        yoy_row.iloc[0][
-            "value"
-        ]
-    )
+    yoy_value = float(yoy_row.iloc[0]["value"])
 
     if yoy_value != 0:
-        yoy_change = (
-            (
-                latest_value
-                - yoy_value
-            )
-            / yoy_value
-            * 100
-        )
+        yoy_change = (latest_value - yoy_value) / yoy_value * 100
 
 
 # Selected-period average
-period_average = float(
-    series["value"].mean()
-)
+period_average = float(series["value"].mean())
 
 
 # Period boundaries
-series_start = pd.Timestamp(
-    series["period_date"].min()
-)
+series_start = pd.Timestamp(series["period_date"].min())
 
-series_end = pd.Timestamp(
-    series["period_date"].max()
-)
+series_end = pd.Timestamp(series["period_date"].max())
 
 
 # Period change
 period_change = None
 
-first_value = float(
-    series.iloc[0]["value"]
-)
+first_value = float(series.iloc[0]["value"])
 
 if first_value != 0:
-    period_change = (
-        (
-            latest_value
-            - first_value
-        )
-        / first_value
-        * 100
-    )
+    period_change = (latest_value - first_value) / first_value * 100
 
 
 # Minimum
-minimum_index = (
-    series["value"].idxmin()
-)
+minimum_index = series["value"].idxmin()
 
 minimum_value = float(
     series.loc[
@@ -833,9 +759,7 @@ minimum_date = pd.Timestamp(
 
 
 # Maximum
-maximum_index = (
-    series["value"].idxmax()
-)
+maximum_index = series["value"].idxmax()
 
 maximum_value = float(
     series.loc[
@@ -854,10 +778,7 @@ maximum_date = pd.Timestamp(
 
 # Geography label
 geography_display = (
-    "Territorial Authority"
-    if geography_level
-    == "territorial_authority"
-    else "Region"
+    "Territorial Authority" if geography_level == "territorial_authority" else "Region"
 )
 
 
@@ -892,11 +813,7 @@ render_html(
 # Source status
 # ---------------------------------------------------------------------
 
-if (
-    series["is_provisional"]
-    .fillna(False)
-    .any()
-):
+if series["is_provisional"].fillna(False).any():
     render_html(
         """
         <div class="overview-source-note">
@@ -926,10 +843,7 @@ kpi_data = [
             metric,
         ),
         "",
-        (
-            "Latest observation · "
-            f"{latest_date:%b %Y}"
-        ),
+        (f"Latest observation · {latest_date:%b %Y}"),
     ),
     (
         "Month-on-Month",
@@ -941,12 +855,8 @@ kpi_data = [
         ),
         percentage_note(
             mom_change,
-            positive_text=(
-                "Increase from previous month"
-            ),
-            negative_text=(
-                "Decrease from previous month"
-            ),
+            positive_text=("Increase from previous month"),
+            negative_text=("Decrease from previous month"),
         ),
     ),
     (
@@ -959,14 +869,8 @@ kpi_data = [
         ),
         percentage_note(
             yoy_change,
-            positive_text=(
-                "Increase from the same month "
-                "one year earlier"
-            ),
-            negative_text=(
-                "Decrease from the same month "
-                "one year earlier"
-            ),
+            positive_text=("Increase from the same month one year earlier"),
+            negative_text=("Decrease from the same month one year earlier"),
         ),
     ),
     (
@@ -976,10 +880,7 @@ kpi_data = [
             metric,
         ),
         "",
-        (
-            f"Average across "
-            f"{len(series):,} monthly observations"
-        ),
+        (f"Average across {len(series):,} monthly observations"),
     ),
 ]
 
@@ -1057,9 +958,7 @@ with st.container(
     )
 
     monthly_line = (
-        alt.Chart(
-            chart_data
-        )
+        alt.Chart(chart_data)
         .mark_line(
             color="#83bfff",
             strokeWidth=1.4,
@@ -1078,9 +977,7 @@ with st.container(
             ),
             y=alt.Y(
                 "value:Q",
-                title=metric_axis_label(
-                    metric
-                ),
+                title=metric_axis_label(metric),
                 scale=alt.Scale(
                     zero=False,
                 ),
@@ -1106,9 +1003,7 @@ with st.container(
     )
 
     rolling_line = (
-        alt.Chart(
-            chart_data
-        )
+        alt.Chart(chart_data)
         .mark_line(
             color="#1769ff",
             strokeWidth=3,
@@ -1120,9 +1015,7 @@ with st.container(
             ),
             y=alt.Y(
                 "rolling_12m:Q",
-                title=metric_axis_label(
-                    metric
-                ),
+                title=metric_axis_label(metric),
             ),
             tooltip=[
                 alt.Tooltip(
@@ -1140,9 +1033,7 @@ with st.container(
     )
 
     latest_point = (
-        alt.Chart(
-            chart_data.tail(1)
-        )
+        alt.Chart(chart_data.tail(1))
         .mark_circle(
             color="#0b57d0",
             size=85,
@@ -1154,9 +1045,7 @@ with st.container(
             ),
             y=alt.Y(
                 "value:Q",
-                title=metric_axis_label(
-                    metric
-                ),
+                title=metric_axis_label(metric),
             ),
             tooltip=[
                 alt.Tooltip(
@@ -1173,11 +1062,7 @@ with st.container(
         )
     )
 
-    trend_chart = (
-        monthly_line
-        + rolling_line
-        + latest_point
-    ).properties(
+    trend_chart = (monthly_line + rolling_line + latest_point).properties(
         height=370,
     )
 
@@ -1185,24 +1070,18 @@ with st.container(
         trend_chart.interactive(
             bind_y=False,
         ),
-        use_container_width=True,
+        width="stretch",
     )
 
-    legend_col1, legend_col2 = (
-        st.columns(
-            [1.2, 4],
-        )
+    legend_col1, legend_col2 = st.columns(
+        [1.2, 4],
     )
 
     with legend_col1:
-        st.caption(
-            "Monthly observations"
-        )
+        st.caption("Monthly observations")
 
     with legend_col2:
-        st.caption(
-            "12-month rolling average"
-        )
+        st.caption("12-month rolling average")
 
 
 # ---------------------------------------------------------------------
@@ -1249,20 +1128,14 @@ with st.container(
             format_percentage(
                 period_change,
             ),
-            (
-                f"{series_start:%b %Y}"
-                " → "
-                f"{series_end:%b %Y}"
-            ),
+            (f"{series_start:%b %Y} → {series_end:%b %Y}"),
             percentage_class(
                 period_change,
             ),
         ),
     ]
 
-    summary_columns = (
-        st.columns(3)
-    )
+    summary_columns = st.columns(3)
 
     for column, (
         label,
@@ -1309,47 +1182,28 @@ recent_source = series[
     ]
 ].copy()
 
-recent_source["month_on_month"] = (
-    recent_source["value"]
-    .pct_change()
-    .mul(100)
-)
+recent_source["month_on_month"] = recent_source["value"].pct_change().mul(100)
 
-recent = (
-    recent_source
-    .tail(12)
-    .sort_values(
-        "period_date",
-        ascending=False,
-    )
+recent = recent_source.tail(12).sort_values(
+    "period_date",
+    ascending=False,
 )
 
 display = pd.DataFrame(
     {
-        "Period": (
-            recent["period_date"]
-            .dt.strftime(
-                "%b %Y"
-            )
-        ),
-        metric_axis_label(
-            metric
-        ): [
+        "Period": (recent["period_date"].dt.strftime("%b %Y")),
+        metric_axis_label(metric): [
             format_value(
                 value,
                 metric,
             )
-            for value
-            in recent["value"]
+            for value in recent["value"]
         ],
         "Month-on-Month": [
             format_percentage(
                 value,
             )
-            for value
-            in recent[
-                "month_on_month"
-            ]
+            for value in recent["month_on_month"]
         ],
     }
 )
@@ -1357,11 +1211,9 @@ display = pd.DataFrame(
 with st.container(
     key="overview_recent_card",
 ):
-    title_col, button_col = (
-        st.columns(
-            [4, 1],
-            vertical_alignment="center",
-        )
+    title_col, button_col = st.columns(
+        [4, 1],
+        vertical_alignment="center",
     )
 
     with title_col:
@@ -1378,8 +1230,11 @@ with st.container(
             """
         )
 
-    with button_col, st.container(
-        key="overview_download",
+    with (
+        button_col,
+        st.container(
+            key="overview_download",
+        ),
     ):
         csv_data = (
             recent[
@@ -1393,33 +1248,25 @@ with st.container(
                 columns={
                     "period_date": "period",
                     "value": "value",
-                    "month_on_month": (
-                        "month_on_month_pct"
-                    ),
+                    "month_on_month": ("month_on_month_pct"),
                 }
             )
             .to_csv(
                 index=False,
             )
-            .encode(
-                "utf-8"
-            )
+            .encode("utf-8")
         )
 
         st.download_button(
             label="Download CSV",
             data=csv_data,
-            file_name=(
-                "overview_"
-                f"{geography_level}_"
-                f"{metric}.csv"
-            ),
+            file_name=(f"overview_{geography_level}_{metric}.csv"),
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
 
     st.dataframe(
         display,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
     )

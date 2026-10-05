@@ -46,9 +46,7 @@ def make_valid_payload() -> dict:
 
 def test_parse_period_covered() -> None:
     """API periodCovered should become ISO dates."""
-    start, end = parse_period_covered(
-        "2026-7-1/2026-7-31"
-    )
+    start, end = parse_period_covered("2026-7-1/2026-7-31")
 
     assert start == "2026-07-01"
     assert end == "2026-07-31"
@@ -60,9 +58,7 @@ def test_invalid_period_covered_fails() -> None:
         MarketRentTransformError,
         match="invalid date",
     ):
-        parse_period_covered(
-            "invalid/2026-7-31"
-        )
+        parse_period_covered("invalid/2026-7-31")
 
 
 def test_transform_payload_maps_columns() -> None:
@@ -70,34 +66,20 @@ def test_transform_payload_maps_columns() -> None:
     dataframe = transform_market_rent_payload(
         make_valid_payload(),
         source_snapshot="example.json",
-        retrieved_at_utc=(
-            "2026-10-02T22:38:15+00:00"
-        ),
+        retrieved_at_utc=("2026-10-02T22:38:15+00:00"),
     )
 
     assert len(dataframe) == 1
 
     row = dataframe.iloc[0]
 
-    assert (
-        row["area_definition"]
-        == "REGC2019"
-    )
+    assert row["area_definition"] == "REGC2019"
 
-    assert (
-        row["period_start"]
-        == "2026-07-01"
-    )
+    assert row["period_start"] == "2026-07-01"
 
-    assert (
-        row["period_end"]
-        == "2026-07-31"
-    )
+    assert row["period_end"] == "2026-07-31"
 
-    assert (
-        row["dwelling_type"]
-        == "Apartment"
-    )
+    assert row["dwelling_type"] == "Apartment"
 
     assert row["bedrooms"] == "1"
 
@@ -105,10 +87,7 @@ def test_transform_payload_maps_columns() -> None:
 
     assert row["median_rent"] == 490
 
-    assert (
-        row["source_snapshot"]
-        == "example.json"
-    )
+    assert row["source_snapshot"] == "example.json"
 
 
 def test_transform_preserves_numeric_values() -> None:
@@ -116,108 +95,51 @@ def test_transform_preserves_numeric_values() -> None:
     dataframe = transform_market_rent_payload(
         make_valid_payload(),
         source_snapshot="example.json",
-        retrieved_at_utc=(
-            "2026-10-02T22:38:15+00:00"
-        ),
+        retrieved_at_utc=("2026-10-02T22:38:15+00:00"),
     )
 
-    assert pd.api.types.is_numeric_dtype(
-        dataframe["median_rent"]
-    )
+    assert pd.api.types.is_numeric_dtype(dataframe["median_rent"])
 
-    assert pd.api.types.is_numeric_dtype(
-        dataframe["bonds_lodged"]
-    )
+    assert pd.api.types.is_numeric_dtype(dataframe["bonds_lodged"])
 
 
 def test_write_staging_csv(
     tmp_path: Path,
 ) -> None:
     """A raw snapshot should produce a staging CSV."""
-    raw_root = (
-        tmp_path
-        / "raw"
-        / "market_rent"
-        / "2026"
-        / "10"
-        / "02"
-    )
+    raw_root = tmp_path / "raw" / "market_rent" / "2026" / "10" / "02"
 
-    raw_root.mkdir(
-        parents=True
-    )
+    raw_root.mkdir(parents=True)
 
-    raw_path = (
-        raw_root
-        / (
-            "statistics_regional-council-2019_"
-            "2026-07_test.json"
-        )
-    )
+    raw_path = raw_root / ("statistics_regional-council-2019_2026-07_test.json")
 
     raw_path.write_text(
-        json.dumps(
-            make_valid_payload()
-        ),
+        json.dumps(make_valid_payload()),
         encoding="utf-8",
     )
 
-    metadata_path = raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    metadata_path = raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
     metadata_path.write_text(
-        json.dumps(
-            {
-                "retrieved_at_utc": (
-                    "2026-10-02T22:38:15+00:00"
-                )
-            }
-        ),
+        json.dumps({"retrieved_at_utc": ("2026-10-02T22:38:15+00:00")}),
         encoding="utf-8",
     )
 
-    staging_root = (
-        tmp_path
-        / "staging"
-        / "market_rent"
-    )
+    staging_root = tmp_path / "staging" / "market_rent"
 
-    output_path = (
-        write_market_rent_staging_csv(
-            raw_path,
-            staging_root=staging_root,
-        )
+    output_path = write_market_rent_staging_csv(
+        raw_path,
+        staging_root=staging_root,
     )
 
     assert output_path.exists()
 
-    dataframe = pd.read_csv(
-        output_path
-    )
+    dataframe = pd.read_csv(output_path)
 
     assert len(dataframe) == 1
 
-    assert (
-        dataframe.loc[
-            0,
-            "area"
-        ]
-        == "Auckland Region"
-    )
+    assert dataframe.loc[0, "area"] == "Auckland Region"
 
-    assert (
-        dataframe.loc[
-            0,
-            "median_rent"
-        ]
-        == 490
-    )
+    assert dataframe.loc[0, "median_rent"] == 490
 
-    assert (
-        dataframe.loc[
-            0,
-            "bonds_lodged"
-        ]
-        == 609
-    )
+    assert dataframe.loc[0, "bonds_lodged"] == 609

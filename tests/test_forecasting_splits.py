@@ -48,20 +48,11 @@ def test_latest_origin_uses_final_horizon() -> None:
 
     latest = splits[-1]
 
-    assert (
-        latest.origin
-        == periods[-7]
-    )
+    assert latest.origin == periods[-7]
 
-    assert (
-        latest.test_start
-        == periods[-6]
-    )
+    assert latest.test_start == periods[-6]
 
-    assert (
-        latest.test_end
-        == periods[-1]
-    )
+    assert latest.test_end == periods[-1]
 
 
 def test_origins_are_monthly_and_chronological() -> None:
@@ -74,10 +65,7 @@ def test_origins_are_monthly_and_chronological() -> None:
         min_history_months=60,
     )
 
-    origins = pd.DatetimeIndex(
-        split.origin
-        for split in splits
-    )
+    origins = pd.DatetimeIndex(split.origin for split in splits)
 
     expected = pd.date_range(
         origins.min(),
@@ -96,9 +84,7 @@ def test_slice_rolling_origin() -> None:
     data = pd.DataFrame(
         {
             "period_date": periods,
-            "value": range(
-                len(periods)
-            ),
+            "value": range(len(periods)),
         }
     )
 
@@ -114,22 +100,13 @@ def test_slice_rolling_origin() -> None:
         split,
     )
 
-    assert (
-        train["period_date"].max()
-        == split.origin
-    )
+    assert train["period_date"].max() == split.origin
 
     assert len(test) == 6
 
-    assert (
-        test["period_date"].min()
-        == split.test_start
-    )
+    assert test["period_date"].min() == split.test_start
 
-    assert (
-        test["period_date"].max()
-        == split.test_end
-    )
+    assert test["period_date"].max() == split.test_end
 
 
 def test_rejects_missing_month() -> None:
@@ -152,9 +129,7 @@ def test_rejects_missing_month() -> None:
 def test_rejects_insufficient_history() -> None:
     """Series shorter than history plus horizon should fail."""
 
-    periods = make_periods(
-        n_months=60
-    )
+    periods = make_periods(n_months=60)
 
     with pytest.raises(
         ValueError,

@@ -28,13 +28,9 @@ def add_calendar_features(
     result = df.copy()
 
     if date_column not in result.columns:
-        raise ValueError(
-            f"Missing date column: {date_column}"
-        )
+        raise ValueError(f"Missing date column: {date_column}")
 
-    result[date_column] = pd.to_datetime(
-        result[date_column]
-    )
+    result[date_column] = pd.to_datetime(result[date_column])
 
     result["month"] = result[date_column].dt.month
     result["quarter"] = result[date_column].dt.quarter
@@ -62,10 +58,7 @@ def add_lag_features(
     missing = required.difference(result.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required lag columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required lag columns: {sorted(missing)}")
 
     result = result.sort_values(
         [
@@ -81,9 +74,7 @@ def add_lag_features(
 
     for lag in lags:
         if lag < 1:
-            raise ValueError(
-                "Lag values must be at least 1."
-            )
+            raise ValueError("Lag values must be at least 1.")
 
         result[f"lag_{lag}"] = grouped.shift(lag)
 
@@ -114,10 +105,7 @@ def add_rolling_features(
     missing = required.difference(result.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required rolling columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required rolling columns: {sorted(missing)}")
 
     result = result.sort_values(
         [
@@ -128,24 +116,19 @@ def add_rolling_features(
 
     for window in windows:
         if window < 1:
-            raise ValueError(
-                "Rolling windows must be at least 1."
-            )
+            raise ValueError("Rolling windows must be at least 1.")
 
-        result[f"rolling_mean_{window}"] = (
-            result.groupby(
-                group_column,
-                sort=False,
-            )[value_column]
-            .transform(
-                lambda series, window=window: (
-                    series.shift(1)
-                    .rolling(
-                        window=window,
-                        min_periods=window,
-                    )
-                    .mean()
+        result[f"rolling_mean_{window}"] = result.groupby(
+            group_column,
+            sort=False,
+        )[value_column].transform(
+            lambda series, window=window: (
+                series.shift(1)
+                .rolling(
+                    window=window,
+                    min_periods=window,
                 )
+                .mean()
             )
         )
 

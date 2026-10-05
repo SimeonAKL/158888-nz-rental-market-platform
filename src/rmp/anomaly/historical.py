@@ -42,10 +42,7 @@ def _median_absolute_deviation(values: pd.Series) -> float:
 
 def _interquartile_range(values: pd.Series) -> float:
     """Return interquartile range for a rolling window."""
-    return float(
-        values.quantile(0.75)
-        - values.quantile(0.25)
-    )
+    return float(values.quantile(0.75) - values.quantile(0.25))
 
 
 def _classify_severity(score: float | None) -> str:
@@ -123,43 +120,27 @@ def detect_historical_anomalies(
         period_col,
         value_col,
     }
-    missing_columns = required_columns.difference(
-        panel.columns
-    )
+    missing_columns = required_columns.difference(panel.columns)
 
     if missing_columns:
-        missing = ", ".join(
-            sorted(missing_columns)
-        )
-        raise ValueError(
-            f"Missing required columns: {missing}"
-        )
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Missing required columns: {missing}")
 
     if seasonal_lag < 1:
-        raise ValueError(
-            "seasonal_lag must be at least 1"
-        )
+        raise ValueError("seasonal_lag must be at least 1")
 
     if baseline_window < 2:
-        raise ValueError(
-            "baseline_window must be at least 2"
-        )
+        raise ValueError("baseline_window must be at least 2")
 
     if min_periods < 2:
-        raise ValueError(
-            "min_periods must be at least 2"
-        )
+        raise ValueError("min_periods must be at least 2")
 
     if min_periods > baseline_window:
-        raise ValueError(
-            "min_periods cannot exceed baseline_window"
-        )
+        raise ValueError("min_periods cannot exceed baseline_window")
 
     result = panel.copy()
 
-    result[period_col] = pd.to_datetime(
-        result[period_col]
-    )
+    result[period_col] = pd.to_datetime(result[period_col])
     result[value_col] = pd.to_numeric(
         result[value_col],
         errors="coerce",
@@ -176,24 +157,16 @@ def detect_historical_anomalies(
     )
 
     if duplicated.any():
-        raise ValueError(
-            "Duplicate series-period observations found "
-            "in historical anomaly input."
-        )
+        raise ValueError("Duplicate series-period observations found in historical anomaly input.")
 
     grouped_values = result.groupby(
         series_col,
         sort=False,
     )[value_col]
 
-    result["seasonal_reference"] = (
-        grouped_values.shift(seasonal_lag)
-    )
+    result["seasonal_reference"] = grouped_values.shift(seasonal_lag)
 
-    result["seasonal_change"] = (
-        result[value_col]
-        - result["seasonal_reference"]
-    )
+    result["seasonal_change"] = result[value_col] - result["seasonal_reference"]
 
     # Exclude the current seasonal change from its own
     # historical baseline.
@@ -207,69 +180,49 @@ def detect_historical_anomalies(
         sort=False,
     )
 
-    result["historical_change_expected"] = (
-        grouped_prior_changes.transform(
-            lambda values: values.rolling(
-                window=baseline_window,
-                min_periods=min_periods,
-            ).median()
+    result["historical_change_expected"] = grouped_prior_changes.transform(
+        lambda values: values.rolling(
+            window=baseline_window,
+            min_periods=min_periods,
+        ).median()
+    )
+
+    result["historical_mad"] = grouped_prior_changes.transform(
+        lambda values: values.rolling(
+            window=baseline_window,
+            min_periods=min_periods,
+        ).apply(
+            _median_absolute_deviation,
+            raw=False,
         )
     )
 
-    result["historical_mad"] = (
-        grouped_prior_changes.transform(
-            lambda values: values.rolling(
-                window=baseline_window,
-                min_periods=min_periods,
-            ).apply(
-                _median_absolute_deviation,
-                raw=False,
-            )
-        )
-    )
-
-    result["historical_iqr"] = (
-        grouped_prior_changes.transform(
-            lambda values: values.rolling(
-                window=baseline_window,
-                min_periods=min_periods,
-            ).apply(
-                _interquartile_range,
-                raw=False,
-            )
+    result["historical_iqr"] = grouped_prior_changes.transform(
+        lambda values: values.rolling(
+            window=baseline_window,
+            min_periods=min_periods,
+        ).apply(
+            _interquartile_range,
+            raw=False,
         )
     )
 
     result["historical_expected"] = (
-        result["seasonal_reference"]
-        + result["historical_change_expected"]
+        result["seasonal_reference"] + result["historical_change_expected"]
     )
 
-    result["historical_deviation"] = (
-        result[value_col]
-        - result["historical_expected"]
-    )
+    result["historical_deviation"] = result[value_col] - result["historical_expected"]
 
     result["historical_deviation_pct"] = np.where(
-        result["historical_expected"].notna()
-        & result["historical_expected"].ne(0),
-        (
-            result["historical_deviation"]
-            / result["historical_expected"]
-            * 100.0
-        ),
+        result["historical_expected"].notna() & result["historical_expected"].ne(0),
+        (result["historical_deviation"] / result["historical_expected"] * 100.0),
         np.nan,
     )
 
-    mad_available = (
-        result["historical_mad"].notna()
-        & result["historical_mad"].gt(0)
-    )
+    mad_available = result["historical_mad"].notna() & result["historical_mad"].gt(0)
 
     iqr_available = (
-        ~mad_available
-        & result["historical_iqr"].notna()
-        & result["historical_iqr"].gt(0)
+        ~mad_available & result["historical_iqr"].notna() & result["historical_iqr"].gt(0)
     )
 
     result["historical_scale_method"] = np.select(
@@ -317,39 +270,20 @@ def detect_historical_anomalies(
 
     result["historical_score"] = np.where(
         score_available,
-        (
-            result["historical_deviation"]
-            / result["historical_scale"]
-        ),
+        (result["historical_deviation"] / result["historical_scale"]),
         np.nan,
     )
 
-    result["historical_score_available"] = (
-        score_available
-    )
+    result["historical_score_available"] = score_available
 
-    result["historical_severity"] = (
-        result["historical_score"].map(
-            _classify_severity
-        )
-    )
+    result["historical_severity"] = result["historical_score"].map(_classify_severity)
 
-    result["historical_direction"] = (
-        result["historical_score"].map(
-            _classify_direction
-        )
-    )
+    result["historical_direction"] = result["historical_score"].map(_classify_direction)
 
-    result["historical_is_anomaly"] = (
-        result["historical_severity"].isin(
-            {"moderate", "high"}
-        )
-    )
+    result["historical_is_anomaly"] = result["historical_severity"].isin({"moderate", "high"})
 
     result["seasonal_lag"] = seasonal_lag
     result["baseline_window"] = baseline_window
-    result["minimum_baseline_observations"] = (
-        min_periods
-    )
+    result["minimum_baseline_observations"] = min_periods
 
     return result

@@ -41,17 +41,9 @@ render_top_navigation(
 )
 
 
-PROJECT_ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[1]
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-HERO_IMAGE_PATH = (
-    PROJECT_ROOT
-    / "assets"
-    / "model_performance_hero.jpg"
-)
+HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "model_performance_hero.jpg"
 
 
 # ---------------------------------------------------------------------
@@ -69,28 +61,16 @@ TICK_COLOR = "#d7dfeb"
 
 
 MODEL_LABELS = {
-    "seasonal_naive": (
-        "Seasonal Naive"
-    ),
-    "ets_additive_damped": (
-        "ETS (Additive Damped)"
-    ),
-    "xgboost_pooled_recursive": (
-        "XGBoost (Pooled Recursive)"
-    ),
+    "seasonal_naive": ("Seasonal Naive"),
+    "ets_additive_damped": ("ETS (Additive Damped)"),
+    "xgboost_pooled_recursive": ("XGBoost (Pooled Recursive)"),
 }
 
 
 MODEL_SHORT_LABELS = {
-    "seasonal_naive": (
-        "Seasonal Naive"
-    ),
-    "ets_additive_damped": (
-        "ETS"
-    ),
-    "xgboost_pooled_recursive": (
-        "XGBoost"
-    ),
+    "seasonal_naive": ("Seasonal Naive"),
+    "ets_additive_damped": ("ETS"),
+    "xgboost_pooled_recursive": ("XGBoost"),
 }
 
 
@@ -164,12 +144,7 @@ def model_color_scale() -> alt.Scale:
     """Return consistent model colors."""
     return alt.Scale(
         domain=MODEL_ORDER,
-        range=[
-            MODEL_COLORS[
-                model
-            ]
-            for model in MODEL_ORDER
-        ],
+        range=[MODEL_COLORS[model] for model in MODEL_ORDER],
     )
 
 
@@ -193,25 +168,17 @@ render_page_hero(
 # ---------------------------------------------------------------------
 
 try:
-    comparison = (
-        load_model_comparison()
-    )
+    comparison = load_model_comparison()
 
-    horizon = (
-        load_metrics_by_horizon()
-    )
+    horizon = load_metrics_by_horizon()
 
-    winners = (
-        load_series_model_winners()
-    )
+    winners = load_series_model_winners()
 
 except (
     FileNotFoundError,
     ValueError,
 ) as exc:
-    st.error(
-        str(exc)
-    )
+    st.error(str(exc))
     st.stop()
 
 
@@ -225,20 +192,11 @@ metrics = [
         "median_rent",
         "bonds_lodged",
     ]
-    if metric
-    in comparison[
-        "metric"
-    ].dropna().unique()
+    if metric in comparison["metric"].dropna().unique()
 ]
 
 if not metrics:
-    metrics = sorted(
-        comparison[
-            "metric"
-        ]
-        .dropna()
-        .unique()
-    )
+    metrics = sorted(comparison["metric"].dropna().unique())
 
 
 with st.container(
@@ -253,16 +211,11 @@ with st.container(
         ),
     )
 
-    selected_metric = (
-        st.selectbox(
-            "Indicator",
-            metrics,
-            format_func=metric_label,
-            key=(
-                "model_performance_"
-                "metric"
-            ),
-        )
+    selected_metric = st.selectbox(
+        "Indicator",
+        metrics,
+        format_func=metric_label,
+        key=("model_performance_metric"),
     )
 
 
@@ -270,73 +223,33 @@ with st.container(
 # Selected metric data
 # ---------------------------------------------------------------------
 
-metric_comparison = (
-    comparison.loc[
-        comparison[
-            "metric"
-        ]
-        == selected_metric
-    ]
-    .copy()
-)
+metric_comparison = comparison.loc[comparison["metric"] == selected_metric].copy()
 
-metric_horizon = (
-    horizon.loc[
-        horizon[
-            "metric"
-        ]
-        == selected_metric
-    ]
-    .copy()
-)
+metric_horizon = horizon.loc[horizon["metric"] == selected_metric].copy()
 
-metric_winners = (
-    winners.loc[
-        winners[
-            "metric"
-        ]
-        == selected_metric
-    ]
-    .copy()
-)
+metric_winners = winners.loc[winners["metric"] == selected_metric].copy()
 
 
 if metric_comparison.empty:
-    st.warning(
-        "No model-comparison results are "
-        "available for this indicator."
-    )
+    st.warning("No model-comparison results are available for this indicator.")
     st.stop()
 
 
-eligible_series_count = (
-    metric_winners[
-        "series_id"
-    ]
-    .nunique()
-)
+eligible_series_count = metric_winners["series_id"].nunique()
 
 
 # ---------------------------------------------------------------------
 # Best model
 # ---------------------------------------------------------------------
 
-best_row = (
-    metric_comparison
-    .sort_values(
-        [
-            "rank_mae",
-            "mae",
-        ]
-    )
-    .iloc[0]
-)
-
-best_model = str(
-    best_row[
-        "model"
+best_row = metric_comparison.sort_values(
+    [
+        "rank_mae",
+        "mae",
     ]
-)
+).iloc[0]
+
+best_model = str(best_row["model"])
 
 
 # ---------------------------------------------------------------------
@@ -358,53 +271,29 @@ with st.container(
     headline_specs = [
         (
             "Best Overall Model",
-            model_label(
-                best_model
-            ),
-            (
-                "Ranked by overall MAE"
-            ),
+            model_label(best_model),
+            ("Ranked by overall MAE"),
         ),
         (
             "MAE",
             format_error(
-                float(
-                    best_row[
-                        "mae"
-                    ]
-                ),
+                float(best_row["mae"]),
                 selected_metric,
             ),
-            (
-                "Mean Absolute Error"
-            ),
+            ("Mean Absolute Error"),
         ),
         (
             "RMSE",
             format_error(
-                float(
-                    best_row[
-                        "rmse"
-                    ]
-                ),
+                float(best_row["rmse"]),
                 selected_metric,
             ),
-            (
-                "Root Mean Squared Error"
-            ),
+            ("Root Mean Squared Error"),
         ),
         (
             "sMAPE",
-            format_percentage(
-                float(
-                    best_row[
-                        "smape"
-                    ]
-                )
-            ),
-            (
-                "Symmetric percentage error"
-            ),
+            format_percentage(float(best_row["smape"])),
+            ("Symmetric percentage error"),
         ),
     ]
 
@@ -440,68 +329,31 @@ with st.container(
         ),
     )
 
-    comparison_display = (
-        metric_comparison
-        .sort_values(
-            "rank_mae"
-        )
-        .copy()
-    )
+    comparison_display = metric_comparison.sort_values("rank_mae").copy()
 
-    comparison_display[
-        "Model"
-    ] = comparison_display[
-        "model"
-    ].map(
-        model_label
-    )
+    comparison_display["Model"] = comparison_display["model"].map(model_label)
 
-    comparison_display[
-        "MAE"
-    ] = [
+    comparison_display["MAE"] = [
         format_error(
             value,
             selected_metric,
         )
-        for value
-        in comparison_display[
-            "mae"
-        ]
+        for value in comparison_display["mae"]
     ]
 
-    comparison_display[
-        "RMSE"
-    ] = [
+    comparison_display["RMSE"] = [
         format_error(
             value,
             selected_metric,
         )
-        for value
-        in comparison_display[
-            "rmse"
-        ]
+        for value in comparison_display["rmse"]
     ]
 
-    comparison_display[
-        "sMAPE"
-    ] = [
-        format_percentage(
-            value
-        )
-        for value
-        in comparison_display[
-            "smape"
-        ]
+    comparison_display["sMAPE"] = [
+        format_percentage(value) for value in comparison_display["smape"]
     ]
 
-    comparison_display[
-        "MAE Rank"
-    ] = (
-        comparison_display[
-            "rank_mae"
-        ]
-        .astype(int)
-    )
+    comparison_display["MAE Rank"] = comparison_display["rank_mae"].astype(int)
 
     display_columns = [
         "Model",
@@ -511,31 +363,17 @@ with st.container(
         "MAE Rank",
     ]
 
-    if (
-        "mae_improvement_vs_baseline_pct"
-        in comparison_display.columns
-    ):
-        comparison_display[
-            "MAE Improvement vs Baseline"
-        ] = [
-            format_percentage(
-                value
-            )
-            for value
-            in comparison_display[
-                "mae_improvement_vs_baseline_pct"
-            ]
+    if "mae_improvement_vs_baseline_pct" in comparison_display.columns:
+        comparison_display["MAE Improvement vs Baseline"] = [
+            format_percentage(value)
+            for value in comparison_display["mae_improvement_vs_baseline_pct"]
         ]
 
-        display_columns.append(
-            "MAE Improvement vs Baseline"
-        )
+        display_columns.append("MAE Improvement vs Baseline")
 
     st.dataframe(
-        comparison_display[
-            display_columns
-        ],
-        use_container_width=True,
+        comparison_display[display_columns],
+        width="stretch",
         hide_index=True,
     )
 
@@ -549,34 +387,20 @@ with st.container(
 ):
     render_card_header(
         "MAE by Model",
-        (
-            "Lower MAE indicates better average "
-            "out-of-sample forecast accuracy."
-        ),
+        ("Lower MAE indicates better average out-of-sample forecast accuracy."),
     )
 
-    mae_chart_data = (
-        metric_comparison[
-            [
-                "model",
-                "mae",
-            ]
+    mae_chart_data = metric_comparison[
+        [
+            "model",
+            "mae",
         ]
-        .copy()
-    )
+    ].copy()
 
-    mae_chart_data[
-        "model_label"
-    ] = mae_chart_data[
-        "model"
-    ].map(
-        short_model_label
-    )
+    mae_chart_data["model_label"] = mae_chart_data["model"].map(short_model_label)
 
     mae_chart = (
-        alt.Chart(
-            mae_chart_data
-        )
+        alt.Chart(mae_chart_data)
         .mark_bar(
             cornerRadiusEnd=6,
         )
@@ -584,35 +408,19 @@ with st.container(
             y=alt.Y(
                 "model_label:N",
                 title=None,
-                sort=[
-                    short_model_label(
-                        model
-                    )
-                    for model
-                    in MODEL_ORDER
-                ],
+                sort=[short_model_label(model) for model in MODEL_ORDER],
                 axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    tickColor=(
-                        TICK_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    tickColor=(TICK_COLOR),
                 ),
             ),
             x=alt.X(
                 "mae:Q",
                 title="Mean Absolute Error",
                 axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    titleColor=(
-                        TITLE_COLOR
-                    ),
-                    gridColor=(
-                        GRID_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    titleColor=(TITLE_COLOR),
+                    gridColor=(GRID_COLOR),
                 ),
             ),
             color=alt.Color(
@@ -632,17 +440,13 @@ with st.container(
                 ),
             ],
         )
-        .properties(
-            height=230
-        )
-        .configure_view(
-            strokeWidth=0
-        )
+        .properties(height=230)
+        .configure_view(strokeWidth=0)
     )
 
     st.altair_chart(
         mae_chart,
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -683,29 +487,15 @@ with st.container(
     )
 
     if metric_horizon.empty:
-        st.info(
-            "No horizon-level metrics are "
-            "available for this indicator."
-        )
+        st.info("No horizon-level metrics are available for this indicator.")
 
     else:
-        horizon_chart_data = (
-            metric_horizon
-            .copy()
-        )
+        horizon_chart_data = metric_horizon.copy()
 
-        horizon_chart_data[
-            "model_label"
-        ] = horizon_chart_data[
-            "model"
-        ].map(
-            short_model_label
-        )
+        horizon_chart_data["model_label"] = horizon_chart_data["model"].map(short_model_label)
 
         horizon_chart = (
-            alt.Chart(
-                horizon_chart_data
-            )
+            alt.Chart(horizon_chart_data)
             .mark_line(
                 strokeWidth=2.6,
                 point=alt.OverlayMarkDef(
@@ -719,33 +509,19 @@ with st.container(
                     title="Forecast Horizon (months)",
                     axis=alt.Axis(
                         labelAngle=0,
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        titleColor=(
-                            TITLE_COLOR
-                        ),
-                        tickColor=(
-                            TICK_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        titleColor=(TITLE_COLOR),
+                        tickColor=(TICK_COLOR),
                     ),
                 ),
                 y=alt.Y(
                     "mae:Q",
                     title="Mean Absolute Error",
-                    scale=alt.Scale(
-                        zero=False
-                    ),
+                    scale=alt.Scale(zero=False),
                     axis=alt.Axis(
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        titleColor=(
-                            TITLE_COLOR
-                        ),
-                        gridColor=(
-                            GRID_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        titleColor=(TITLE_COLOR),
+                        gridColor=(GRID_COLOR),
                     ),
                 ),
                 color=alt.Color(
@@ -769,17 +545,13 @@ with st.container(
                     ),
                 ],
             )
-            .properties(
-                height=320
-            )
-            .configure_view(
-                strokeWidth=0
-            )
+            .properties(height=320)
+            .configure_view(strokeWidth=0)
         )
 
         st.altair_chart(
             horizon_chart,
-            use_container_width=True,
+            width="stretch",
         )
 
 
@@ -801,85 +573,37 @@ with st.container(
     )
 
     if metric_winners.empty:
-        st.info(
-            "No series-level winner data are "
-            "available for this indicator."
-        )
+        st.info("No series-level winner data are available for this indicator.")
 
     else:
         winner_counts = (
-            metric_winners[
-                "best_model"
-            ]
+            metric_winners["best_model"]
             .value_counts()
-            .rename_axis(
-                "model"
-            )
-            .reset_index(
-                name="series_count"
-            )
+            .rename_axis("model")
+            .reset_index(name="series_count")
         )
 
         # Ensure all three models appear in a fixed,
         # consistent order even if one has zero winners.
-        winner_counts = (
-            pd.DataFrame(
-                {
-                    "model": (
-                        MODEL_ORDER
-                    )
-                }
-            )
-            .merge(
-                winner_counts,
-                on="model",
-                how="left",
-            )
+        winner_counts = pd.DataFrame({"model": (MODEL_ORDER)}).merge(
+            winner_counts,
+            on="model",
+            how="left",
         )
 
-        winner_counts[
-            "series_count"
-        ] = (
-            winner_counts[
-                "series_count"
-            ]
-            .fillna(0)
-            .astype(int)
-        )
+        winner_counts["series_count"] = winner_counts["series_count"].fillna(0).astype(int)
 
-        winner_counts[
-            "model_label"
-        ] = winner_counts[
-            "model"
-        ].map(
-            short_model_label
-        )
+        winner_counts["model_label"] = winner_counts["model"].map(short_model_label)
 
-        total_winners = int(
-            winner_counts[
-                "series_count"
-            ].sum()
-        )
+        total_winners = int(winner_counts["series_count"].sum())
 
         if total_winners > 0:
-            winner_counts[
-                "share_pct"
-            ] = (
-                winner_counts[
-                    "series_count"
-                ]
-                / total_winners
-                * 100
-            )
+            winner_counts["share_pct"] = winner_counts["series_count"] / total_winners * 100
         else:
-            winner_counts[
-                "share_pct"
-            ] = 0.0
+            winner_counts["share_pct"] = 0.0
 
         winner_chart = (
-            alt.Chart(
-                winner_counts
-            )
+            alt.Chart(winner_counts)
             .mark_bar(
                 cornerRadiusTopLeft=6,
                 cornerRadiusTopRight=6,
@@ -888,36 +612,20 @@ with st.container(
                 x=alt.X(
                     "model_label:N",
                     title=None,
-                    sort=[
-                        short_model_label(
-                            model
-                        )
-                        for model
-                        in MODEL_ORDER
-                    ],
+                    sort=[short_model_label(model) for model in MODEL_ORDER],
                     axis=alt.Axis(
                         labelAngle=0,
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        tickColor=(
-                            TICK_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        tickColor=(TICK_COLOR),
                     ),
                 ),
                 y=alt.Y(
                     "series_count:Q",
                     title="Winning Series",
                     axis=alt.Axis(
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        titleColor=(
-                            TITLE_COLOR
-                        ),
-                        gridColor=(
-                            GRID_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        titleColor=(TITLE_COLOR),
+                        gridColor=(GRID_COLOR),
                     ),
                 ),
                 color=alt.Color(
@@ -941,41 +649,26 @@ with st.container(
                     ),
                 ],
             )
-            .properties(
-                height=300
-            )
-            .configure_view(
-                strokeWidth=0
-            )
+            .properties(height=300)
+            .configure_view(strokeWidth=0)
         )
 
         st.altair_chart(
             winner_chart,
-            use_container_width=True,
+            width="stretch",
         )
 
-        winner_columns = (
-            st.columns(
-                len(MODEL_ORDER)
-            )
-        )
+        winner_columns = st.columns(len(MODEL_ORDER))
 
         for column, row in zip(
             winner_columns,
-            winner_counts.itertuples(
-                index=False
-            ),
+            winner_counts.itertuples(index=False),
         ):
             with column:
                 render_stat_card(
-                    short_model_label(
-                        row.model
-                    ),
+                    short_model_label(row.model),
                     f"{row.series_count:,}",
-                    (
-                        f"{row.share_pct:.1f}% "
-                        "of eligible series"
-                    ),
+                    (f"{row.share_pct:.1f}% of eligible series"),
                     flat=True,
                 )
 
@@ -989,10 +682,7 @@ with st.container(
 ):
     render_card_header(
         "How to Read These Results",
-        (
-            "Overall model rankings and series-level "
-            "winner counts answer different questions."
-        ),
+        ("Overall model rankings and series-level winner counts answer different questions."),
     )
 
     st.info(

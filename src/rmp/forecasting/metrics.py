@@ -23,22 +23,13 @@ def _as_float_arrays(
     )
 
     if actual.shape != predicted.shape:
-        raise ValueError(
-            "y_true and y_pred must have the same shape."
-        )
+        raise ValueError("y_true and y_pred must have the same shape.")
 
     if actual.size == 0:
-        raise ValueError(
-            "Metric inputs cannot be empty."
-        )
+        raise ValueError("Metric inputs cannot be empty.")
 
-    if (
-        np.isnan(actual).any()
-        or np.isnan(predicted).any()
-    ):
-        raise ValueError(
-            "Metric inputs cannot contain NaN values."
-        )
+    if np.isnan(actual).any() or np.isnan(predicted).any():
+        raise ValueError("Metric inputs cannot contain NaN values.")
 
     return actual, predicted
 
@@ -54,13 +45,7 @@ def mae(
         y_pred,
     )
 
-    return float(
-        np.mean(
-            np.abs(
-                actual - predicted
-            )
-        )
-    )
+    return float(np.mean(np.abs(actual - predicted)))
 
 
 def rmse(
@@ -74,15 +59,7 @@ def rmse(
         y_pred,
     )
 
-    return float(
-        np.sqrt(
-            np.mean(
-                np.square(
-                    actual - predicted
-                )
-            )
-        )
-    )
+    return float(np.sqrt(np.mean(np.square(actual - predicted))))
 
 
 def smape(
@@ -102,17 +79,9 @@ def smape(
         y_pred,
     )
 
-    denominator = (
-        np.abs(actual)
-        + np.abs(predicted)
-    )
+    denominator = np.abs(actual) + np.abs(predicted)
 
-    numerator = (
-        2.0
-        * np.abs(
-            actual - predicted
-        )
-    )
+    numerator = 2.0 * np.abs(actual - predicted)
 
     terms = np.divide(
         numerator,
@@ -124,10 +93,7 @@ def smape(
         where=denominator != 0,
     )
 
-    return float(
-        np.mean(terms)
-        * 100.0
-    )
+    return float(np.mean(terms) * 100.0)
 
 
 def calculate_forecast_metrics(
@@ -163,6 +129,4 @@ def calculate_metrics_frame(
         y_pred,
     )
 
-    return pd.DataFrame(
-        [metrics]
-    )
+    return pd.DataFrame([metrics])

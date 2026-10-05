@@ -33,12 +33,8 @@ def main() -> int:
         print("API key     : configured")
         print()
 
-        with MarketRentAPIClient(
-            settings=settings
-        ) as client:
-            print(
-                "Requesting GET /area-definitions ..."
-            )
+        with MarketRentAPIClient(settings=settings) as client:
+            print("Requesting GET /area-definitions ...")
 
             data = client.get_area_definitions()
 

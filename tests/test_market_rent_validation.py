@@ -49,9 +49,7 @@ def test_valid_payload_passes() -> None:
     """A valid Market Rent payload should pass validation."""
     payload = make_valid_payload()
 
-    validate_market_rent_payload(
-        payload
-    )
+    validate_market_rent_payload(payload)
 
 
 def test_missing_required_item_field_fails() -> None:
@@ -64,9 +62,7 @@ def test_missing_required_item_field_fails() -> None:
         MarketRentValidationError,
         match="missing fields",
     ):
-        validate_market_rent_payload(
-            payload
-        )
+        validate_market_rent_payload(payload)
 
 
 def test_non_numeric_field_fails() -> None:
@@ -79,9 +75,7 @@ def test_non_numeric_field_fails() -> None:
         MarketRentValidationError,
         match="must be numeric",
     ):
-        validate_market_rent_payload(
-            payload
-        )
+        validate_market_rent_payload(payload)
 
 
 def test_empty_items_fails() -> None:
@@ -94,9 +88,7 @@ def test_empty_items_fails() -> None:
         MarketRentValidationError,
         match="must not be empty",
     ):
-        validate_market_rent_payload(
-            payload
-        )
+        validate_market_rent_payload(payload)
 
 
 def test_validate_file_returns_payload(
@@ -112,13 +104,8 @@ def test_validate_file_returns_payload(
         encoding="utf-8",
     )
 
-    result = validate_market_rent_file(
-        path
-    )
+    result = validate_market_rent_file(path)
 
-    assert (
-        result["areaDefinition"]
-        == "regional-council-2019"
-    )
+    assert result["areaDefinition"] == "regional-council-2019"
 
     assert len(result["items"]) == 1

@@ -43,19 +43,12 @@ def get_database_config() -> dict[str, str | int]:
         "password",
     ]
 
-    missing = [
-        field
-        for field in required_fields
-        if not config[field]
-    ]
+    missing = [field for field in required_fields if not config[field]]
 
     if missing:
         missing_names = ", ".join(missing)
 
-        raise ValueError(
-            "Missing required database configuration: "
-            f"{missing_names}"
-        )
+        raise ValueError(f"Missing required database configuration: {missing_names}")
 
     # Required fields have been validated above.
     return {
@@ -73,13 +66,11 @@ def get_database_config() -> dict[str, str | int]:
 
 
 MARKET_RENT_SANDBOX_BASE_URL = (
-    "https://api.business.govt.nz/"
-    "sandbox/tenancy-services/market-rent/v2"
+    "https://api.business.govt.nz/sandbox/tenancy-services/market-rent/v2"
 )
 
 MARKET_RENT_PRODUCTION_BASE_URL = (
-    "https://api.business.govt.nz/"
-    "gateway/tenancy-services/market-rent/v2"
+    "https://api.business.govt.nz/gateway/tenancy-services/market-rent/v2"
 )
 
 
@@ -113,19 +104,20 @@ def get_market_rent_settings() -> MarketRentSettings:
         subscription key is missing.
     """
 
-    environment = os.getenv(
-        "MARKET_RENT_API_ENV",
-        "sandbox",
-    ).strip().lower()
+    environment = (
+        os.getenv(
+            "MARKET_RENT_API_ENV",
+            "sandbox",
+        )
+        .strip()
+        .lower()
+    )
 
     if environment not in {
         "sandbox",
         "production",
     }:
-        raise ValueError(
-            "MARKET_RENT_API_ENV must be either "
-            "'sandbox' or 'production'."
-        )
+        raise ValueError("MARKET_RENT_API_ENV must be either 'sandbox' or 'production'.")
 
     if environment == "sandbox":
         base_url = MARKET_RENT_SANDBOX_BASE_URL
@@ -135,9 +127,7 @@ def get_market_rent_settings() -> MarketRentSettings:
             "",
         ).strip()
 
-        key_variable = (
-            "MARKET_RENT_API_SANDBOX_KEY"
-        )
+        key_variable = "MARKET_RENT_API_SANDBOX_KEY"
 
     else:
         base_url = MARKET_RENT_PRODUCTION_BASE_URL
@@ -147,9 +137,7 @@ def get_market_rent_settings() -> MarketRentSettings:
             "",
         ).strip()
 
-        key_variable = (
-            "MARKET_RENT_API_PROD_KEY"
-        )
+        key_variable = "MARKET_RENT_API_PROD_KEY"
 
     if not subscription_key:
         raise ValueError(

@@ -80,17 +80,11 @@ def add_practical_significance(
         score_available_col,
     }
 
-    missing_columns = required_columns.difference(
-        anomalies.columns
-    )
+    missing_columns = required_columns.difference(anomalies.columns)
 
     if missing_columns:
-        missing = ", ".join(
-            sorted(missing_columns)
-        )
-        raise ValueError(
-            f"Missing required columns: {missing}"
-        )
+        missing = ", ".join(sorted(missing_columns))
+        raise ValueError(f"Missing required columns: {missing}")
 
     result = anomalies.copy()
 
@@ -113,11 +107,7 @@ def add_practical_significance(
             "practical_pct_threshold",
         ] = threshold.minimum_percentage_deviation
 
-        available = (
-            metric_mask
-            & result[deviation_col].notna()
-            & result[deviation_pct_col].notna()
-        )
+        available = metric_mask & result[deviation_col].notna() & result[deviation_pct_col].notna()
 
         result.loc[
             available,
@@ -126,12 +116,8 @@ def add_practical_significance(
 
         significant = (
             available
-            & result[deviation_col].abs().ge(
-                threshold.minimum_absolute_deviation
-            )
-            & result[deviation_pct_col].abs().ge(
-                threshold.minimum_percentage_deviation
-            )
+            & result[deviation_col].abs().ge(threshold.minimum_absolute_deviation)
+            & result[deviation_pct_col].abs().ge(threshold.minimum_percentage_deviation)
         )
 
         result.loc[
@@ -139,32 +125,17 @@ def add_practical_significance(
             "practical_significance",
         ] = True
 
-    result["statistical_anomaly"] = (
-        result[anomaly_col]
-        .fillna(False)
-        .astype(bool)
-    )
+    result["statistical_anomaly"] = result[anomaly_col].fillna(False).astype(bool)
 
-    statistical_available = (
-        result[score_available_col]
-        .fillna(False)
-        .astype(bool)
-    )
+    statistical_available = result[score_available_col].fillna(False).astype(bool)
 
     result["dashboard_alert"] = (
-        statistical_available
-        & result["statistical_anomaly"]
-        & result["practical_significance"]
+        statistical_available & result["statistical_anomaly"] & result["practical_significance"]
     )
 
     result["alert_status"] = np.select(
         [
-            (
-                ~statistical_available
-                | ~result[
-                    "practical_significance_available"
-                ]
-            ),
+            (~statistical_available | ~result["practical_significance_available"]),
             result["dashboard_alert"],
             result["statistical_anomaly"],
         ],

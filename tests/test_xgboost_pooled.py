@@ -28,37 +28,18 @@ def make_pooled_history(
         1,
         n_series + 1,
     ):
-        for index, date in enumerate(
-            dates
-        ):
-            seasonal = (
-                20.0
-                * np.sin(
-                    2.0
-                    * np.pi
-                    * index
-                    / 12.0
-                )
-            )
+        for index, date in enumerate(dates):
+            seasonal = 20.0 * np.sin(2.0 * np.pi * index / 12.0)
 
-            value = (
-                400.0
-                + (location_id * 50.0)
-                + (index * 1.5)
-                + seasonal
-            )
+            value = 400.0 + (location_id * 50.0) + (index * 1.5) + seasonal
 
             rows.append(
                 {
                     "period_date": date,
-                    "series_id": (
-                        f"region_{location_id}_median_rent"
-                    ),
+                    "series_id": (f"region_{location_id}_median_rent"),
                     "geography_level": "region",
                     "location_id": location_id,
-                    "location_name": (
-                        f"Region {location_id}"
-                    ),
+                    "location_name": (f"Region {location_id}"),
                     "metric": "median_rent",
                     "value": value,
                 }
@@ -77,9 +58,7 @@ def test_prepare_training_data() -> None:
         y_train,
         location_keys,
         feature_columns,
-    ) = prepare_training_data(
-        history
-    )
+    ) = prepare_training_data(history)
 
     assert not x_train.empty
     assert len(x_train) == len(y_train)
@@ -105,8 +84,7 @@ def test_recursive_forecast_returns_all_series() -> None:
     history = make_pooled_history()
 
     future = pd.date_range(
-        history["period_date"].max()
-        + pd.offsets.MonthBegin(1),
+        history["period_date"].max() + pd.offsets.MonthBegin(1),
         periods=6,
         freq="MS",
     )
@@ -116,17 +94,11 @@ def test_recursive_forecast_returns_all_series() -> None:
         future,
     )
 
-    assert len(result) == (
-        3 * 6
-    )
+    assert len(result) == (3 * 6)
 
-    assert result[
-        "series_id"
-    ].nunique() == 3
+    assert result["series_id"].nunique() == 3
 
-    assert set(
-        result["horizon_step"]
-    ) == {
+    assert set(result["horizon_step"]) == {
         1,
         2,
         3,
@@ -135,9 +107,7 @@ def test_recursive_forecast_returns_all_series() -> None:
         6,
     }
 
-    assert np.isfinite(
-        result["predicted"]
-    ).all()
+    assert np.isfinite(result["predicted"]).all()
 
 
 def test_recursive_forecast_is_deterministic() -> None:
@@ -146,8 +116,7 @@ def test_recursive_forecast_is_deterministic() -> None:
     history = make_pooled_history()
 
     future = pd.date_range(
-        history["period_date"].max()
-        + pd.offsets.MonthBegin(1),
+        history["period_date"].max() + pd.offsets.MonthBegin(1),
         periods=3,
         freq="MS",
     )
@@ -162,13 +131,7 @@ def test_recursive_forecast_is_deterministic() -> None:
         future,
     )
 
-    assert first[
-        "predicted"
-    ].to_numpy() == pytest.approx(
-        second[
-            "predicted"
-        ].to_numpy()
-    )
+    assert first["predicted"].to_numpy() == pytest.approx(second["predicted"].to_numpy())
 
 
 def test_recursive_forecast_does_not_modify_history() -> None:
@@ -176,13 +139,10 @@ def test_recursive_forecast_does_not_modify_history() -> None:
 
     history = make_pooled_history()
 
-    original = history.copy(
-        deep=True
-    )
+    original = history.copy(deep=True)
 
     future = pd.date_range(
-        history["period_date"].max()
-        + pd.offsets.MonthBegin(1),
+        history["period_date"].max() + pd.offsets.MonthBegin(1),
         periods=3,
         freq="MS",
     )
@@ -209,8 +169,7 @@ def test_rejects_multiple_metrics() -> None:
     ] = "bonds_lodged"
 
     future = pd.date_range(
-        history["period_date"].max()
-        + pd.offsets.MonthBegin(1),
+        history["period_date"].max() + pd.offsets.MonthBegin(1),
         periods=3,
         freq="MS",
     )
@@ -219,9 +178,7 @@ def test_rejects_multiple_metrics() -> None:
         ValueError,
         match="one target metric",
     ):
-        prepare_training_data(
-            history
-        )
+        prepare_training_data(history)
 
     with pytest.raises(
         ValueError,
@@ -239,8 +196,7 @@ def test_rejects_nonconsecutive_future_dates() -> None:
     history = make_pooled_history()
 
     future = pd.date_range(
-        history["period_date"].max()
-        + pd.offsets.MonthBegin(2),
+        history["period_date"].max() + pd.offsets.MonthBegin(2),
         periods=3,
         freq="MS",
     )
@@ -292,9 +248,7 @@ def test_location_features_distinguish_geography_levels() -> None:
 
     history = pd.DataFrame(rows)
 
-    _, _, location_keys, feature_columns = (
-        prepare_training_data(history)
-    )
+    _, _, location_keys, feature_columns = prepare_training_data(history)
 
     assert set(location_keys) == {
         "region_1",
@@ -302,7 +256,4 @@ def test_location_features_distinguish_geography_levels() -> None:
     }
 
     assert "location_region_1" in feature_columns
-    assert (
-        "location_territorial_authority_1"
-        in feature_columns
-    )
+    assert "location_territorial_authority_1" in feature_columns

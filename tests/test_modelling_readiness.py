@@ -18,18 +18,10 @@ def make_inputs():
 
     panel = pd.DataFrame(
         {
-            "period_date": list(dates)
-            + list(dates),
-            "series_id": (
-                ["series_a"] * 120
-                + ["series_b"] * 120
-            ),
-            "metric": (
-                ["median_rent"] * 120
-                + ["bonds_lodged"] * 120
-            ),
-            "value": list(range(120))
-            + list(range(120)),
+            "period_date": list(dates) + list(dates),
+            "series_id": (["series_a"] * 120 + ["series_b"] * 120),
+            "metric": (["median_rent"] * 120 + ["bonds_lodged"] * 120),
+            "value": list(range(120)) + list(range(120)),
         }
     )
 
@@ -87,47 +79,24 @@ def test_ready_dataset() -> None:
 
     row = result.iloc[0]
 
-    assert bool(
-        row["dataset_ready"]
-    )
+    assert bool(row["dataset_ready"])
 
     assert row["n_series"] == 2
     assert row["complete_series"] == 2
 
-    assert (
-        row["forecast_eligible_series"]
-        == 2
-    )
+    assert row["forecast_eligible_series"] == 2
 
-    assert (
-        row["quality_pass_series"]
-        == 2
-    )
+    assert row["quality_pass_series"] == 2
 
-    assert (
-        row["eligible_quality_pass_series"]
-        == 2
-    )
+    assert row["eligible_quality_pass_series"] == 2
 
-    assert (
-        row[
-            "minimum_eligible_continuous_months"
-        ]
-        == 120
-    )
+    assert row["minimum_eligible_continuous_months"] == 120
 
-    assert (
-        row["required_continuous_months"]
-        == 77
-    )
+    assert row["required_continuous_months"] == 77
 
-    assert bool(
-        row["rolling_origin_ready"]
-    )
+    assert bool(row["rolling_origin_ready"])
 
-    assert bool(
-        row["feature_history_ready"]
-    )
+    assert bool(row["feature_history_ready"])
 
 
 def test_ineligible_series_does_not_block_ready_subset() -> None:
@@ -158,33 +127,18 @@ def test_ineligible_series_does_not_block_ready_subset() -> None:
 
     row = result.iloc[0]
 
-    assert bool(
-        row["dataset_ready"]
-    )
+    assert bool(row["dataset_ready"])
 
     assert row["n_series"] == 2
     assert row["complete_series"] == 1
 
-    assert (
-        row["forecast_eligible_series"]
-        == 1
-    )
+    assert row["forecast_eligible_series"] == 1
 
-    assert (
-        row["eligible_quality_pass_series"]
-        == 1
-    )
+    assert row["eligible_quality_pass_series"] == 1
 
-    assert (
-        row[
-            "minimum_eligible_continuous_months"
-        ]
-        == 120
-    )
+    assert row["minimum_eligible_continuous_months"] == 120
 
-    assert bool(
-        row["rolling_origin_ready"]
-    )
+    assert bool(row["rolling_origin_ready"])
 
 
 def test_failed_quality_not_ready() -> None:
@@ -205,19 +159,11 @@ def test_failed_quality_not_ready() -> None:
 
     row = result.iloc[0]
 
-    assert not bool(
-        row["dataset_ready"]
-    )
+    assert not bool(row["dataset_ready"])
 
-    assert (
-        row["forecast_eligible_series"]
-        == 2
-    )
+    assert row["forecast_eligible_series"] == 2
 
-    assert (
-        row["eligible_quality_pass_series"]
-        == 1
-    )
+    assert row["eligible_quality_pass_series"] == 1
 
 
 def test_no_forecast_eligible_series_not_ready() -> None:
@@ -225,13 +171,9 @@ def test_no_forecast_eligible_series_not_ready() -> None:
 
     panel, catalog, quality = make_inputs()
 
-    catalog[
-        "eligible_for_forecasting"
-    ] = False
+    catalog["eligible_for_forecasting"] = False
 
-    catalog[
-        "continuous_months"
-    ] = 50
+    catalog["continuous_months"] = 50
 
     result = build_modelling_readiness(
         panel,
@@ -241,22 +183,10 @@ def test_no_forecast_eligible_series_not_ready() -> None:
 
     row = result.iloc[0]
 
-    assert not bool(
-        row["dataset_ready"]
-    )
+    assert not bool(row["dataset_ready"])
 
-    assert (
-        row["forecast_eligible_series"]
-        == 0
-    )
+    assert row["forecast_eligible_series"] == 0
 
-    assert (
-        row[
-            "minimum_eligible_continuous_months"
-        ]
-        == 0
-    )
+    assert row["minimum_eligible_continuous_months"] == 0
 
-    assert not bool(
-        row["rolling_origin_ready"]
-    )
+    assert not bool(row["rolling_origin_ready"])

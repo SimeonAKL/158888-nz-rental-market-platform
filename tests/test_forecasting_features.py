@@ -24,13 +24,8 @@ def sample_series() -> pd.DataFrame:
     return pd.DataFrame(
         {
             "period_date": dates,
-            "series_id": [
-                "region_2_median_rent"
-            ]
-            * 15,
-            "value": list(
-                range(1, 16)
-            ),
+            "series_id": ["region_2_median_rent"] * 15,
+            "value": list(range(1, 16)),
         }
     )
 
@@ -40,9 +35,7 @@ def test_calendar_features(
 ) -> None:
     """Calendar features should match observation dates."""
 
-    result = add_calendar_features(
-        sample_series
-    )
+    result = add_calendar_features(sample_series)
 
     first = result.iloc[0]
 
@@ -61,19 +54,11 @@ def test_lag_one_uses_previous_value(
         lags=(1,),
     )
 
-    assert pd.isna(
-        result.iloc[0]["lag_1"]
-    )
+    assert pd.isna(result.iloc[0]["lag_1"])
 
-    assert (
-        result.iloc[1]["lag_1"]
-        == 1
-    )
+    assert result.iloc[1]["lag_1"] == 1
 
-    assert (
-        result.iloc[2]["lag_1"]
-        == 2
-    )
+    assert result.iloc[2]["lag_1"] == 2
 
 
 def test_lag_twelve(
@@ -86,14 +71,9 @@ def test_lag_twelve(
         lags=(12,),
     )
 
-    assert pd.isna(
-        result.iloc[11]["lag_12"]
-    )
+    assert pd.isna(result.iloc[11]["lag_12"])
 
-    assert (
-        result.iloc[12]["lag_12"]
-        == 1
-    )
+    assert result.iloc[12]["lag_12"] == 1
 
 
 def test_rolling_mean_excludes_current_target(
@@ -107,16 +87,10 @@ def test_rolling_mean_excludes_current_target(
     )
 
     # At month 4, prior values are 1, 2, 3.
-    assert (
-        result.iloc[3]["rolling_mean_3"]
-        == pytest.approx(2.0)
-    )
+    assert result.iloc[3]["rolling_mean_3"] == pytest.approx(2.0)
 
     # It must not include current value 4.
-    assert (
-        result.iloc[3]["rolling_mean_3"]
-        != pytest.approx(3.0)
-    )
+    assert result.iloc[3]["rolling_mean_3"] != pytest.approx(3.0)
 
 
 def test_rolling_requires_full_history(
@@ -129,21 +103,13 @@ def test_rolling_requires_full_history(
         windows=(3,),
     )
 
-    assert pd.isna(
-        result.iloc[0]["rolling_mean_3"]
-    )
+    assert pd.isna(result.iloc[0]["rolling_mean_3"])
 
-    assert pd.isna(
-        result.iloc[1]["rolling_mean_3"]
-    )
+    assert pd.isna(result.iloc[1]["rolling_mean_3"])
 
-    assert pd.isna(
-        result.iloc[2]["rolling_mean_3"]
-    )
+    assert pd.isna(result.iloc[2]["rolling_mean_3"])
 
-    assert not pd.isna(
-        result.iloc[3]["rolling_mean_3"]
-    )
+    assert not pd.isna(result.iloc[3]["rolling_mean_3"])
 
 
 def test_build_forecasting_features(
@@ -151,9 +117,7 @@ def test_build_forecasting_features(
 ) -> None:
     """Complete feature builder should create all core features."""
 
-    result = build_forecasting_features(
-        sample_series
-    )
+    result = build_forecasting_features(sample_series)
 
     expected_columns = {
         "lag_1",
@@ -169,9 +133,7 @@ def test_build_forecasting_features(
         "year",
     }
 
-    assert expected_columns.issubset(
-        result.columns
-    )
+    assert expected_columns.issubset(result.columns)
 
 
 def test_rejects_invalid_lag(

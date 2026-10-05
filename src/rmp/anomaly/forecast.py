@@ -34,10 +34,7 @@ def _median_absolute_deviation(values: pd.Series) -> float:
 
 def _interquartile_range(values: pd.Series) -> float:
     """Return interquartile range."""
-    return float(
-        values.quantile(0.75)
-        - values.quantile(0.25)
-    )
+    return float(values.quantile(0.75) - values.quantile(0.25))
 
 
 def _classify_severity(score: float | None) -> str:
@@ -109,31 +106,17 @@ def select_winner_horizon_predictions(
         "best_model",
     }
 
-    missing_predictions = prediction_required.difference(
-        predictions.columns
-    )
+    missing_predictions = prediction_required.difference(predictions.columns)
 
     if missing_predictions:
-        missing = ", ".join(
-            sorted(missing_predictions)
-        )
-        raise ValueError(
-            "Missing required prediction columns: "
-            f"{missing}"
-        )
+        missing = ", ".join(sorted(missing_predictions))
+        raise ValueError(f"Missing required prediction columns: {missing}")
 
-    missing_winners = winner_required.difference(
-        winners.columns
-    )
+    missing_winners = winner_required.difference(winners.columns)
 
     if missing_winners:
-        missing = ", ".join(
-            sorted(missing_winners)
-        )
-        raise ValueError(
-            "Missing required winner columns: "
-            f"{missing}"
-        )
+        missing = ", ".join(sorted(missing_winners))
+        raise ValueError(f"Missing required winner columns: {missing}")
 
     winner_map = winners[
         [
@@ -152,13 +135,9 @@ def select_winner_horizon_predictions(
     )
 
     if duplicated_winners.any():
-        raise ValueError(
-            "Duplicate series winner mappings found."
-        )
+        raise ValueError("Duplicate series winner mappings found.")
 
-    selected = predictions.loc[
-        predictions["horizon_step"].eq(horizon)
-    ].copy()
+    selected = predictions.loc[predictions["horizon_step"].eq(horizon)].copy()
 
     selected = selected.merge(
         winner_map,
@@ -170,24 +149,14 @@ def select_winner_horizon_predictions(
         validate="many_to_one",
     )
 
-    selected = selected.loc[
-        selected["model"].eq(
-            selected["best_model"]
-        )
-    ].copy()
+    selected = selected.loc[selected["model"].eq(selected["best_model"])].copy()
 
     if selected.empty:
-        raise ValueError(
-            "No winner-model horizon predictions were found."
-        )
+        raise ValueError("No winner-model horizon predictions were found.")
 
-    selected["origin"] = pd.to_datetime(
-        selected["origin"]
-    )
+    selected["origin"] = pd.to_datetime(selected["origin"])
 
-    selected["forecast_period"] = pd.to_datetime(
-        selected["forecast_period"]
-    )
+    selected["forecast_period"] = pd.to_datetime(selected["forecast_period"])
 
     duplicated_predictions = selected.duplicated(
         subset=[
@@ -198,10 +167,7 @@ def select_winner_horizon_predictions(
     )
 
     if duplicated_predictions.any():
-        raise ValueError(
-            "Duplicate winner-model series-period "
-            "predictions found."
-        )
+        raise ValueError("Duplicate winner-model series-period predictions found.")
 
     return selected.sort_values(
         [
@@ -250,14 +216,10 @@ def detect_forecast_residual_anomalies(
         Winner-model horizon-one predictions plus residual anomaly fields.
     """
     if horizon < 1:
-        raise ValueError(
-            "horizon must be at least 1"
-        )
+        raise ValueError("horizon must be at least 1")
 
     if min_prior_residuals < 3:
-        raise ValueError(
-            "min_prior_residuals must be at least 3"
-        )
+        raise ValueError("min_prior_residuals must be at least 3")
 
     result = select_winner_horizon_predictions(
         predictions,
@@ -275,19 +237,11 @@ def detect_forecast_residual_anomalies(
         errors="coerce",
     )
 
-    result["forecast_residual"] = (
-        result["actual"]
-        - result["predicted"]
-    )
+    result["forecast_residual"] = result["actual"] - result["predicted"]
 
     result["forecast_residual_pct"] = np.where(
-        result["predicted"].notna()
-        & result["predicted"].ne(0),
-        (
-            result["forecast_residual"]
-            / result["predicted"]
-            * 100.0
-        ),
+        result["predicted"].notna() & result["predicted"].ne(0),
+        (result["forecast_residual"] / result["predicted"] * 100.0),
         np.nan,
     )
 
@@ -314,46 +268,27 @@ def detect_forecast_residual_anomalies(
         sort=False,
     )
 
-    result["residual_median"] = (
-        grouped_prior.transform(
-            lambda values: values.expanding(
-                min_periods=min_prior_residuals
-            ).median()
+    result["residual_median"] = grouped_prior.transform(
+        lambda values: values.expanding(min_periods=min_prior_residuals).median()
+    )
+
+    result["residual_mad"] = grouped_prior.transform(
+        lambda values: values.expanding(min_periods=min_prior_residuals).apply(
+            _median_absolute_deviation,
+            raw=False,
         )
     )
 
-    result["residual_mad"] = (
-        grouped_prior.transform(
-            lambda values: values.expanding(
-                min_periods=min_prior_residuals
-            ).apply(
-                _median_absolute_deviation,
-                raw=False,
-            )
+    result["residual_iqr"] = grouped_prior.transform(
+        lambda values: values.expanding(min_periods=min_prior_residuals).apply(
+            _interquartile_range,
+            raw=False,
         )
     )
 
-    result["residual_iqr"] = (
-        grouped_prior.transform(
-            lambda values: values.expanding(
-                min_periods=min_prior_residuals
-            ).apply(
-                _interquartile_range,
-                raw=False,
-            )
-        )
-    )
+    mad_available = result["residual_mad"].notna() & result["residual_mad"].gt(0)
 
-    mad_available = (
-        result["residual_mad"].notna()
-        & result["residual_mad"].gt(0)
-    )
-
-    iqr_available = (
-        ~mad_available
-        & result["residual_iqr"].notna()
-        & result["residual_iqr"].gt(0)
-    )
+    iqr_available = ~mad_available & result["residual_iqr"].notna() & result["residual_iqr"].gt(0)
 
     result["forecast_scale_method"] = np.select(
         [
@@ -400,43 +335,26 @@ def detect_forecast_residual_anomalies(
 
     result["forecast_anomaly_score"] = np.where(
         score_available,
-        (
-            result["forecast_residual"]
-            - result["residual_median"]
-        )
+        (result["forecast_residual"] - result["residual_median"])
         / result["forecast_residual_scale"],
         np.nan,
     )
 
-    result["forecast_score_available"] = (
-        score_available
-    )
+    result["forecast_score_available"] = score_available
 
-    result["forecast_severity"] = (
-        result["forecast_anomaly_score"].map(
-            _classify_severity
-        )
-    )
+    result["forecast_severity"] = result["forecast_anomaly_score"].map(_classify_severity)
 
-    result["forecast_direction"] = (
-        result["forecast_anomaly_score"].map(
-            _classify_direction
-        )
-    )
+    result["forecast_direction"] = result["forecast_anomaly_score"].map(_classify_direction)
 
-    result["forecast_is_anomaly"] = (
-        result["forecast_severity"].isin(
-            {
-                "moderate",
-                "high",
-            }
-        )
+    result["forecast_is_anomaly"] = result["forecast_severity"].isin(
+        {
+            "moderate",
+            "high",
+        }
     )
 
     result["forecast_anomaly_horizon"] = horizon
 
-    result["minimum_prior_residuals"] = (
-        min_prior_residuals
-    )
+    result["minimum_prior_residuals"] = min_prior_residuals
 
     return result

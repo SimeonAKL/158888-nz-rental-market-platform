@@ -31,73 +31,45 @@ def ets_forecast(
     """
 
     if seasonal_period < 1:
-        raise ValueError(
-            "seasonal_period must be at least 1."
-        )
+        raise ValueError("seasonal_period must be at least 1.")
 
     required = {
         date_column,
         value_column,
     }
 
-    missing = required.difference(
-        train.columns
-    )
+    missing = required.difference(train.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required train columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required train columns: {sorted(missing)}")
 
     if train.empty:
-        raise ValueError(
-            "Training data cannot be empty."
-        )
+        raise ValueError("Training data cannot be empty.")
 
     data = train.copy()
 
-    data[date_column] = pd.to_datetime(
-        data[date_column]
-    )
+    data[date_column] = pd.to_datetime(data[date_column])
 
     data[value_column] = pd.to_numeric(
         data[value_column],
         errors="raise",
     )
 
-    data = data.sort_values(
-        date_column
-    ).reset_index(drop=True)
+    data = data.sort_values(date_column).reset_index(drop=True)
 
     if data[date_column].duplicated().any():
-        raise ValueError(
-            "Training data contains duplicate periods."
-        )
+        raise ValueError("Training data contains duplicate periods.")
 
     if data[value_column].isna().any():
-        raise ValueError(
-            "Training values cannot contain NaN values."
-        )
+        raise ValueError("Training values cannot contain NaN values.")
 
-    if not np.isfinite(
-        data[value_column].to_numpy(
-            dtype=float
-        )
-    ).all():
-        raise ValueError(
-            "Training values must be finite."
-        )
+    if not np.isfinite(data[value_column].to_numpy(dtype=float)).all():
+        raise ValueError("Training values must be finite.")
 
-    minimum_observations = (
-        2 * seasonal_period
-    )
+    minimum_observations = 2 * seasonal_period
 
     if len(data) < minimum_observations:
-        raise ValueError(
-            "ETS requires at least "
-            f"{minimum_observations} training observations."
-        )
+        raise ValueError(f"ETS requires at least {minimum_observations} training observations.")
 
     expected_history = pd.date_range(
         start=data[date_column].min(),
@@ -105,54 +77,32 @@ def ets_forecast(
         freq="MS",
     )
 
-    observed_history = pd.DatetimeIndex(
-        data[date_column]
-    )
+    observed_history = pd.DatetimeIndex(data[date_column])
 
-    if not observed_history.equals(
-        expected_history
-    ):
-        raise ValueError(
-            "Training periods must form a complete monthly sequence."
-        )
+    if not observed_history.equals(expected_history):
+        raise ValueError("Training periods must form a complete monthly sequence.")
 
-    future_dates = pd.DatetimeIndex(
-        pd.to_datetime(
-            forecast_periods
-        )
-    )
+    future_dates = pd.DatetimeIndex(pd.to_datetime(forecast_periods))
 
     if len(future_dates) < 1:
-        raise ValueError(
-            "At least one forecast period is required."
-        )
+        raise ValueError("At least one forecast period is required.")
 
     if future_dates.has_duplicates:
-        raise ValueError(
-            "Forecast periods contain duplicates."
-        )
+        raise ValueError("Forecast periods contain duplicates.")
 
     expected_future = pd.date_range(
-        start=(
-            data[date_column].max()
-            + pd.offsets.MonthBegin(1)
-        ),
+        start=(data[date_column].max() + pd.offsets.MonthBegin(1)),
         periods=len(future_dates),
         freq="MS",
     )
 
-    if not future_dates.equals(
-        expected_future
-    ):
+    if not future_dates.equals(expected_future):
         raise ValueError(
-            "Forecast periods must be consecutive months "
-            "immediately after the training data."
+            "Forecast periods must be consecutive months immediately after the training data."
         )
 
     values = pd.Series(
-        data[value_column].to_numpy(
-            dtype=float
-        ),
+        data[value_column].to_numpy(dtype=float),
         index=pd.date_range(
             start=data[date_column].min(),
             periods=len(data),
@@ -175,21 +125,15 @@ def ets_forecast(
         remove_bias=False,
     )
 
-    predicted = fitted.forecast(
-        len(future_dates)
-    )
+    predicted = fitted.forecast(len(future_dates))
 
     predictions = np.asarray(
         predicted,
         dtype=float,
     )
 
-    if not np.isfinite(
-        predictions
-    ).all():
-        raise ValueError(
-            "ETS produced non-finite forecasts."
-        )
+    if not np.isfinite(predictions).all():
+        raise ValueError("ETS produced non-finite forecasts.")
 
     return pd.DataFrame(
         {

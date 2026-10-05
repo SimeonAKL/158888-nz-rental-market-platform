@@ -21,17 +21,11 @@ from rmp.forecasting.xgboost_pooled import (
     pooled_recursive_forecast,
 )
 
-INPUT_PATH = Path(
-    "data/processed/analytics/monthly_panel.csv"
-)
+INPUT_PATH = Path("data/processed/analytics/monthly_panel.csv")
 
-CATALOG_PATH = Path(
-    "data/processed/analytics/series_catalog.csv"
-)
+CATALOG_PATH = Path("data/processed/analytics/series_catalog.csv")
 
-OUTPUT_DIR = Path(
-    "data/processed/forecasting"
-)
+OUTPUT_DIR = Path("data/processed/forecasting")
 
 MODEL_NAME = "xgboost_pooled_recursive"
 
@@ -72,15 +66,10 @@ def load_monthly_panel() -> pd.DataFrame:
         "value",
     }
 
-    missing = required.difference(
-        panel.columns
-    )
+    missing = required.difference(panel.columns)
 
     if missing:
-        raise ValueError(
-            "Monthly panel is missing required columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Monthly panel is missing required columns: {sorted(missing)}")
 
     return panel.sort_values(
         [
@@ -91,14 +80,11 @@ def load_monthly_panel() -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-
 def load_series_catalog() -> pd.DataFrame:
     """Load Phase 3 forecasting-eligibility metadata."""
 
     if not CATALOG_PATH.exists():
-        raise FileNotFoundError(
-            f"Input file not found: {CATALOG_PATH}"
-        )
+        raise FileNotFoundError(f"Input file not found: {CATALOG_PATH}")
 
     catalog = pd.read_csv(
         CATALOG_PATH,
@@ -112,20 +98,13 @@ def load_series_catalog() -> pd.DataFrame:
         "eligible_for_forecasting",
     }
 
-    missing = required.difference(
-        catalog.columns
-    )
+    missing = required.difference(catalog.columns)
 
     if missing:
-        raise ValueError(
-            "Series catalog is missing required columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Series catalog is missing required columns: {sorted(missing)}")
 
     if catalog.empty:
-        raise ValueError(
-            "Series catalog is empty."
-        )
+        raise ValueError("Series catalog is empty.")
 
     return catalog
 
@@ -135,9 +114,7 @@ def run_forecasts(
 ) -> pd.DataFrame:
     """Run target-specific pooled recursive forecasts."""
 
-    prediction_frames: list[
-        pd.DataFrame
-    ] = []
+    prediction_frames: list[pd.DataFrame] = []
 
     for metric_name, metric_data in panel.groupby(
         "metric",
@@ -145,34 +122,22 @@ def run_forecasts(
     ):
         metric_data = metric_data.copy()
 
-        first_series_id = (
-            metric_data["series_id"]
-            .sort_values()
-            .iloc[0]
-        )
+        first_series_id = metric_data["series_id"].sort_values().iloc[0]
 
         periods = metric_data.loc[
-            metric_data["series_id"]
-            == first_series_id,
+            metric_data["series_id"] == first_series_id,
             "period_date",
         ].sort_values()
 
         splits = generate_rolling_origins(
             periods,
-            forecast_horizon=(
-                DEFAULT_FORECAST_HORIZON
-            ),
+            forecast_horizon=(DEFAULT_FORECAST_HORIZON),
             n_origins=DEFAULT_N_ORIGINS,
-            min_history_months=(
-                DEFAULT_MIN_HISTORY_MONTHS
-            ),
+            min_history_months=(DEFAULT_MIN_HISTORY_MONTHS),
         )
 
         for split in splits:
-            history = metric_data.loc[
-                metric_data["period_date"]
-                <= split.origin
-            ].copy()
+            history = metric_data.loc[metric_data["period_date"] <= split.origin].copy()
 
             future_dates = pd.date_range(
                 start=split.test_start,
@@ -180,22 +145,14 @@ def run_forecasts(
                 freq="MS",
             )
 
-            forecast = (
-                pooled_recursive_forecast(
-                    history,
-                    future_dates,
-                )
+            forecast = pooled_recursive_forecast(
+                history,
+                future_dates,
             )
 
             actuals = metric_data.loc[
-                (
-                    metric_data["period_date"]
-                    >= split.test_start
-                )
-                & (
-                    metric_data["period_date"]
-                    <= split.test_end
-                ),
+                (metric_data["period_date"] >= split.test_start)
+                & (metric_data["period_date"] <= split.test_end),
                 [
                     "series_id",
                     "period_date",
@@ -222,50 +179,37 @@ def run_forecasts(
 
             if result["actual"].isna().any():
                 raise ValueError(
-                    "Missing actual values for "
-                    f"{metric_name} at origin "
-                    f"{split.origin.date()}."
+                    f"Missing actual values for {metric_name} at origin {split.origin.date()}."
                 )
 
-            result["origin"] = (
-                split.origin
-            )
+            result["origin"] = split.origin
 
-            result["model"] = (
-                MODEL_NAME
-            )
+            result["model"] = MODEL_NAME
 
-            result["error"] = (
-                result["actual"]
-                - result["predicted"]
-            )
+            result["error"] = result["actual"] - result["predicted"]
 
-            result["absolute_error"] = (
-                result["error"].abs()
-            )
+            result["absolute_error"] = result["error"].abs()
 
-            result["squared_error"] = (
-                result["error"] ** 2
-            )
+            result["squared_error"] = result["error"] ** 2
 
-            prediction_frames.append(
-                result
-            )
+            prediction_frames.append(result)
 
     predictions = pd.concat(
         prediction_frames,
         ignore_index=True,
     )
 
-    return predictions[
-        PREDICTION_COLUMNS
-    ].sort_values(
-        [
-            "series_id",
-            "origin",
-            "horizon_step",
-        ]
-    ).reset_index(drop=True)
+    return (
+        predictions[PREDICTION_COLUMNS]
+        .sort_values(
+            [
+                "series_id",
+                "origin",
+                "horizon_step",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def calculate_group_metrics(
@@ -309,26 +253,22 @@ def build_metrics_by_origin(
             )
         )
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            calculate_group_metrics(
-                group
-            )
-        )
+        row.update(calculate_group_metrics(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "series_id",
-            "origin",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "series_id",
+                "origin",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_metrics_by_series(
@@ -360,30 +300,24 @@ def build_metrics_by_series(
             )
         )
 
-        row["n_origins"] = group[
-            "origin"
-        ].nunique()
+        row["n_origins"] = group["origin"].nunique()
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            calculate_group_metrics(
-                group
-            )
-        )
+        row.update(calculate_group_metrics(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "series_id",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "series_id",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_summary(
@@ -398,15 +332,9 @@ def build_summary(
             "model": MODEL_NAME,
             "scope": "overall",
             "metric": "all",
-            "n_series": predictions[
-                "series_id"
-            ].nunique(),
-            "n_forecasts": len(
-                predictions
-            ),
-            **calculate_group_metrics(
-                predictions
-            ),
+            "n_series": predictions["series_id"].nunique(),
+            "n_forecasts": len(predictions),
+            **calculate_group_metrics(predictions),
         }
     )
 
@@ -419,15 +347,9 @@ def build_summary(
                 "model": MODEL_NAME,
                 "scope": "metric",
                 "metric": metric_name,
-                "n_series": group[
-                    "series_id"
-                ].nunique(),
-                "n_forecasts": len(
-                    group
-                ),
-                **calculate_group_metrics(
-                    group
-                ),
+                "n_series": group["series_id"].nunique(),
+                "n_forecasts": len(group),
+                **calculate_group_metrics(group),
             }
         )
 
@@ -440,35 +362,19 @@ def validate_predictions(
 ) -> None:
     """Validate Phase 4.3 output completeness."""
 
-    n_series = panel[
-        "series_id"
-    ].nunique()
+    n_series = panel["series_id"].nunique()
 
-    expected_rows = (
-        n_series
-        * DEFAULT_N_ORIGINS
-        * DEFAULT_FORECAST_HORIZON
-    )
+    expected_rows = n_series * DEFAULT_N_ORIGINS * DEFAULT_FORECAST_HORIZON
 
     if len(predictions) != expected_rows:
         raise ValueError(
-            "Unexpected prediction count: "
-            f"{len(predictions)}; "
-            f"expected {expected_rows}."
+            f"Unexpected prediction count: {len(predictions)}; expected {expected_rows}."
         )
 
-    origins = predictions.groupby(
-        "series_id"
-    )["origin"].nunique()
+    origins = predictions.groupby("series_id")["origin"].nunique()
 
-    if not (
-        origins
-        == DEFAULT_N_ORIGINS
-    ).all():
-        raise ValueError(
-            "Each series must have exactly "
-            f"{DEFAULT_N_ORIGINS} origins."
-        )
+    if not (origins == DEFAULT_N_ORIGINS).all():
+        raise ValueError(f"Each series must have exactly {DEFAULT_N_ORIGINS} origins.")
 
     numeric_columns = [
         "actual",
@@ -478,17 +384,8 @@ def validate_predictions(
         "squared_error",
     ]
 
-    if not np.isfinite(
-        predictions[
-            numeric_columns
-        ].to_numpy(
-            dtype=float
-        )
-    ).all():
-        raise ValueError(
-            "XGBoost results contain "
-            "non-finite values."
-        )
+    if not np.isfinite(predictions[numeric_columns].to_numpy(dtype=float)).all():
+        raise ValueError("XGBoost results contain non-finite values.")
 
 
 def main() -> None:
@@ -502,30 +399,18 @@ def main() -> None:
         catalog,
     )
 
-    predictions = run_forecasts(
-        panel
-    )
+    predictions = run_forecasts(panel)
 
     validate_predictions(
         panel,
         predictions,
     )
 
-    metrics_by_origin = (
-        build_metrics_by_origin(
-            predictions
-        )
-    )
+    metrics_by_origin = build_metrics_by_origin(predictions)
 
-    metrics_by_series = (
-        build_metrics_by_series(
-            predictions
-        )
-    )
+    metrics_by_series = build_metrics_by_series(predictions)
 
-    summary = build_summary(
-        predictions
-    )
+    summary = build_summary(predictions)
 
     OUTPUT_DIR.mkdir(
         parents=True,
@@ -533,55 +418,34 @@ def main() -> None:
     )
 
     predictions.to_csv(
-        OUTPUT_DIR
-        / "xgboost_predictions.csv",
+        OUTPUT_DIR / "xgboost_predictions.csv",
         index=False,
     )
 
     metrics_by_origin.to_csv(
-        OUTPUT_DIR
-        / "xgboost_metrics_by_origin.csv",
+        OUTPUT_DIR / "xgboost_metrics_by_origin.csv",
         index=False,
     )
 
     metrics_by_series.to_csv(
-        OUTPUT_DIR
-        / "xgboost_metrics_by_series.csv",
+        OUTPUT_DIR / "xgboost_metrics_by_series.csv",
         index=False,
     )
 
     summary.to_csv(
-        OUTPUT_DIR
-        / "xgboost_summary.csv",
+        OUTPUT_DIR / "xgboost_summary.csv",
         index=False,
     )
 
-    print(
-        "Pooled recursive XGBoost evaluation complete."
-    )
-    print(
-        f"Series: {panel['series_id'].nunique()}"
-    )
-    print(
-        f"Predictions: {len(predictions)}"
-    )
-    print(
-        f"Origins per series: {DEFAULT_N_ORIGINS}"
-    )
-    print(
-        "Forecast horizon: "
-        f"{DEFAULT_FORECAST_HORIZON}"
-    )
+    print("Pooled recursive XGBoost evaluation complete.")
+    print(f"Series: {panel['series_id'].nunique()}")
+    print(f"Predictions: {len(predictions)}")
+    print(f"Origins per series: {DEFAULT_N_ORIGINS}")
+    print(f"Forecast horizon: {DEFAULT_FORECAST_HORIZON}")
     print()
-    print(
-        summary.to_string(
-            index=False
-        )
-    )
+    print(summary.to_string(index=False))
     print()
-    print(
-        f"Outputs written to: {OUTPUT_DIR}"
-    )
+    print(f"Outputs written to: {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

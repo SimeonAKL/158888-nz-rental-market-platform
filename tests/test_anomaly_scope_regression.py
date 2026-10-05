@@ -155,20 +155,11 @@ def test_consolidation_retains_historical_only_series() -> None:
         "historical_only_series",
     }
 
-    historical_only = result.loc[
-        result["series_id"]
-        == "historical_only_series"
-    ].iloc[0]
+    historical_only = result.loc[result["series_id"] == "historical_only_series"].iloc[0]
 
     assert not historical_only["has_forecast_record"]
-    assert (
-        historical_only["detector_coverage"]
-        == "historical_only"
-    )
-    assert (
-        historical_only["overall_status"]
-        == "normal"
-    )
+    assert historical_only["detector_coverage"] == "historical_only"
+    assert historical_only["overall_status"] == "normal"
 
 
 def test_forecast_series_keeps_matched_forecast_record() -> None:
@@ -178,15 +169,10 @@ def test_forecast_series_keeps_matched_forecast_record() -> None:
         _forecast_rows(),
     )
 
-    forecast_series = result.loc[
-        result["series_id"]
-        == "forecast_series"
-    ].iloc[0]
+    forecast_series = result.loc[result["series_id"] == "forecast_series"].iloc[0]
 
     assert forecast_series["has_forecast_record"]
-    assert forecast_series["forecast_model"] == (
-        "ets_additive_damped"
-    )
+    assert forecast_series["forecast_model"] == ("ets_additive_damped")
     assert forecast_series["detector_coverage"] == "both"
 
 
@@ -200,12 +186,6 @@ def test_summary_series_count_matches_historical_scope() -> None:
         forecast,
     )
 
-    assert (
-        result["series_id"].nunique()
-        == historical["series_id"].nunique()
-    )
+    assert result["series_id"].nunique() == historical["series_id"].nunique()
 
-    assert (
-        result["series_id"].nunique()
-        > forecast["series_id"].nunique()
-    )
+    assert result["series_id"].nunique() > forecast["series_id"].nunique()

@@ -17,10 +17,7 @@ from rmp.validation.cross_source import (
 def build_parser() -> argparse.ArgumentParser:
     """Create command-line parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Validate Market Rent aggregate Region data "
-            "against Rental Bond Region data."
-        )
+        description=("Validate Market Rent aggregate Region data against Rental Bond Region data.")
     )
 
     parser.add_argument(
@@ -35,20 +32,14 @@ def build_parser() -> argparse.ArgumentParser:
         "--median-tolerance",
         type=Decimal,
         default=Decimal(20),
-        help=(
-            "Allowed absolute median-rent difference "
-            "in NZD per week. Default: 20."
-        ),
+        help=("Allowed absolute median-rent difference in NZD per week. Default: 20."),
     )
 
     parser.add_argument(
         "--bonds-pct-tolerance",
         type=Decimal,
         default=Decimal(20),
-        help=(
-            "Allowed absolute percentage difference "
-            "for bonds lodged. Default: 20."
-        ),
+        help=("Allowed absolute percentage difference for bonds lodged. Default: 20."),
     )
 
     return parser
@@ -69,12 +60,8 @@ def main() -> int:
     try:
         result = validate_cross_source(
             period_date=args.period,
-            median_rent_tolerance=(
-                args.median_tolerance
-            ),
-            bonds_lodged_pct_tolerance=(
-                args.bonds_pct_tolerance
-            ),
+            median_rent_tolerance=(args.median_tolerance),
+            bonds_lodged_pct_tolerance=(args.bonds_pct_tolerance),
         )
 
     except (
@@ -83,72 +70,39 @@ def main() -> int:
         OSError,
         ValueError,
     ) as exc:
-        print(
-            "Cross-source validation FAILED"
-        )
+        print("Cross-source validation FAILED")
 
-        print(
-            f"Error: {exc}"
-        )
+        print(f"Error: {exc}")
 
         return 1
 
     print("=" * 100)
-    print(
-        "Market Rent vs Rental Bond "
-        "Cross-source Validation"
-    )
+    print("Market Rent vs Rental Bond Cross-source Validation")
     print("=" * 100)
 
-    print(
-        f"Period              : {result.period_date}"
-    )
+    print(f"Period              : {result.period_date}")
 
-    print(
-        f"Market Rent regions : "
-        f"{result.market_region_count}"
-    )
+    print(f"Market Rent regions : {result.market_region_count}")
 
-    print(
-        f"Rental Bond regions : "
-        f"{result.rental_region_count}"
-    )
+    print(f"Rental Bond regions : {result.rental_region_count}")
 
-    print(
-        f"Matched regions     : "
-        f"{result.matched_region_count}"
-    )
+    print(f"Matched regions     : {result.matched_region_count}")
 
     print()
 
     if result.missing_in_market:
-        print(
-            "Missing in Market Rent:"
-        )
+        print("Missing in Market Rent:")
 
-        for region in (
-            result.missing_in_market
-        ):
-            print(
-                f"  - {region}"
-            )
+        for region in result.missing_in_market:
+            print(f"  - {region}")
 
     if result.missing_in_rental:
-        print(
-            "Missing in Rental Bond:"
-        )
+        print("Missing in Rental Bond:")
 
-        for region in (
-            result.missing_in_rental
-        ):
-            print(
-                f"  - {region}"
-            )
+        for region in result.missing_in_rental:
+            print(f"  - {region}")
 
-    if (
-        result.missing_in_market
-        or result.missing_in_rental
-    ):
+    if result.missing_in_market or result.missing_in_rental:
         print()
 
     print(
@@ -163,24 +117,13 @@ def main() -> int:
         f"{'Bond':>7}"
     )
 
-    print(
-        "-" * 101
-    )
+    print("-" * 101)
 
-    for comparison in (
-        result.comparisons
-    ):
+    for comparison in result.comparisons:
         pct = (
             "N/A"
-            if (
-                comparison
-                .bonds_lodged_difference_pct
-                is None
-            )
-            else format_decimal(
-                comparison
-                .bonds_lodged_difference_pct
-            )
+            if (comparison.bonds_lodged_difference_pct is None)
+            else format_decimal(comparison.bonds_lodged_difference_pct)
         )
 
         print(
@@ -198,37 +141,23 @@ def main() -> int:
     print()
     print("-" * 100)
 
-    print(
-        "Median rent:"
-    )
+    print("Median rent:")
 
-    print(
-        f"  PASS: {result.median_pass_count}"
-    )
+    print(f"  PASS: {result.median_pass_count}")
 
-    print(
-        f"  WARN: {result.median_warn_count}"
-    )
+    print(f"  WARN: {result.median_warn_count}")
 
     print()
 
-    print(
-        "Bonds lodged:"
-    )
+    print("Bonds lodged:")
 
-    print(
-        f"  PASS: {result.bonds_pass_count}"
-    )
+    print(f"  PASS: {result.bonds_pass_count}")
 
-    print(
-        f"  WARN: {result.bonds_warn_count}"
-    )
+    print(f"  WARN: {result.bonds_warn_count}")
 
     print()
 
-    print(
-        f"Overall result: {result.overall_status}"
-    )
+    print(f"Overall result: {result.overall_status}")
 
     print("=" * 100)
 
@@ -239,6 +168,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(
-        main()
-    )
+    sys.exit(main())

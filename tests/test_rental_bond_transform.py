@@ -54,12 +54,7 @@ def make_raw_dataframe() -> pd.DataFrame:
 
 def test_parse_timeframe() -> None:
     """Rental Bond monthly date should convert to ISO format."""
-    assert (
-        parse_timeframe(
-            "1/07/2026"
-        )
-        == "2026-07-01"
-    )
+    assert parse_timeframe("1/07/2026") == "2026-07-01"
 
 
 def test_invalid_timeframe_fails() -> None:
@@ -68,9 +63,7 @@ def test_invalid_timeframe_fails() -> None:
         RentalBondTransformError,
         match="Invalid Rental Bond TimeFrame",
     ):
-        parse_timeframe(
-            "2026-07-01"
-        )
+        parse_timeframe("2026-07-01")
 
 
 def test_transform_region_dataframe() -> None:
@@ -81,9 +74,7 @@ def test_transform_region_dataframe() -> None:
         dataframe,
         dataset="region",
         source_snapshot="example.csv",
-        retrieved_at_utc=(
-            "2026-10-03T06:37:38+00:00"
-        ),
+        retrieved_at_utc=("2026-10-03T06:37:38+00:00"),
         is_provisional=True,
     )
 
@@ -140,9 +131,7 @@ def test_transform_preserves_na_location() -> None:
         dataframe,
         dataset="region",
         source_snapshot="example.csv",
-        retrieved_at_utc=(
-            "2026-10-03T06:37:38+00:00"
-        ),
+        retrieved_at_utc=("2026-10-03T06:37:38+00:00"),
         is_provisional=True,
     )
 
@@ -171,9 +160,7 @@ def test_transform_territorial_authority() -> None:
         dataframe,
         dataset="territorial_authority",
         source_snapshot="example.csv",
-        retrieved_at_utc=(
-            "2026-10-03T06:37:38+00:00"
-        ),
+        retrieved_at_utc=("2026-10-03T06:37:38+00:00"),
         is_provisional=True,
     )
 
@@ -190,33 +177,13 @@ def test_get_staging_path(
     tmp_path: Path,
 ) -> None:
     """Raw directory structure should map to staging."""
-    raw_root = (
-        tmp_path
-        / "raw"
-        / "rental_bond"
-    )
+    raw_root = tmp_path / "raw" / "rental_bond"
 
-    staging_root = (
-        tmp_path
-        / "staging"
-        / "rental_bond"
-    )
+    staging_root = tmp_path / "staging" / "rental_bond"
 
-    raw_path = (
-        raw_root
-        / "2026"
-        / "10"
-        / "03"
-        / "rental_bond_region_example.csv"
-    )
+    raw_path = raw_root / "2026" / "10" / "03" / "rental_bond_region_example.csv"
 
-    expected = (
-        staging_root
-        / "2026"
-        / "10"
-        / "03"
-        / "rental_bond_region_example.csv"
-    ).resolve()
+    expected = (staging_root / "2026" / "10" / "03" / "rental_bond_region_example.csv").resolve()
 
     result = get_staging_path(
         raw_path,
@@ -231,25 +198,11 @@ def test_write_staging_csv(
     tmp_path: Path,
 ) -> None:
     """Validated raw data should write a standard staging CSV."""
-    raw_root = (
-        tmp_path
-        / "raw"
-        / "rental_bond"
-    )
+    raw_root = tmp_path / "raw" / "rental_bond"
 
-    staging_root = (
-        tmp_path
-        / "staging"
-        / "rental_bond"
-    )
+    staging_root = tmp_path / "staging" / "rental_bond"
 
-    raw_path = (
-        raw_root
-        / "2026"
-        / "10"
-        / "03"
-        / "rental_bond_region_example.csv"
-    )
+    raw_path = raw_root / "2026" / "10" / "03" / "rental_bond_region_example.csv"
 
     raw_path.parent.mkdir(
         parents=True,
@@ -263,24 +216,15 @@ def test_write_staging_csv(
         index=False,
     )
 
-    metadata_path = raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    metadata_path = raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
     metadata = {
         "metadata_schema_version": 1,
-        "source": (
-            "MBIE / Tenancy Services Rental Bond Data"
-        ),
-        "publisher": (
-            "Ministry of Business, "
-            "Innovation and Employment"
-        ),
+        "source": ("MBIE / Tenancy Services Rental Bond Data"),
+        "publisher": ("Ministry of Business, Innovation and Employment"),
         "dataset": "region",
         "source_url": "https://example.com/example.csv",
-        "retrieved_at_utc": (
-            "2026-10-03T06:37:38+00:00"
-        ),
+        "retrieved_at_utc": ("2026-10-03T06:37:38+00:00"),
         "raw_file": raw_path.name,
         "file_size_bytes": raw_path.stat().st_size,
         "sha256": "example-checksum",
@@ -289,18 +233,14 @@ def test_write_staging_csv(
     }
 
     metadata_path.write_text(
-        json.dumps(
-            metadata
-        ),
+        json.dumps(metadata),
         encoding="utf-8",
     )
 
-    staging_path = (
-        write_rental_bond_staging_csv(
-            raw_path,
-            raw_root=raw_root,
-            staging_root=staging_root,
-        )
+    staging_path = write_rental_bond_staging_csv(
+        raw_path,
+        raw_root=raw_root,
+        staging_root=staging_root,
     )
 
     assert staging_path.exists()
@@ -312,15 +252,10 @@ def test_write_staging_csv(
 
     assert result.shape == (
         2,
-        len(
-            OUTPUT_COLUMNS
-        ),
+        len(OUTPUT_COLUMNS),
     )
 
-    assert (
-        result.columns.tolist()
-        == OUTPUT_COLUMNS
-    )
+    assert result.columns.tolist() == OUTPUT_COLUMNS
 
     assert (
         result.loc[

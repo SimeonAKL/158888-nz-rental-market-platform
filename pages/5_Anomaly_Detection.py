@@ -52,17 +52,9 @@ render_top_navigation(
 )
 
 
-PROJECT_ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[1]
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-HERO_IMAGE_PATH = (
-    PROJECT_ROOT
-    / "assets"
-    / "anomaly_detection_hero.jpg"
-)
+HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "anomaly_detection_hero.jpg"
 
 
 # ---------------------------------------------------------------------
@@ -84,15 +76,9 @@ TICK_COLOR = "#d7dfeb"
 
 STATUS_LABELS = {
     "normal": "Normal",
-    "historical_alert": (
-        "Historical Alert"
-    ),
-    "forecast_alert": (
-        "Forecast Alert"
-    ),
-    "confirmed_anomaly": (
-        "Both Detectors Flagged"
-    ),
+    "historical_alert": ("Historical Alert"),
+    "forecast_alert": ("Forecast Alert"),
+    "confirmed_anomaly": ("Both Detectors Flagged"),
     "unavailable": "Unavailable",
 }
 
@@ -116,15 +102,9 @@ DIRECTION_LABELS = {
 
 
 MODEL_LABELS = {
-    "seasonal_naive": (
-        "Seasonal Naive"
-    ),
-    "ets_additive_damped": (
-        "ETS (Additive Damped)"
-    ),
-    "xgboost_pooled_recursive": (
-        "XGBoost (Pooled Recursive)"
-    ),
+    "seasonal_naive": ("Seasonal Naive"),
+    "ets_additive_damped": ("ETS (Additive Damped)"),
+    "xgboost_pooled_recursive": ("XGBoost (Pooled Recursive)"),
 }
 
 
@@ -216,11 +196,7 @@ def safe_bool_series(
             index=frame.index,
         )
 
-    return (
-        frame[column]
-        .fillna(False)
-        .astype(bool)
-    )
+    return frame[column].fillna(False).astype(bool)
 
 
 def format_optional_value(
@@ -244,9 +220,7 @@ def format_optional_percentage(
     if pd.isna(value):
         return "N/A"
 
-    return format_percentage(
-        float(value)
-    )
+    return format_percentage(float(value))
 
 
 # ---------------------------------------------------------------------
@@ -275,9 +249,7 @@ except (
     FileNotFoundError,
     ValueError,
 ) as exc:
-    st.error(
-        str(exc)
-    )
+    st.error(str(exc))
     st.stop()
 
 
@@ -314,43 +286,24 @@ with st.container(
 series = (
     filter_series(
         data,
-        geography_level=(
-            geography_level
-        ),
+        geography_level=(geography_level),
         location_name=location_name,
         metric=metric,
     )
-    .sort_values(
-        "period_date"
-    )
-    .reset_index(
-        drop=True
-    )
+    .sort_values("period_date")
+    .reset_index(drop=True)
 )
 
 if series.empty:
-    st.warning(
-        "No anomaly-analysis data are available "
-        "for this selection."
-    )
+    st.warning("No anomaly-analysis data are available for this selection.")
     st.stop()
 
 
-axis_label = metric_axis_label(
-    metric
-)
+axis_label = metric_axis_label(metric)
 
-series_start = pd.Timestamp(
-    series[
-        "period_date"
-    ].min()
-)
+series_start = pd.Timestamp(series["period_date"].min())
 
-series_end = pd.Timestamp(
-    series[
-        "period_date"
-    ].max()
-)
+series_end = pd.Timestamp(series["period_date"].max())
 
 
 alert_mask = safe_bool_series(
@@ -358,12 +311,7 @@ alert_mask = safe_bool_series(
     "overall_dashboard_alert",
 )
 
-alerts = (
-    series.loc[
-        alert_mask
-    ]
-    .copy()
-)
+alerts = series.loc[alert_mask].copy()
 
 
 has_forecast_coverage = bool(
@@ -379,11 +327,7 @@ has_forecast_coverage = bool(
 # ---------------------------------------------------------------------
 
 render_series_header(
-    (
-        f"{location_name}"
-        " — "
-        f"{metric_label(metric)}"
-    ),
+    (f"{location_name} — {metric_label(metric)}"),
     (
         f"{geography_label(geography_level)}"
         "  •  "
@@ -396,15 +340,7 @@ render_series_header(
 )
 
 
-if (
-    "is_provisional"
-    in series.columns
-    and series[
-        "is_provisional"
-    ]
-    .fillna(False)
-    .any()
-):
+if "is_provisional" in series.columns and series["is_provisional"].fillna(False).any():
     render_source_note()
 
 
@@ -428,69 +364,34 @@ if not has_forecast_coverage:
 # ---------------------------------------------------------------------
 
 high_alerts = (
-    alerts.loc[
-        alerts[
-            "overall_severity"
-        ]
-        == "high"
-    ]
-    if "overall_severity"
-    in alerts.columns
+    alerts.loc[alerts["overall_severity"] == "high"]
+    if "overall_severity" in alerts.columns
     else alerts.iloc[0:0]
 )
 
 
 both_flagged = (
-    alerts.loc[
-        alerts[
-            "overall_status"
-        ]
-        == "confirmed_anomaly"
-    ]
-    if "overall_status"
-    in alerts.columns
+    alerts.loc[alerts["overall_status"] == "confirmed_anomaly"]
+    if "overall_status" in alerts.columns
     else alerts.iloc[0:0]
 )
 
 
 if alerts.empty:
-    latest_alert_text = (
-        "None"
-    )
+    latest_alert_text = "None"
 
-    latest_alert_note = (
-        "No dashboard-level alerts"
-    )
+    latest_alert_note = "No dashboard-level alerts"
 
 else:
-    latest_alert_row = (
-        alerts
-        .sort_values(
-            "period_date"
-        )
-        .iloc[-1]
-    )
+    latest_alert_row = alerts.sort_values("period_date").iloc[-1]
 
-    latest_alert_date = pd.Timestamp(
-        latest_alert_row[
-            "period_date"
-        ]
-    )
+    latest_alert_date = pd.Timestamp(latest_alert_row["period_date"])
 
-    latest_alert_text = (
-        latest_alert_date.strftime(
-            "%b %Y"
-        )
-    )
+    latest_alert_text = latest_alert_date.strftime("%b %Y")
 
     latest_alert_note = (
-        status_label(
-            latest_alert_row[
-                "overall_status"
-            ]
-        )
-        if "overall_status"
-        in latest_alert_row.index
+        status_label(latest_alert_row["overall_status"])
+        if "overall_status" in latest_alert_row.index
         else "Alert"
     )
 
@@ -499,26 +400,17 @@ headline_specs = [
     (
         "Total Alerts",
         f"{len(alerts):,}",
-        (
-            "Dashboard-level alerts "
-            "in the full series"
-        ),
+        ("Dashboard-level alerts in the full series"),
     ),
     (
         "High Severity",
         f"{len(high_alerts):,}",
-        (
-            "Alerts classified "
-            "as high severity"
-        ),
+        ("Alerts classified as high severity"),
     ),
     (
         "Both Detectors Flagged",
         f"{len(both_flagged):,}",
-        (
-            "Same period flagged by "
-            "historical and forecast detectors"
-        ),
+        ("Same period flagged by historical and forecast detectors"),
     ),
     (
         "Latest Alert",
@@ -586,20 +478,15 @@ with st.container(
         ]
     )
 
-    chart_data = (
-        series[
-            [
-                "period_date",
-                "value",
-            ]
+    chart_data = series[
+        [
+            "period_date",
+            "value",
         ]
-        .copy()
-    )
+    ].copy()
 
     base_line = (
-        alt.Chart(
-            chart_data
-        )
+        alt.Chart(chart_data)
         .mark_line(
             color=LIGHT_BLUE,
             strokeWidth=1.8,
@@ -611,30 +498,18 @@ with st.container(
                 axis=alt.Axis(
                     format="%Y",
                     grid=False,
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    tickColor=(
-                        TICK_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    tickColor=(TICK_COLOR),
                 ),
             ),
             y=alt.Y(
                 "value:Q",
                 title=axis_label,
-                scale=alt.Scale(
-                    zero=False
-                ),
+                scale=alt.Scale(zero=False),
                 axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    titleColor=(
-                        TITLE_COLOR
-                    ),
-                    gridColor=(
-                        GRID_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    titleColor=(TITLE_COLOR),
+                    gridColor=(GRID_COLOR),
                 ),
             ),
             tooltip=[
@@ -652,104 +527,58 @@ with st.container(
         )
     )
 
-
     if not alerts.empty:
-        alert_points = (
-            alerts[
-                [
-                    column
-                    for column in [
-                        "period_date",
-                        "value",
-                        "overall_status",
-                        "overall_severity",
-                        "overall_direction",
-                    ]
-                    if column
-                    in alerts.columns
+        alert_points = alerts[
+            [
+                column
+                for column in [
+                    "period_date",
+                    "value",
+                    "overall_status",
+                    "overall_severity",
+                    "overall_direction",
                 ]
+                if column in alerts.columns
             ]
-            .copy()
-        )
+        ].copy()
 
         def alert_category(
             row: pd.Series,
         ) -> str:
             """Return chart alert category."""
-            if (
-                row.get(
-                    "overall_status"
-                )
-                == "confirmed_anomaly"
-            ):
-                return (
-                    "Both detectors flagged"
-                )
+            if row.get("overall_status") == "confirmed_anomaly":
+                return "Both detectors flagged"
 
-            if (
-                row.get(
-                    "overall_severity"
-                )
-                == "high"
-            ):
+            if row.get("overall_severity") == "high":
                 return "High"
 
             return "Moderate"
 
-
-        alert_points[
-            "alert_category"
-        ] = alert_points.apply(
+        alert_points["alert_category"] = alert_points.apply(
             alert_category,
             axis=1,
         )
 
-        alert_points[
-            "status_label"
-        ] = (
-            alert_points[
-                "overall_status"
-            ]
-            .map(
-                status_label
-            )
-            if "overall_status"
-            in alert_points.columns
+        alert_points["status_label"] = (
+            alert_points["overall_status"].map(status_label)
+            if "overall_status" in alert_points.columns
             else "Alert"
         )
 
-        alert_points[
-            "severity_label"
-        ] = (
-            alert_points[
-                "overall_severity"
-            ]
-            .map(
-                severity_label
-            )
-            if "overall_severity"
-            in alert_points.columns
+        alert_points["severity_label"] = (
+            alert_points["overall_severity"].map(severity_label)
+            if "overall_severity" in alert_points.columns
             else "N/A"
         )
 
-        alert_points[
-            "direction_label"
-        ] = (
-            alert_points[
-                "overall_direction"
-            ]
-            .map(
-                direction_label
-            )
-            if "overall_direction"
-            in alert_points.columns
+        alert_points["direction_label"] = (
+            alert_points["overall_direction"].map(direction_label)
+            if "overall_direction" in alert_points.columns
             else "N/A"
         )
 
         marker_layer = (
-            alt.Chart(
-                alert_points
-            )
+            alt.Chart(alert_points)
             .mark_circle(
                 size=95,
                 stroke="white",
@@ -770,10 +599,7 @@ with st.container(
                         domain=[
                             "Moderate",
                             "High",
-                            (
-                                "Both detectors "
-                                "flagged"
-                            ),
+                            ("Both detectors flagged"),
                         ],
                         range=[
                             MODERATE_COLOR,
@@ -810,37 +636,20 @@ with st.container(
             )
         )
 
-        history_chart = (
-            base_line
-            + marker_layer
-        )
+        history_chart = base_line + marker_layer
 
     else:
-        history_chart = (
-            base_line
-        )
-
+        history_chart = base_line
 
     st.altair_chart(
-        history_chart
-        .properties(
-            height=380
-        )
-        .interactive(
-            bind_y=False
-        )
-        .configure_view(
-            strokeWidth=0
-        ),
-        use_container_width=True,
+        history_chart.properties(height=380)
+        .interactive(bind_y=False)
+        .configure_view(strokeWidth=0),
+        width="stretch",
     )
 
-
     if alerts.empty:
-        st.success(
-            "No dashboard-level anomaly alerts "
-            "were identified for this series."
-        )
+        st.success("No dashboard-level anomaly alerts were identified for this series.")
 
     else:
         st.caption(
@@ -860,166 +669,66 @@ with st.container(
 ):
     render_card_header(
         "Alert History",
-        (
-            "Dashboard-level anomaly observations, "
-            "newest first."
-        ),
+        ("Dashboard-level anomaly observations, newest first."),
     )
 
     if alerts.empty:
-        st.info(
-            "There are no alert records to display "
-            "for this series."
-        )
+        st.info("There are no alert records to display for this series.")
 
     else:
-        recent_alerts = (
-            alerts
-            .sort_values(
-                "period_date",
-                ascending=False,
-            )
-            .copy()
-        )
+        recent_alerts = alerts.sort_values(
+            "period_date",
+            ascending=False,
+        ).copy()
 
         display = pd.DataFrame()
 
-        display[
-            "Period"
-        ] = (
-            recent_alerts[
-                "period_date"
-            ]
-            .dt.strftime(
-                "%b %Y"
-            )
-        )
+        display["Period"] = recent_alerts["period_date"].dt.strftime("%b %Y")
 
-        display[
-            axis_label
-        ] = [
+        display[axis_label] = [
             format_optional_value(
                 value,
                 metric,
             )
-            for value
-            in recent_alerts[
-                "value"
-            ]
+            for value in recent_alerts["value"]
         ]
 
-        if (
-            "overall_status"
-            in recent_alerts.columns
-        ):
-            display[
-                "Alert Type"
-            ] = (
-                recent_alerts[
-                    "overall_status"
-                ]
-                .map(
-                    status_label
-                )
-            )
+        if "overall_status" in recent_alerts.columns:
+            display["Alert Type"] = recent_alerts["overall_status"].map(status_label)
 
-        if (
-            "overall_severity"
-            in recent_alerts.columns
-        ):
-            display[
-                "Severity"
-            ] = (
-                recent_alerts[
-                    "overall_severity"
-                ]
-                .map(
-                    severity_label
-                )
-            )
+        if "overall_severity" in recent_alerts.columns:
+            display["Severity"] = recent_alerts["overall_severity"].map(severity_label)
 
-        if (
-            "overall_direction"
-            in recent_alerts.columns
-        ):
-            display[
-                "Direction"
-            ] = (
-                recent_alerts[
-                    "overall_direction"
-                ]
-                .map(
-                    direction_label
-                )
-            )
+        if "overall_direction" in recent_alerts.columns:
+            display["Direction"] = recent_alerts["overall_direction"].map(direction_label)
 
-        if (
-            "historical_deviation_pct"
-            in recent_alerts.columns
-        ):
-            display[
-                "Historical Deviation"
-            ] = [
-                format_optional_percentage(
-                    value
-                )
-                for value
-                in recent_alerts[
-                    "historical_deviation_pct"
-                ]
+        if "historical_deviation_pct" in recent_alerts.columns:
+            display["Historical Deviation"] = [
+                format_optional_percentage(value)
+                for value in recent_alerts["historical_deviation_pct"]
             ]
 
-        if (
-            "forecast_model"
-            in recent_alerts.columns
-        ):
-            display[
-                "Forecast Model"
-            ] = (
-                recent_alerts[
-                    "forecast_model"
-                ]
-                .map(
-                    model_label
-                )
-            )
+        if "forecast_model" in recent_alerts.columns:
+            display["Forecast Model"] = recent_alerts["forecast_model"].map(model_label)
 
-        if (
-            "predicted"
-            in recent_alerts.columns
-        ):
-            display[
-                "Predicted"
-            ] = [
+        if "predicted" in recent_alerts.columns:
+            display["Predicted"] = [
                 format_optional_value(
                     value,
                     metric,
                 )
-                for value
-                in recent_alerts[
-                    "predicted"
-                ]
+                for value in recent_alerts["predicted"]
             ]
 
-        if (
-            "forecast_residual_pct"
-            in recent_alerts.columns
-        ):
-            display[
-                "Forecast Residual"
-            ] = [
-                format_optional_percentage(
-                    value
-                )
-                for value
-                in recent_alerts[
-                    "forecast_residual_pct"
-                ]
+        if "forecast_residual_pct" in recent_alerts.columns:
+            display["Forecast Residual"] = [
+                format_optional_percentage(value)
+                for value in recent_alerts["forecast_residual_pct"]
             ]
 
         st.dataframe(
             display,
-            use_container_width=True,
+            width="stretch",
             hide_index=True,
             height=430,
         )
@@ -1034,10 +743,7 @@ with st.container(
 ):
     render_card_header(
         "Detector Coverage and Status Distribution",
-        (
-            "Distribution of dashboard anomaly statuses "
-            "across the selected historical series."
-        ),
+        ("Distribution of dashboard anomaly statuses across the selected historical series."),
     )
 
     st.caption(
@@ -1048,31 +754,14 @@ with st.container(
     )
 
     status_counts = (
-        series[
-            "overall_status"
-        ]
-        .fillna(
-            "unavailable"
-        )
+        series["overall_status"]
+        .fillna("unavailable")
         .value_counts()
-        .rename_axis(
-            "status"
-        )
-        .reset_index(
-            name="observations"
-        )
+        .rename_axis("status")
+        .reset_index(name="observations")
     )
 
-    status_counts[
-        "status_label"
-    ] = (
-        status_counts[
-            "status"
-        ]
-        .map(
-            status_label
-        )
-    )
+    status_counts["status_label"] = status_counts["status"].map(status_label)
 
     status_order = [
         "Normal",
@@ -1083,9 +772,7 @@ with st.container(
     ]
 
     status_chart = (
-        alt.Chart(
-            status_counts
-        )
+        alt.Chart(status_counts)
         .mark_bar(
             cornerRadiusEnd=6,
             color=BLUE,
@@ -1096,27 +783,17 @@ with st.container(
                 title=None,
                 sort=status_order,
                 axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    tickColor=(
-                        TICK_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    tickColor=(TICK_COLOR),
                 ),
             ),
             x=alt.X(
                 "observations:Q",
                 title="Monthly Observations",
                 axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    titleColor=(
-                        TITLE_COLOR
-                    ),
-                    gridColor=(
-                        GRID_COLOR
-                    ),
+                    labelColor=(LABEL_COLOR),
+                    titleColor=(TITLE_COLOR),
+                    gridColor=(GRID_COLOR),
                 ),
             ),
             tooltip=[
@@ -1131,47 +808,30 @@ with st.container(
                 ),
             ],
         )
-        .properties(
-            height=250
-        )
-        .configure_view(
-            strokeWidth=0
-        )
+        .properties(height=250)
+        .configure_view(strokeWidth=0)
     )
 
     st.altair_chart(
         status_chart,
-        use_container_width=True,
+        width="stretch",
     )
 
     coverage_specs = [
         (
             "Historical Detector",
             "Available",
-            (
-                "Historical seasonal anomaly "
-                "coverage"
-            ),
+            ("Historical seasonal anomaly coverage"),
         ),
         (
             "Forecast-Residual Detector",
-            (
-                "Available"
-                if has_forecast_coverage
-                else "Not Available"
-            ),
-            (
-                "Depends on forecast-eligible "
-                "model coverage"
-            ),
+            ("Available" if has_forecast_coverage else "Not Available"),
+            ("Depends on forecast-eligible model coverage"),
         ),
         (
             "Both-Detector Flags",
             f"{len(both_flagged):,}",
-            (
-                "Periods flagged by both "
-                "analytical detector paths"
-            ),
+            ("Periods flagged by both analytical detector paths"),
         ),
     ]
 

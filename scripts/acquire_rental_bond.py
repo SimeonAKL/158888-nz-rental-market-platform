@@ -14,10 +14,7 @@ from rmp.acquisition.rental_bond_snapshot import (
 def build_parser() -> argparse.ArgumentParser:
     """Create the command-line parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Download an official Tenancy Services "
-            "Rental Bond CSV snapshot."
-        )
+        description=("Download an official Tenancy Services Rental Bond CSV snapshot.")
     )
 
     parser.add_argument(
@@ -26,9 +23,7 @@ def build_parser() -> argparse.ArgumentParser:
             "region",
             "territorial_authority",
         ],
-        help=(
-            "Rental Bond dataset to download."
-        ),
+        help=("Rental Bond dataset to download."),
     )
 
     return parser
@@ -43,21 +38,13 @@ def main() -> int:
     print("Rental Bond data acquisition")
     print("=" * 60)
 
-    print(
-        f"Dataset: {args.dataset}"
-    )
+    print(f"Dataset: {args.dataset}")
 
     print()
-    print(
-        "Downloading official Tenancy Services CSV..."
-    )
+    print("Downloading official Tenancy Services CSV...")
 
     try:
-        snapshot = (
-            acquire_rental_bond_snapshot(
-                args.dataset
-            )
-        )
+        snapshot = acquire_rental_bond_snapshot(args.dataset)
 
     except (
         RentalBondAcquisitionError,
@@ -66,31 +53,20 @@ def main() -> int:
     ) as exc:
         print()
         print("Acquisition FAILED")
-        print(
-            f"Error: {exc}"
-        )
+        print(f"Error: {exc}")
 
         return 1
 
     print()
     print("Acquisition successful.")
 
-    print(
-        f"Raw CSV      : {snapshot.raw_path}"
-    )
+    print(f"Raw CSV      : {snapshot.raw_path}")
 
-    print(
-        f"Metadata     : {snapshot.metadata_path}"
-    )
+    print(f"Metadata     : {snapshot.metadata_path}")
 
-    print(
-        f"SHA-256      : {snapshot.sha256}"
-    )
+    print(f"SHA-256      : {snapshot.sha256}")
 
-    print(
-        f"File size    : "
-        f"{snapshot.file_size_bytes} bytes"
-    )
+    print(f"File size    : {snapshot.file_size_bytes} bytes")
 
     print()
     print("=" * 60)
@@ -101,6 +77,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(
-        main()
-    )
+    sys.exit(main())

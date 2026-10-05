@@ -57,17 +57,9 @@ render_top_navigation(
 )
 
 
-PROJECT_ROOT = (
-    Path(__file__)
-    .resolve()
-    .parents[1]
-)
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-HERO_IMAGE_PATH = (
-    PROJECT_ROOT
-    / "assets"
-    / "historical_hero.jpg"
-)
+HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "historical_hero.jpg"
 
 
 # ---------------------------------------------------------------------
@@ -84,9 +76,7 @@ TITLE_COLOR = "#52617e"
 TICK_COLOR = "#d7dfeb"
 GRID_COLOR = "#edf1f7"
 
-MONTH_ORDER = list(
-    calendar.month_abbr
-)[1:]
+MONTH_ORDER = list(calendar.month_abbr)[1:]
 
 MONTHS_PER_YEAR = 12
 
@@ -114,9 +104,7 @@ render_page_hero(
 
 panel = load_monthly_panel()
 
-seasonality = (
-    load_monthly_seasonality()
-)
+seasonality = load_monthly_seasonality()
 
 
 with st.container(
@@ -124,10 +112,7 @@ with st.container(
 ):
     render_filter_header(
         "Series Selection",
-        (
-            "Choose a geography, location, "
-            "indicator, and the period to analyse."
-        ),
+        ("Choose a geography, location, indicator, and the period to analyse."),
     )
 
     (
@@ -139,25 +124,15 @@ with st.container(
         key_prefix="historical",
     )
 
-    full_series = (
-        filter_series(
-            panel,
-            geography_level=(
-                geography_level
-            ),
-            location_name=location_name,
-            metric=metric,
-        )
-        .sort_values(
-            "period_date"
-        )
-    )
+    full_series = filter_series(
+        panel,
+        geography_level=(geography_level),
+        location_name=location_name,
+        metric=metric,
+    ).sort_values("period_date")
 
     if full_series.empty:
-        st.warning(
-            "No historical data is available "
-            "for this selection."
-        )
+        st.warning("No historical data is available for this selection.")
         st.stop()
 
     (
@@ -179,12 +154,7 @@ with st.container(
 # statistics at the beginning of a shortened selection can use
 # observations immediately preceding the selected period.
 
-full_series = (
-    full_series
-    .reset_index(
-        drop=True
-    )
-)
+full_series = full_series.reset_index(drop=True)
 
 year_ago = (
     full_series[
@@ -203,47 +173,28 @@ year_ago = (
     )
     .rename(
         columns={
-            "value": (
-                "value_year_ago"
-            ),
+            "value": ("value_year_ago"),
         }
     )
 )
 
-full_series = (
-    full_series.merge(
-        year_ago,
-        on="period_date",
-        how="left",
-    )
+full_series = full_series.merge(
+    year_ago,
+    on="period_date",
+    how="left",
 )
 
-full_series = (
-    full_series.assign(
-        rolling_12m=(
-            full_series["value"]
-            .rolling(
-                12,
-                min_periods=12,
-            )
-            .mean()
-        ),
-        mom_pct=(
-            full_series["value"]
-            .pct_change()
-            * 100
-        ),
-        yoy_pct=(
-            (
-                full_series["value"]
-                / full_series[
-                    "value_year_ago"
-                ]
-                - 1
-            )
-            * 100
-        ),
-    )
+full_series = full_series.assign(
+    rolling_12m=(
+        full_series["value"]
+        .rolling(
+            12,
+            min_periods=12,
+        )
+        .mean()
+    ),
+    mom_pct=(full_series["value"].pct_change() * 100),
+    yoy_pct=((full_series["value"] / full_series["value_year_ago"] - 1) * 100),
 )
 
 
@@ -251,64 +202,34 @@ full_series = (
 # Selected period
 # ---------------------------------------------------------------------
 
-series = (
-    filter_date_range(
-        full_series,
-        date_column="period_date",
-        start_date=start_date,
-        end_date=end_date,
-    )
-    .sort_values(
-        "period_date"
-    )
-)
+series = filter_date_range(
+    full_series,
+    date_column="period_date",
+    start_date=start_date,
+    end_date=end_date,
+).sort_values("period_date")
 
 if series.empty:
-    st.warning(
-        "No observations are available "
-        "for the selected period."
-    )
+    st.warning("No observations are available for the selected period.")
     st.stop()
 
 
-axis_label = metric_axis_label(
-    metric
-)
+axis_label = metric_axis_label(metric)
 
-series_start = pd.Timestamp(
-    series[
-        "period_date"
-    ].min()
-)
+series_start = pd.Timestamp(series["period_date"].min())
 
-series_end = pd.Timestamp(
-    series[
-        "period_date"
-    ].max()
-)
+series_end = pd.Timestamp(series["period_date"].max())
 
 
 # ---------------------------------------------------------------------
 # Headline statistics
 # ---------------------------------------------------------------------
 
-period_average = float(
-    series[
-        "value"
-    ].mean()
-)
+period_average = float(series["value"].mean())
 
-max_row = series.loc[
-    series[
-        "value"
-    ].idxmax()
-]
+max_row = series.loc[series["value"].idxmax()]
 
-min_row = series.loc[
-    series[
-        "value"
-    ].idxmin()
-]
+min_row = series.loc[series["value"].idxmin()]
 
 
 # ---------------------------------------------------------------------
@@ -334,105 +255,43 @@ valid_rolling = (
             "rolling_12m",
         ]
     )
-    .sort_values(
-        "period_date"
-    )
+    .sort_values("period_date")
 )
 
 annualised_growth = None
 
-growth_basis = (
-    "monthly values"
-)
+growth_basis = "monthly values"
 
-growth_start_date = (
-    series_start
-)
+growth_start_date = series_start
 
-growth_end_date = (
-    series_end
-)
+growth_end_date = series_end
 
-first_level = float(
-    series.iloc[0][
-        "value"
-    ]
-)
+first_level = float(series.iloc[0]["value"])
 
-last_level = float(
-    series.iloc[-1][
-        "value"
-    ]
-)
+last_level = float(series.iloc[-1]["value"])
 
 
 if len(valid_rolling) >= 2:
-    rolling_start = (
-        valid_rolling.iloc[0]
-    )
+    rolling_start = valid_rolling.iloc[0]
 
-    rolling_end = (
-        valid_rolling.iloc[-1]
-    )
+    rolling_end = valid_rolling.iloc[-1]
 
-    growth_start_date = (
-        pd.Timestamp(
-            rolling_start[
-                "period_date"
-            ]
-        )
-    )
+    growth_start_date = pd.Timestamp(rolling_start["period_date"])
 
-    growth_end_date = (
-        pd.Timestamp(
-            rolling_end[
-                "period_date"
-            ]
-        )
-    )
+    growth_end_date = pd.Timestamp(rolling_end["period_date"])
 
-    first_level = float(
-        rolling_start[
-            "rolling_12m"
-        ]
-    )
+    first_level = float(rolling_start["rolling_12m"])
 
-    last_level = float(
-        rolling_end[
-            "rolling_12m"
-        ]
-    )
+    last_level = float(rolling_end["rolling_12m"])
 
-    growth_basis = (
-        "12-month averages"
-    )
+    growth_basis = "12-month averages"
 
 
-years_span = (
-    (
-        growth_end_date
-        - growth_start_date
-    ).days
-    / 365.25
-)
+years_span = (growth_end_date - growth_start_date).days / 365.25
 
 
-if (
-    years_span >= 1
-    and first_level > 0
-    and last_level > 0
-):
-    annualised_growth = (
-        (
-            last_level
-            / first_level
-        )
-        ** (
-            1
-            / years_span
-        )
-        - 1
-    ) * 100
+if years_span >= 1 and first_level > 0 and last_level > 0:
+    annualised_growth = ((last_level / first_level) ** (1 / years_span) - 1) * 100
 
 
 # ---------------------------------------------------------------------
@@ -440,10 +299,7 @@ if (
 # ---------------------------------------------------------------------
 
 render_series_header(
-    (
-        f"{location_name} "
-        f"— {metric_label(metric)}"
-    ),
+    (f"{location_name} — {metric_label(metric)}"),
     (
         f"{geography_label(geography_level)}"
         "  •  "
@@ -456,13 +312,7 @@ render_series_header(
 )
 
 
-if (
-    series[
-        "is_provisional"
-    ]
-    .fillna(False)
-    .any()
-):
+if series["is_provisional"].fillna(False).any():
     render_source_note()
 
 
@@ -477,49 +327,31 @@ stat_specs = [
             period_average,
             metric,
         ),
-        (
-            f"Mean of "
-            f"{len(series):,} months"
-        ),
+        (f"Mean of {len(series):,} months"),
         "",
     ),
     (
         "Annualised Growth",
-        format_percentage(
-            annualised_growth
-        ),
-        (
-            "Compound rate from "
-            f"{growth_basis}"
-        ),
-        tone_for(
-            annualised_growth
-        ),
+        format_percentage(annualised_growth),
+        (f"Compound rate from {growth_basis}"),
+        tone_for(annualised_growth),
     ),
     (
         "Highest",
         format_value(
-            max_row[
-                "value"
-            ],
+            max_row["value"],
             metric,
         ),
-        (
-            f"{max_row['period_date']:%b %Y}"
-        ),
+        (f"{max_row['period_date']:%b %Y}"),
         "",
     ),
     (
         "Lowest",
         format_value(
-            min_row[
-                "value"
-            ],
+            min_row["value"],
             metric,
         ),
-        (
-            f"{min_row['period_date']:%b %Y}"
-        ),
+        (f"{min_row['period_date']:%b %Y}"),
         "",
     ),
 ]
@@ -585,69 +417,44 @@ with st.container(
             tickCount="year",
             labelOverlap=True,
             grid=False,
-            labelColor=(
-                LABEL_COLOR
-            ),
-            tickColor=(
-                TICK_COLOR
-            ),
+            labelColor=(LABEL_COLOR),
+            tickColor=(TICK_COLOR),
         ),
     )
 
-    trend_base = alt.Chart(
-        series
-    )
+    trend_base = alt.Chart(series)
 
-    monthly_line = (
-        trend_base
-        .mark_line(
-            color=LIGHT_BLUE,
-            strokeWidth=1.4,
-        )
-        .encode(
-            x=x_time,
-            y=alt.Y(
+    monthly_line = trend_base.mark_line(
+        color=LIGHT_BLUE,
+        strokeWidth=1.4,
+    ).encode(
+        x=x_time,
+        y=alt.Y(
+            "value:Q",
+            title=axis_label,
+            scale=alt.Scale(zero=False),
+            axis=alt.Axis(
+                labelColor=(LABEL_COLOR),
+                titleColor=(TITLE_COLOR),
+                gridColor=(GRID_COLOR),
+            ),
+        ),
+        tooltip=[
+            alt.Tooltip(
+                "period_date:T",
+                title="Period",
+                format="%b %Y",
+            ),
+            alt.Tooltip(
                 "value:Q",
                 title=axis_label,
-                scale=alt.Scale(
-                    zero=False
-                ),
-                axis=alt.Axis(
-                    labelColor=(
-                        LABEL_COLOR
-                    ),
-                    titleColor=(
-                        TITLE_COLOR
-                    ),
-                    gridColor=(
-                        GRID_COLOR
-                    ),
-                ),
+                format=",.1f",
             ),
-            tooltip=[
-                alt.Tooltip(
-                    "period_date:T",
-                    title="Period",
-                    format="%b %Y",
-                ),
-                alt.Tooltip(
-                    "value:Q",
-                    title=axis_label,
-                    format=",.1f",
-                ),
-            ],
-        )
+        ],
     )
 
     rolling_line = (
-        trend_base
-        .transform_filter(
-            
-                "isValid("
-                "datum.rolling_12m"
-                ")"
-            
-        )
+        trend_base.transform_filter("isValid(datum.rolling_12m)")
         .mark_line(
             color=BLUE,
             strokeWidth=2.8,
@@ -666,9 +473,7 @@ with st.container(
                 ),
                 alt.Tooltip(
                     "rolling_12m:Q",
-                    title=(
-                        "12-month average"
-                    ),
+                    title=("12-month average"),
                     format=",.1f",
                 ),
             ],
@@ -676,24 +481,15 @@ with st.container(
     )
 
     trend_chart = (
-        (
-            monthly_line
-            + rolling_line
-        )
-        .interactive(
-            bind_y=False
-        )
-        .properties(
-            height=380
-        )
-        .configure_view(
-            strokeWidth=0
-        )
+        (monthly_line + rolling_line)
+        .interactive(bind_y=False)
+        .properties(height=380)
+        .configure_view(strokeWidth=0)
     )
 
     st.altair_chart(
         trend_chart,
-        use_container_width=True,
+        width="stretch",
     )
 
 
@@ -702,14 +498,7 @@ with st.container(
 # ---------------------------------------------------------------------
 
 annual = (
-    series
-    .assign(
-        year=(
-            series[
-                "period_date"
-            ].dt.year
-        )
-    )
+    series.assign(year=(series["period_date"].dt.year))
     .groupby(
         "year",
         as_index=False,
@@ -726,48 +515,25 @@ annual = (
     )
 )
 
-full_year = (
-    annual["months"]
-    >= MONTHS_PER_YEAR
-)
+full_year = annual["months"] >= MONTHS_PER_YEAR
 
-annual[
-    "coverage"
-] = np.where(
+annual["coverage"] = np.where(
     full_year,
     "Full year",
     "Partial year",
 )
 
-annual[
-    "yoy_pct"
-] = (
-    annual[
-        "average"
-    ]
-    .pct_change()
-    * 100
-)
+annual["yoy_pct"] = annual["average"].pct_change() * 100
 
-previous_full_year = (
-    full_year.shift(
-        fill_value=False
-    )
-)
+previous_full_year = full_year.shift(fill_value=False)
 
 annual.loc[
-    ~(
-        full_year
-        & previous_full_year
-    ),
+    ~(full_year & previous_full_year),
     "yoy_pct",
 ] = np.nan
 
 
-if (
-    len(annual)
-    >= MIN_YEARS_FOR_ANNUAL_CHART
-):
+if len(annual) >= MIN_YEARS_FOR_ANNUAL_CHART:
     with st.container(
         key="card_historical_annual",
     ):
@@ -796,9 +562,7 @@ if (
         )
 
         annual_chart = (
-            alt.Chart(
-                annual
-            )
+            alt.Chart(annual)
             .mark_bar(
                 cornerRadiusTopLeft=4,
                 cornerRadiusTopRight=4,
@@ -810,30 +574,17 @@ if (
                     axis=alt.Axis(
                         labelAngle=0,
                         labelOverlap=True,
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        tickColor=(
-                            TICK_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        tickColor=(TICK_COLOR),
                     ),
                 ),
                 y=alt.Y(
                     "average:Q",
-                    title=(
-                        f"Average "
-                        f"{axis_label}"
-                    ),
+                    title=(f"Average {axis_label}"),
                     axis=alt.Axis(
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        titleColor=(
-                            TITLE_COLOR
-                        ),
-                        gridColor=(
-                            GRID_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        titleColor=(TITLE_COLOR),
+                        gridColor=(GRID_COLOR),
                     ),
                 ),
                 color=alt.Color(
@@ -862,31 +613,22 @@ if (
                     ),
                     alt.Tooltip(
                         "months:Q",
-                        title=(
-                            "Months of data"
-                        ),
+                        title=("Months of data"),
                     ),
                     alt.Tooltip(
                         "yoy_pct:Q",
-                        title=(
-                            "Change vs previous "
-                            "year (%)"
-                        ),
+                        title=("Change vs previous year (%)"),
                         format="+.1f",
                     ),
                 ],
             )
-            .properties(
-                height=300
-            )
-            .configure_view(
-                strokeWidth=0
-            )
+            .properties(height=300)
+            .configure_view(strokeWidth=0)
         )
 
         st.altair_chart(
             annual_chart,
-            use_container_width=True,
+            width="stretch",
         )
 
 
@@ -896,94 +638,32 @@ if (
 
 seasonal = filter_series(
     seasonality,
-    geography_level=(
-        geography_level
-    ),
-    location_name=(
-        location_name
-    ),
+    geography_level=(geography_level),
+    location_name=(location_name),
     metric=metric,
 )
 
 
 if not seasonal.empty:
-    seasonal = (
-        seasonal
-        .assign(
-            month=(
-                seasonal[
-                    "month"
-                ].astype(int)
-            )
-        )
-        .sort_values(
-            "month"
-        )
-    )
+    seasonal = seasonal.assign(month=(seasonal["month"].astype(int))).sort_values("month")
 
-    seasonal[
-        "month_name"
-    ] = seasonal[
-        "month"
-    ].map(
-        lambda month: (
-            calendar.month_abbr[
-                month
-            ]
-        )
-    )
+    seasonal["month_name"] = seasonal["month"].map(lambda month: calendar.month_abbr[month])
 
-    seasonal_mean = float(
-        seasonal[
-            "median_value"
-        ].mean()
-    )
+    seasonal_mean = float(seasonal["median_value"].mean())
 
     if seasonal_mean:
-        seasonal[
-            "deviation_pct"
-        ] = (
-            (
-                seasonal[
-                    "median_value"
-                ]
-                / seasonal_mean
-                - 1
-            )
-            * 100
-        )
+        seasonal["deviation_pct"] = (seasonal["median_value"] / seasonal_mean - 1) * 100
     else:
-        seasonal[
-            "deviation_pct"
-        ] = np.nan
+        seasonal["deviation_pct"] = np.nan
 
-    peak = seasonal.loc[
-        seasonal[
-            "median_value"
-        ].idxmax()
-    ]
+    peak = seasonal.loc[seasonal["median_value"].idxmax()]
 
-    low = seasonal.loc[
-        seasonal[
-            "median_value"
-        ].idxmin()
-    ]
+    low = seasonal.loc[seasonal["median_value"].idxmin()]
 
     spread_pct = None
 
     if seasonal_mean:
-        spread_pct = (
-            (
-                peak[
-                    "median_value"
-                ]
-                - low[
-                    "median_value"
-                ]
-            )
-            / seasonal_mean
-            * 100
-        )
+        spread_pct = (peak["median_value"] - low["median_value"]) / seasonal_mean * 100
 
     with st.container(
         key="card_historical_seasonality",
@@ -1001,31 +681,13 @@ if not seasonal.empty:
         season_specs = [
             (
                 "Typical Peak Month",
-                calendar.month_name[
-                    int(
-                        peak[
-                            "month"
-                        ]
-                    )
-                ],
-                (
-                    "Full-history median "
-                    f"{format_value(peak['median_value'], metric)}"
-                ),
+                calendar.month_name[int(peak["month"])],
+                (f"Full-history median {format_value(peak['median_value'], metric)}"),
             ),
             (
                 "Typical Lowest Month",
-                calendar.month_name[
-                    int(
-                        low[
-                            "month"
-                        ]
-                    )
-                ],
-                (
-                    "Full-history median "
-                    f"{format_value(low['median_value'], metric)}"
-                ),
+                calendar.month_name[int(low["month"])],
+                (f"Full-history median {format_value(low['median_value'], metric)}"),
             ),
             (
                 "Peak-to-Low Spread",
@@ -1033,10 +695,7 @@ if not seasonal.empty:
                     spread_pct,
                     signed=False,
                 ),
-                (
-                    "Gap between peak and low, "
-                    "relative to the average month"
-                ),
+                ("Gap between peak and low, relative to the average month"),
             ),
         ]
 
@@ -1072,12 +731,8 @@ if not seasonal.empty:
         )
 
         seasonal_bars = (
-            alt.Chart(
-                seasonal
-            )
-            .mark_bar(
-                cornerRadiusEnd=4
-            )
+            alt.Chart(seasonal)
+            .mark_bar(cornerRadiusEnd=4)
             .encode(
                 x=alt.X(
                     "month_name:N",
@@ -1085,43 +740,24 @@ if not seasonal.empty:
                     title=None,
                     axis=alt.Axis(
                         labelAngle=0,
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        tickColor=(
-                            TICK_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        tickColor=(TICK_COLOR),
                     ),
                 ),
                 y=alt.Y(
                     "deviation_pct:Q",
-                    title=(
-                        "% vs average month"
-                    ),
+                    title=("% vs average month"),
                     axis=alt.Axis(
                         format="+.1f",
-                        labelColor=(
-                            LABEL_COLOR
-                        ),
-                        titleColor=(
-                            TITLE_COLOR
-                        ),
-                        gridColor=(
-                            GRID_COLOR
-                        ),
+                        labelColor=(LABEL_COLOR),
+                        titleColor=(TITLE_COLOR),
+                        gridColor=(GRID_COLOR),
                     ),
                 ),
                 color=alt.condition(
-                    (
-                        "datum."
-                        "deviation_pct >= 0"
-                    ),
-                    alt.value(
-                        BLUE
-                    ),
-                    alt.value(
-                        WARM
-                    ),
+                    ("datum.deviation_pct >= 0"),
+                    alt.value(BLUE),
+                    alt.value(WARM),
                 ),
                 tooltip=[
                     alt.Tooltip(
@@ -1130,23 +766,17 @@ if not seasonal.empty:
                     ),
                     alt.Tooltip(
                         "median_value:Q",
-                        title=(
-                            "Full-history median"
-                        ),
+                        title=("Full-history median"),
                         format=",.1f",
                     ),
                     alt.Tooltip(
                         "deviation_pct:Q",
-                        title=(
-                            "% vs average month"
-                        ),
+                        title=("% vs average month"),
                         format="+.1f",
                     ),
                     alt.Tooltip(
                         "n_observations:Q",
-                        title=(
-                            "Historical observations"
-                        ),
+                        title=("Historical observations"),
                     ),
                 ],
             )
@@ -1164,101 +794,58 @@ if not seasonal.empty:
                 color="#9aa6bf",
                 strokeWidth=1,
             )
-            .encode(
-                y="y:Q"
-            )
+            .encode(y="y:Q")
         )
 
         st.altair_chart(
-            (
-                seasonal_bars
-                + zero_rule
-            )
-            .properties(
-                height=300
-            )
-            .configure_view(
-                strokeWidth=0
-            ),
-            use_container_width=True,
+            (seasonal_bars + zero_rule).properties(height=300).configure_view(strokeWidth=0),
+            width="stretch",
         )
 
         with st.expander(
             "Monthly statistics",
             expanded=False,
         ):
-            seasonal_display = (
-                pd.DataFrame(
-                    {
-                        "Month": (
-                            seasonal[
-                                "month_name"
-                            ]
-                        ),
-                        "Median": [
-                            format_value(
-                                value,
-                                metric,
-                            )
-                            for value
-                            in seasonal[
-                                "median_value"
-                            ]
-                        ],
-                        "Mean": [
-                            format_value(
-                                value,
-                                metric,
-                            )
-                            for value
-                            in seasonal[
-                                "mean_value"
-                            ]
-                        ],
-                        "Minimum": [
-                            format_value(
-                                value,
-                                metric,
-                            )
-                            for value
-                            in seasonal[
-                                "minimum_value"
-                            ]
-                        ],
-                        "Maximum": [
-                            format_value(
-                                value,
-                                metric,
-                            )
-                            for value
-                            in seasonal[
-                                "maximum_value"
-                            ]
-                        ],
-                        "Observations": (
-                            seasonal[
-                                "n_observations"
-                            ]
-                            .astype(int)
-                        ),
-                    }
-                )
+            seasonal_display = pd.DataFrame(
+                {
+                    "Month": (seasonal["month_name"]),
+                    "Median": [
+                        format_value(
+                            value,
+                            metric,
+                        )
+                        for value in seasonal["median_value"]
+                    ],
+                    "Mean": [
+                        format_value(
+                            value,
+                            metric,
+                        )
+                        for value in seasonal["mean_value"]
+                    ],
+                    "Minimum": [
+                        format_value(
+                            value,
+                            metric,
+                        )
+                        for value in seasonal["minimum_value"]
+                    ],
+                    "Maximum": [
+                        format_value(
+                            value,
+                            metric,
+                        )
+                        for value in seasonal["maximum_value"]
+                    ],
+                    "Observations": (seasonal["n_observations"].astype(int)),
+                }
             )
 
             st.dataframe(
                 seasonal_display,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
-                height=(
-                    (
-                        len(
-                            seasonal_display
-                        )
-                        + 1
-                    )
-                    * 35
-                    + 3
-                ),
+                height=((len(seasonal_display) + 1) * 35 + 3),
             )
 
 
@@ -1280,11 +867,7 @@ with st.container(
     with title_col:
         render_card_header(
             "Historical Observations",
-            (
-                f"All {len(series):,} months "
-                "in the selected period, "
-                "newest first."
-            ),
+            (f"All {len(series):,} months in the selected period, newest first."),
         )
 
     with (
@@ -1302,39 +885,21 @@ with st.container(
                     "yoy_pct",
                 ]
             ]
-            .assign(
-                period_date=lambda data: (
-                    data[
-                        "period_date"
-                    ].dt.strftime(
-                        "%Y-%m"
-                    )
-                )
-            )
+            .assign(period_date=lambda data: data["period_date"].dt.strftime("%Y-%m"))
             .rename(
                 columns={
                     "period_date": "period",
-                    "mom_pct": (
-                        "month_on_month_pct"
-                    ),
-                    "yoy_pct": (
-                        "year_on_year_pct"
-                    ),
+                    "mom_pct": ("month_on_month_pct"),
+                    "yoy_pct": ("year_on_year_pct"),
                 }
             )
             .round(2)
-            .to_csv(
-                index=False
-            )
-            .encode(
-                "utf-8"
-            )
+            .to_csv(index=False)
+            .encode("utf-8")
         )
 
         location_slug = (
-            str(
-                location_name
-            )
+            str(location_name)
             .lower()
             .replace(
                 " ",
@@ -1345,66 +910,34 @@ with st.container(
         st.download_button(
             label="Download CSV",
             data=csv_data,
-            file_name=(
-                "historical_"
-                f"{location_slug}_"
-                f"{metric}.csv"
-            ),
+            file_name=(f"historical_{location_slug}_{metric}.csv"),
             mime="text/csv",
-            use_container_width=True,
+            width="stretch",
         )
 
-    recent_first = (
-        series.sort_values(
-            "period_date",
-            ascending=False,
-        )
+    recent_first = series.sort_values(
+        "period_date",
+        ascending=False,
     )
 
     table = pd.DataFrame(
         {
-            "Period": (
-                recent_first[
-                    "period_date"
-                ]
-                .dt.strftime(
-                    "%b %Y"
-                )
-            ),
+            "Period": (recent_first["period_date"].dt.strftime("%b %Y")),
             axis_label: [
                 format_value(
                     value,
                     metric,
                 )
-                for value
-                in recent_first[
-                    "value"
-                ]
+                for value in recent_first["value"]
             ],
-            "Month-on-Month": [
-                format_percentage(
-                    value
-                )
-                for value
-                in recent_first[
-                    "mom_pct"
-                ]
-            ],
-            "Year-on-Year": [
-                format_percentage(
-                    value
-                )
-                for value
-                in recent_first[
-                    "yoy_pct"
-                ]
-            ],
+            "Month-on-Month": [format_percentage(value) for value in recent_first["mom_pct"]],
+            "Year-on-Year": [format_percentage(value) for value in recent_first["yoy_pct"]],
         }
     )
 
     st.dataframe(
         table,
-        use_container_width=True,
+        width="stretch",
         hide_index=True,
         height=430,
     )

@@ -38,9 +38,7 @@ def test_build_future_periods_uses_common_origin() -> None:
         horizon=6,
     )
 
-    assert origin == pd.Timestamp(
-        "2026-07-01"
-    )
+    assert origin == pd.Timestamp("2026-07-01")
 
     assert future.equals(
         pd.date_range(
@@ -111,16 +109,12 @@ def test_seasonal_naive_future_uses_prior_year() -> None:
         future,
     )
 
-    assert forecast[
-        "predicted"
-    ].tolist() == [
+    assert forecast["predicted"].tolist() == [
         112.0,
         113.0,
     ]
 
-    assert forecast[
-        "horizon_step"
-    ].tolist() == [
+    assert forecast["horizon_step"].tolist() == [
         1,
         2,
     ]
@@ -149,25 +143,13 @@ def test_winner_selection_returns_one_model_per_series() -> None:
                         "metric": "median_rent",
                         "geography_level": "region",
                         "location_id": location_id,
-                        "location_name": (
-                            f"Location {location_id}"
-                        ),
-                        "forecast_origin": pd.Timestamp(
-                            "2026-07-01"
-                        ),
+                        "location_name": (f"Location {location_id}"),
+                        "forecast_origin": pd.Timestamp("2026-07-01"),
                         "forecast_period": (
-                            pd.Timestamp(
-                                "2026-07-01"
-                            )
-                            + pd.DateOffset(
-                                months=horizon_step
-                            )
+                            pd.Timestamp("2026-07-01") + pd.DateOffset(months=horizon_step)
                         ),
                         "horizon_step": horizon_step,
-                        "predicted": (
-                            500.0
-                            + horizon_step
-                        ),
+                        "predicted": (500.0 + horizon_step),
                     }
                 )
 

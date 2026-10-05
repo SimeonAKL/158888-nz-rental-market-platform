@@ -40,9 +40,7 @@ def sample_clean_data() -> pd.DataFrame:
             },
             {
                 "period_date": "2026-06-01",
-                "geography_level": (
-                    "territorial_authority"
-                ),
+                "geography_level": ("territorial_authority"),
                 "location_id": 76,
                 "location_name": "Auckland",
                 "median_rent": Decimal(670),
@@ -52,9 +50,7 @@ def sample_clean_data() -> pd.DataFrame:
             },
             {
                 "period_date": "2026-07-01",
-                "geography_level": (
-                    "territorial_authority"
-                ),
+                "geography_level": ("territorial_authority"),
                 "location_id": 76,
                 "location_name": "Auckland",
                 "median_rent": Decimal(680),
@@ -84,9 +80,7 @@ def sample_clean_data() -> pd.DataFrame:
             },
             {
                 "period_date": "2026-07-01",
-                "geography_level": (
-                    "territorial_authority"
-                ),
+                "geography_level": ("territorial_authority"),
                 "location_id": 60,
                 "location_name": "Hamilton City",
                 "median_rent": Decimal(550),
@@ -103,22 +97,13 @@ def test_select_core_geographies(
 ) -> None:
     """All valid Regions and Territorial Authorities remain."""
 
-    result = select_core_geographies(
-        sample_clean_data
-    )
+    result = select_core_geographies(sample_clean_data)
 
-    assert set(
-        result["location_id"]
-    ) == {2, 60, 76}
+    assert set(result["location_id"]) == {2, 60, 76}
 
-    assert -99 not in set(
-        result["location_id"]
-    )
+    assert -99 not in set(result["location_id"])
 
-    assert -1 not in set(
-        result["location_id"]
-    )
-
+    assert -1 not in set(result["location_id"])
 
 
 def test_build_monthly_panel(
@@ -126,26 +111,18 @@ def test_build_monthly_panel(
 ) -> None:
     """Two metrics should be produced per source row."""
 
-    panel = build_monthly_panel(
-        sample_clean_data
-    )
+    panel = build_monthly_panel(sample_clean_data)
 
     assert len(panel) == 10
 
-    assert set(
-        panel["metric"]
-    ) == {
+    assert set(panel["metric"]) == {
         "median_rent",
         "bonds_lodged",
     }
 
-    assert panel[
-        "series_id"
-    ].nunique() == 6
+    assert panel["series_id"].nunique() == 6
 
-    assert pd.api.types.is_datetime64_any_dtype(
-        panel["period_date"]
-    )
+    assert pd.api.types.is_datetime64_any_dtype(panel["period_date"])
 
 
 def test_panel_has_no_duplicate_periods(
@@ -153,9 +130,7 @@ def test_panel_has_no_duplicate_periods(
 ) -> None:
     """Each series-month combination must be unique."""
 
-    panel = build_monthly_panel(
-        sample_clean_data
-    )
+    panel = build_monthly_panel(sample_clean_data)
 
     duplicate_count = panel.duplicated(
         subset=[
@@ -172,9 +147,7 @@ def test_validate_rejects_duplicates(
 ) -> None:
     """Duplicate observations should fail validation."""
 
-    panel = build_monthly_panel(
-        sample_clean_data
-    )
+    panel = build_monthly_panel(sample_clean_data)
 
     duplicated = pd.concat(
         [
@@ -188,6 +161,4 @@ def test_validate_rejects_duplicates(
         ValueError,
         match="Duplicate monthly observations",
     ):
-        validate_monthly_panel(
-            duplicated
-        )
+        validate_monthly_panel(duplicated)

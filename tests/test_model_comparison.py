@@ -47,23 +47,16 @@ def make_predictions(
         rows.append(
             {
                 "model": model,
-                "series_id": (
-                    "region_1_median_rent"
-                ),
+                "series_id": ("region_1_median_rent"),
                 "metric": "median_rent",
                 "geography_level": "region",
                 "location_id": 1,
                 "location_name": "Region 1",
-                "origin": pd.Timestamp(
-                    "2025-12-01"
-                ),
+                "origin": pd.Timestamp("2025-12-01"),
                 "forecast_period": date,
                 "horizon_step": index,
                 "actual": actual,
-                "predicted": (
-                    actual
-                    + error_size
-                ),
+                "predicted": (actual + error_size),
             }
         )
 
@@ -139,15 +132,11 @@ def test_combine_predictions() -> None:
         ),
     ]
 
-    result = combine_predictions(
-        frames
-    )
+    result = combine_predictions(frames)
 
     assert len(result) == 12
 
-    assert result[
-        "model"
-    ].nunique() == 3
+    assert result["model"].nunique() == 3
 
 
 def test_model_comparison_ranks_lower_error_first() -> None:
@@ -170,36 +159,19 @@ def test_model_comparison_ranks_lower_error_first() -> None:
         ]
     )
 
-    result = build_model_comparison(
-        predictions
-    )
+    result = build_model_comparison(predictions)
 
-    xgb = result.loc[
-        result["model"]
-        == "xgboost_pooled_recursive"
-    ].iloc[0]
+    xgb = result.loc[result["model"] == "xgboost_pooled_recursive"].iloc[0]
 
-    baseline = result.loc[
-        result["model"]
-        == "seasonal_naive"
-    ].iloc[0]
+    baseline = result.loc[result["model"] == "seasonal_naive"].iloc[0]
 
     assert xgb["rank_mae"] == 1
     assert xgb["rank_rmse"] == 1
     assert xgb["rank_smape"] == 1
 
-    assert (
-        xgb[
-            "mae_improvement_vs_baseline_pct"
-        ]
-        > 0
-    )
+    assert xgb["mae_improvement_vs_baseline_pct"] > 0
 
-    assert baseline[
-        "mae_improvement_vs_baseline_pct"
-    ] == pytest.approx(
-        0.0
-    )
+    assert baseline["mae_improvement_vs_baseline_pct"] == pytest.approx(0.0)
 
 
 def test_metrics_by_horizon_has_one_row_per_model_step() -> None:
@@ -222,17 +194,11 @@ def test_metrics_by_horizon_has_one_row_per_model_step() -> None:
         ]
     )
 
-    result = build_metrics_by_horizon(
-        predictions
-    )
+    result = build_metrics_by_horizon(predictions)
 
-    assert len(result) == (
-        3 * 4
-    )
+    assert len(result) == (3 * 4)
 
-    assert set(
-        result["horizon_step"]
-    ) == {
+    assert set(result["horizon_step"]) == {
         1,
         2,
         3,
@@ -270,13 +236,9 @@ def test_series_winner_uses_lowest_smape() -> None:
         ]
     )
 
-    result = build_series_model_winners(
-        metrics
-    )
+    result = build_series_model_winners(metrics)
 
-    assert result.iloc[0][
-        "best_model"
-    ] == "ets_additive_damped"
+    assert result.iloc[0]["best_model"] == "ets_additive_damped"
 
 
 def test_alignment_rejects_duplicate_keys() -> None:

@@ -31,23 +31,15 @@ def run_migration(
 ) -> None:
     """Execute one SQL migration file inside a transaction."""
     if not migration_path.exists():
-        raise FileNotFoundError(
-            f"Migration file does not exist: {migration_path}"
-        )
+        raise FileNotFoundError(f"Migration file does not exist: {migration_path}")
 
     if migration_path.suffix.lower() != ".sql":
-        raise ValueError(
-            "Migration file must have a .sql extension."
-        )
+        raise ValueError("Migration file must have a .sql extension.")
 
-    sql = migration_path.read_text(
-        encoding="utf-8"
-    ).strip()
+    sql = migration_path.read_text(encoding="utf-8").strip()
 
     if not sql:
-        raise ValueError(
-            f"Migration file is empty: {migration_path}"
-        )
+        raise ValueError(f"Migration file is empty: {migration_path}")
 
     engine = create_engine(
         build_database_url(),
@@ -56,9 +48,7 @@ def run_migration(
 
     try:
         with engine.begin() as connection:
-            connection.exec_driver_sql(
-                sql
-            )
+            connection.exec_driver_sql(sql)
 
     finally:
         engine.dispose()
@@ -67,10 +57,7 @@ def run_migration(
 def build_parser() -> argparse.ArgumentParser:
     """Create command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Run a SQL migration against "
-            "the configured PostgreSQL database."
-        )
+        description=("Run a SQL migration against the configured PostgreSQL database.")
     )
 
     parser.add_argument(
@@ -96,9 +83,7 @@ def main() -> int:
     print("Executing migration...")
 
     try:
-        run_migration(
-            args.migration
-        )
+        run_migration(args.migration)
 
     except (
         FileNotFoundError,

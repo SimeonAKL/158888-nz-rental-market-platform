@@ -38,14 +38,10 @@ def _overall_severity(
     active_severities: list[str] = []
 
     if historical_alert:
-        active_severities.append(
-            str(historical_severity)
-        )
+        active_severities.append(str(historical_severity))
 
     if forecast_alert:
-        active_severities.append(
-            str(forecast_severity)
-        )
+        active_severities.append(str(forecast_severity))
 
     if not active_severities:
         return "normal"
@@ -107,80 +103,48 @@ def consolidate_anomaly_outputs(
         "forecast_alert_status",
     }
 
-    missing_historical = (
-        historical_required.difference(
-            historical.columns
-        )
-    )
+    missing_historical = historical_required.difference(historical.columns)
 
     if missing_historical:
         raise ValueError(
-            "Missing required historical columns: "
-            + ", ".join(
-                sorted(missing_historical)
-            )
+            "Missing required historical columns: " + ", ".join(sorted(missing_historical))
         )
 
-    missing_forecast = (
-        forecast_required.difference(
-            forecast.columns
-        )
-    )
+    missing_forecast = forecast_required.difference(forecast.columns)
 
     if missing_forecast:
         raise ValueError(
-            "Missing required forecast columns: "
-            + ", ".join(
-                sorted(missing_forecast)
-            )
+            "Missing required forecast columns: " + ", ".join(sorted(missing_forecast))
         )
 
     historical_result = historical.copy()
     forecast_result = forecast.copy()
 
-    historical_result["period_date"] = (
-        pd.to_datetime(
-            historical_result["period_date"]
-        )
-    )
+    historical_result["period_date"] = pd.to_datetime(historical_result["period_date"])
 
-    forecast_result["forecast_period"] = (
-        pd.to_datetime(
-            forecast_result["forecast_period"]
-        )
-    )
+    forecast_result["forecast_period"] = pd.to_datetime(forecast_result["forecast_period"])
 
-    historical_duplicates = (
-        historical_result.duplicated(
-            subset=[
-                "series_id",
-                "period_date",
-            ],
-            keep=False,
-        )
+    historical_duplicates = historical_result.duplicated(
+        subset=[
+            "series_id",
+            "period_date",
+        ],
+        keep=False,
     )
 
     if historical_duplicates.any():
-        raise ValueError(
-            "Duplicate historical series-period "
-            "observations found."
-        )
+        raise ValueError("Duplicate historical series-period observations found.")
 
-    forecast_duplicates = (
-        forecast_result.duplicated(
-            subset=[
-                "series_id",
-                "forecast_period",
-            ],
-            keep=False,
-        )
+    forecast_duplicates = forecast_result.duplicated(
+        subset=[
+            "series_id",
+            "forecast_period",
+        ],
+        keep=False,
     )
 
     if forecast_duplicates.any():
-        raise ValueError(
-            "Duplicate forecast series-period "
-            "observations found."
-        )
+        raise ValueError("Duplicate forecast series-period observations found.")
 
     forecast_columns = [
         "series_id",
@@ -210,15 +174,9 @@ def consolidate_anomaly_outputs(
         "forecast_alert_status",
     ]
 
-    forecast_columns = [
-        column
-        for column in forecast_columns
-        if column in forecast_result.columns
-    ]
+    forecast_columns = [column for column in forecast_columns if column in forecast_result.columns]
 
-    forecast_subset = forecast_result[
-        forecast_columns
-    ].copy()
+    forecast_subset = forecast_result[forecast_columns].copy()
 
     forecast_subset = forecast_subset.rename(
         columns={
@@ -238,77 +196,38 @@ def consolidate_anomaly_outputs(
         validate="one_to_one",
     )
 
-    metric_mismatch = (
-        result["forecast_metric"].notna()
-        & result["metric"].ne(
-            result["forecast_metric"]
-        )
+    metric_mismatch = result["forecast_metric"].notna() & result["metric"].ne(
+        result["forecast_metric"]
     )
 
     if metric_mismatch.any():
-        raise ValueError(
-            "Historical and forecast metric mismatch "
-            "found after consolidation."
-        )
+        raise ValueError("Historical and forecast metric mismatch found after consolidation.")
 
-    result["has_forecast_record"] = (
-        result["forecast_metric"].notna()
+    result["has_forecast_record"] = result["forecast_metric"].notna()
+
+    result["historical_dashboard_alert"] = result["dashboard_alert"].fillna(False).astype(bool)
+
+    result["forecast_dashboard_alert"] = (
+        result["forecast_dashboard_alert"].fillna(False).astype(bool)
     )
 
-    result[
-        "historical_dashboard_alert"
-    ] = (
-        result["dashboard_alert"]
-        .fillna(False)
-        .astype(bool)
+    result["historical_detector_available"] = (
+        result["historical_score_available"].fillna(False).astype(bool)
     )
 
-    result[
-        "forecast_dashboard_alert"
-    ] = (
-        result[
-            "forecast_dashboard_alert"
-        ]
-        .fillna(False)
-        .astype(bool)
+    result["forecast_detector_available"] = (
+        result["forecast_score_available"].fillna(False).astype(bool)
     )
 
-    result[
-        "historical_detector_available"
-    ] = (
-        result[
-            "historical_score_available"
-        ]
-        .fillna(False)
-        .astype(bool)
-    )
+    historical_available = result["historical_detector_available"]
 
-    result[
-        "forecast_detector_available"
-    ] = (
-        result[
-            "forecast_score_available"
-        ]
-        .fillna(False)
-        .astype(bool)
-    )
-
-    historical_available = result[
-        "historical_detector_available"
-    ]
-
-    forecast_available = result[
-        "forecast_detector_available"
-    ]
+    forecast_available = result["forecast_detector_available"]
 
     result["detector_coverage"] = np.select(
         [
-            historical_available
-            & forecast_available,
-            historical_available
-            & ~forecast_available,
-            ~historical_available
-            & forecast_available,
+            historical_available & forecast_available,
+            historical_available & ~forecast_available,
+            ~historical_available & forecast_available,
         ],
         [
             "both",
@@ -318,24 +237,16 @@ def consolidate_anomaly_outputs(
         default="unavailable",
     )
 
-    historical_alert = result[
-        "historical_dashboard_alert"
-    ]
+    historical_alert = result["historical_dashboard_alert"]
 
-    forecast_alert = result[
-        "forecast_dashboard_alert"
-    ]
+    forecast_alert = result["forecast_dashboard_alert"]
 
-    any_available = (
-        historical_available
-        | forecast_available
-    )
+    any_available = historical_available | forecast_available
 
     result["overall_status"] = np.select(
         [
             ~any_available,
-            historical_alert
-            & forecast_alert,
+            historical_alert & forecast_alert,
             historical_alert,
             forecast_alert,
         ],
@@ -348,10 +259,7 @@ def consolidate_anomaly_outputs(
         default="normal",
     )
 
-    result["overall_dashboard_alert"] = (
-        historical_alert
-        | forecast_alert
-    )
+    result["overall_dashboard_alert"] = historical_alert | forecast_alert
 
     result["overall_severity"] = [
         _overall_severity(
@@ -381,12 +289,8 @@ def consolidate_anomaly_outputs(
         [
             historical_alert
             & forecast_alert
-            & result[
-                "historical_direction"
-            ].eq(
-                result[
-                    "forecast_error_direction"
-                ].map(
+            & result["historical_direction"].eq(
+                result["forecast_error_direction"].map(
                     {
                         "above_forecast": "high",
                         "below_forecast": "low",
@@ -394,8 +298,7 @@ def consolidate_anomaly_outputs(
                     }
                 )
             ),
-            historical_alert
-            & forecast_alert,
+            historical_alert & forecast_alert,
             historical_alert,
             forecast_alert,
         ],
@@ -403,9 +306,7 @@ def consolidate_anomaly_outputs(
             result["historical_direction"],
             "mixed",
             result["historical_direction"],
-            result[
-                "forecast_error_direction"
-            ].map(
+            result["forecast_error_direction"].map(
                 {
                     "above_forecast": "high",
                     "below_forecast": "low",

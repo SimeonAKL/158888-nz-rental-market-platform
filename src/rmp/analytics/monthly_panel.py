@@ -11,8 +11,9 @@ CORE_METRICS = (
 
 EXCLUDED_LOCATION_IDS = {
     -99,  # ALL
-    -1,   # NA / unknown
+    -1,  # NA / unknown
 }
+
 
 def select_core_geographies(
     df: pd.DataFrame,
@@ -34,30 +35,18 @@ def select_core_geographies(
     missing = required_columns.difference(df.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required geography columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required geography columns: {sorted(missing)}")
 
-    valid_geography_level = df[
-        "geography_level"
-    ].isin(
+    valid_geography_level = df["geography_level"].isin(
         {
             "region",
             "territorial_authority",
         }
     )
 
-    valid_location = ~df[
-        "location_id"
-    ].isin(
-        EXCLUDED_LOCATION_IDS
-    )
+    valid_location = ~df["location_id"].isin(EXCLUDED_LOCATION_IDS)
 
-    result = df.loc[
-        valid_geography_level
-        & valid_location
-    ].copy()
+    result = df.loc[valid_geography_level & valid_location].copy()
 
     return result
 
@@ -81,10 +70,7 @@ def reshape_metrics(
     missing = required_columns.difference(df.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required analytics columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Missing required analytics columns: {sorted(missing)}")
 
     panel = df.melt(
         id_vars=[
@@ -100,9 +86,7 @@ def reshape_metrics(
         value_name="value",
     )
 
-    panel["period_date"] = pd.to_datetime(
-        panel["period_date"]
-    )
+    panel["period_date"] = pd.to_datetime(panel["period_date"])
 
     panel["value"] = pd.to_numeric(
         panel["value"],
@@ -137,25 +121,15 @@ def validate_monthly_panel(
         "source_snapshot_id",
     }
 
-    missing = required_columns.difference(
-        panel.columns
-    )
+    missing = required_columns.difference(panel.columns)
 
     if missing:
-        raise ValueError(
-            "Monthly panel is missing columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Monthly panel is missing columns: {sorted(missing)}")
 
-    invalid_metrics = set(
-        panel["metric"].dropna().unique()
-    ).difference(CORE_METRICS)
+    invalid_metrics = set(panel["metric"].dropna().unique()).difference(CORE_METRICS)
 
     if invalid_metrics:
-        raise ValueError(
-            "Unexpected metrics found: "
-            f"{sorted(invalid_metrics)}"
-        )
+        raise ValueError(f"Unexpected metrics found: {sorted(invalid_metrics)}")
 
     duplicates = panel.duplicated(
         subset=[
@@ -166,29 +140,17 @@ def validate_monthly_panel(
     )
 
     if duplicates.any():
-        duplicate_count = int(
-            duplicates.sum()
-        )
+        duplicate_count = int(duplicates.sum())
 
-        raise ValueError(
-            "Duplicate monthly observations found: "
-            f"{duplicate_count}"
-        )
+        raise ValueError(f"Duplicate monthly observations found: {duplicate_count}")
 
     if panel["period_date"].isna().any():
-        raise ValueError(
-            "Monthly panel contains null period_date."
-        )
+        raise ValueError("Monthly panel contains null period_date.")
 
-    valid_days = panel[
-        "period_date"
-    ].dt.day.eq(1)
+    valid_days = panel["period_date"].dt.day.eq(1)
 
     if not valid_days.all():
-        raise ValueError(
-            "All period_date values must be "
-            "the first day of the month."
-        )
+        raise ValueError("All period_date values must be the first day of the month.")
 
 
 def build_monthly_panel(

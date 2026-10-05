@@ -14,38 +14,26 @@ from rmp.acquisition.market_rent_snapshot import (
 def build_parser() -> argparse.ArgumentParser:
     """Create the command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Acquire an immutable raw snapshot "
-            "from the MBIE Market Rent API."
-        )
+        description=("Acquire an immutable raw snapshot from the MBIE Market Rent API.")
     )
 
     parser.add_argument(
         "--period-ending",
         required=True,
-        help=(
-            "Period ending in YYYY-MM format, "
-            "for example 2026-07."
-        ),
+        help=("Period ending in YYYY-MM format, for example 2026-07."),
     )
 
     parser.add_argument(
         "--num-months",
         type=int,
         default=1,
-        help=(
-            "Number of months requested. "
-            "Default: 1."
-        ),
+        help=("Number of months requested. Default: 1."),
     )
 
     parser.add_argument(
         "--area-definition",
         required=True,
-        help=(
-            "Market Rent geographic definition, "
-            "for example regional-council-2019."
-        ),
+        help=("Market Rent geographic definition, for example regional-council-2019."),
     )
 
     parser.add_argument(
@@ -67,40 +55,20 @@ def main() -> int:
     print("Market Rent raw acquisition")
     print("=" * 60)
 
-    print(
-        f"Period ending   : "
-        f"{args.period_ending}"
-    )
-    print(
-        f"Number of months: "
-        f"{args.num_months}"
-    )
-    print(
-        f"Area definition : "
-        f"{args.area_definition}"
-    )
-    print(
-        f"Aggregates      : "
-        f"{args.include_aggregates}"
-    )
+    print(f"Period ending   : {args.period_ending}")
+    print(f"Number of months: {args.num_months}")
+    print(f"Area definition : {args.area_definition}")
+    print(f"Aggregates      : {args.include_aggregates}")
 
     print()
     print("Requesting Market Rent data...")
 
     try:
-        raw_path, metadata_path = (
-            acquire_market_rent_snapshot(
-                period_ending=(
-                    args.period_ending
-                ),
-                num_months=args.num_months,
-                area_definition=(
-                    args.area_definition
-                ),
-                include_aggregates=(
-                    args.include_aggregates
-                ),
-            )
+        raw_path, metadata_path = acquire_market_rent_snapshot(
+            period_ending=(args.period_ending),
+            num_months=args.num_months,
+            area_definition=(args.area_definition),
+            include_aggregates=(args.include_aggregates),
         )
 
     except (

@@ -30,9 +30,7 @@ anomalies = load_anomaly_summary()
 total_series = catalog["series_id"].nunique()
 historical_observations = len(anomalies)
 overall_alerts = int(anomalies["overall_dashboard_alert"].sum())
-both_detectors_flagged = int(
-    (anomalies["overall_status"] == "confirmed_anomaly").sum()
-)
+both_detectors_flagged = int((anomalies["overall_status"] == "confirmed_anomaly").sum())
 
 final_forecasts = load_final_forward_forecasts()
 
@@ -105,11 +103,7 @@ with kpi2:
     )
 
 with kpi3:
-    forecast_text = (
-        f"{forecast_series:,}"
-        if forecast_series is not None
-        else "N/A"
-    )
+    forecast_text = f"{forecast_series:,}" if forecast_series is not None else "N/A"
     st.markdown(
         f"""
 <div class="metric-card">

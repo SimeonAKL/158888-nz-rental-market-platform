@@ -34,33 +34,17 @@ def test_matching_regions_pass() -> None:
         rental_rows=rental,
     )
 
-    assert (
-        missing_in_market
-        == ()
-    )
+    assert missing_in_market == ()
 
-    assert (
-        missing_in_rental
-        == ()
-    )
+    assert missing_in_rental == ()
 
-    assert len(
-        comparisons
-    ) == 1
+    assert len(comparisons) == 1
 
-    comparison = (
-        comparisons[0]
-    )
+    comparison = comparisons[0]
 
-    assert (
-        comparison.median_rent_status
-        == "PASS"
-    )
+    assert comparison.median_rent_status == "PASS"
 
-    assert (
-        comparison.bonds_lodged_status
-        == "PASS"
-    )
+    assert comparison.bonds_lodged_status == "PASS"
 
 
 def test_median_difference_within_tolerance_passes() -> None:
@@ -79,21 +63,13 @@ def test_median_difference_within_tolerance_passes() -> None:
         },
     }
 
-    comparisons, _, _ = (
-        compare_sources(
-            market_rows=market,
-            rental_rows=rental,
-            median_rent_tolerance=(
-                Decimal(20)
-            ),
-        )
+    comparisons, _, _ = compare_sources(
+        market_rows=market,
+        rental_rows=rental,
+        median_rent_tolerance=(Decimal(20)),
     )
 
-    assert (
-        comparisons[0]
-        .median_rent_status
-        == "PASS"
-    )
+    assert comparisons[0].median_rent_status == "PASS"
 
 
 def test_large_median_difference_warns() -> None:
@@ -112,21 +88,13 @@ def test_large_median_difference_warns() -> None:
         },
     }
 
-    comparisons, _, _ = (
-        compare_sources(
-            market_rows=market,
-            rental_rows=rental,
-            median_rent_tolerance=(
-                Decimal(20)
-            ),
-        )
+    comparisons, _, _ = compare_sources(
+        market_rows=market,
+        rental_rows=rental,
+        median_rent_tolerance=(Decimal(20)),
     )
 
-    assert (
-        comparisons[0]
-        .median_rent_status
-        == "WARN"
-    )
+    assert comparisons[0].median_rent_status == "WARN"
 
 
 def test_bonds_difference_within_tolerance_passes() -> None:
@@ -145,27 +113,15 @@ def test_bonds_difference_within_tolerance_passes() -> None:
         },
     }
 
-    comparisons, _, _ = (
-        compare_sources(
-            market_rows=market,
-            rental_rows=rental,
-            bonds_lodged_pct_tolerance=(
-                Decimal(20)
-            ),
-        )
+    comparisons, _, _ = compare_sources(
+        market_rows=market,
+        rental_rows=rental,
+        bonds_lodged_pct_tolerance=(Decimal(20)),
     )
 
-    assert (
-        comparisons[0]
-        .bonds_lodged_status
-        == "PASS"
-    )
+    assert comparisons[0].bonds_lodged_status == "PASS"
 
-    assert (
-        comparisons[0]
-        .bonds_lodged_difference_pct
-        == Decimal(10)
-    )
+    assert comparisons[0].bonds_lodged_difference_pct == Decimal(10)
 
 
 def test_large_bonds_difference_warns() -> None:
@@ -184,21 +140,13 @@ def test_large_bonds_difference_warns() -> None:
         },
     }
 
-    comparisons, _, _ = (
-        compare_sources(
-            market_rows=market,
-            rental_rows=rental,
-            bonds_lodged_pct_tolerance=(
-                Decimal(20)
-            ),
-        )
+    comparisons, _, _ = compare_sources(
+        market_rows=market,
+        rental_rows=rental,
+        bonds_lodged_pct_tolerance=(Decimal(20)),
     )
 
-    assert (
-        comparisons[0]
-        .bonds_lodged_status
-        == "WARN"
-    )
+    assert comparisons[0].bonds_lodged_status == "WARN"
 
 
 def test_missing_region_is_reported() -> None:
@@ -230,18 +178,8 @@ def test_missing_region_is_reported() -> None:
         rental_rows=rental,
     )
 
-    assert (
-        missing_in_market
-        == ()
-    )
+    assert missing_in_market == ()
 
-    assert (
-        missing_in_rental
-        == (
-            "Waikato Region",
-        )
-    )
+    assert missing_in_rental == ("Waikato Region",)
 
-    assert len(
-        comparisons
-    ) == 1
+    assert len(comparisons) == 1

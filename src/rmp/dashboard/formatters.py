@@ -7,9 +7,7 @@ import math
 MODEL_LABELS = {
     "seasonal_naive": "Seasonal Naive",
     "ets_additive_damped": "ETS (Additive Damped)",
-    "xgboost_pooled_recursive": (
-        "XGBoost (Pooled Recursive)"
-    ),
+    "xgboost_pooled_recursive": ("XGBoost (Pooled Recursive)"),
 }
 
 

@@ -52,36 +52,21 @@ def generate_rolling_origins(
     """
 
     if forecast_horizon < 1:
-        raise ValueError(
-            "forecast_horizon must be at least 1."
-        )
+        raise ValueError("forecast_horizon must be at least 1.")
 
     if n_origins < 1:
-        raise ValueError(
-            "n_origins must be at least 1."
-        )
+        raise ValueError("n_origins must be at least 1.")
 
     if min_history_months < 1:
-        raise ValueError(
-            "min_history_months must be at least 1."
-        )
+        raise ValueError("min_history_months must be at least 1.")
 
-    dates = pd.DatetimeIndex(
-        pd.to_datetime(periods)
-    ).sort_values()
+    dates = pd.DatetimeIndex(pd.to_datetime(periods)).sort_values()
 
     if dates.has_duplicates:
-        raise ValueError(
-            "Periods contain duplicate monthly observations."
-        )
+        raise ValueError("Periods contain duplicate monthly observations.")
 
-    if len(dates) < (
-        min_history_months
-        + forecast_horizon
-    ):
-        raise ValueError(
-            "Insufficient history for rolling-origin evaluation."
-        )
+    if len(dates) < (min_history_months + forecast_horizon):
+        raise ValueError("Insufficient history for rolling-origin evaluation.")
 
     expected = pd.date_range(
         start=dates.min(),
@@ -90,37 +75,20 @@ def generate_rolling_origins(
     )
 
     if not dates.equals(expected):
-        raise ValueError(
-            "Periods must form a complete monthly sequence."
-        )
+        raise ValueError("Periods must form a complete monthly sequence.")
 
-    latest_origin_index = (
-        len(dates)
-        - forecast_horizon
-        - 1
-    )
+    latest_origin_index = len(dates) - forecast_horizon - 1
 
-    earliest_allowed_index = (
-        min_history_months
-        - 1
-    )
+    earliest_allowed_index = min_history_months - 1
 
-    available_origins = (
-        latest_origin_index
-        - earliest_allowed_index
-        + 1
-    )
+    available_origins = latest_origin_index - earliest_allowed_index + 1
 
     actual_n_origins = min(
         n_origins,
         available_origins,
     )
 
-    first_origin_index = (
-        latest_origin_index
-        - actual_n_origins
-        + 1
-    )
+    first_origin_index = latest_origin_index - actual_n_origins + 1
 
     splits: list[RollingOriginSplit] = []
 
@@ -130,26 +98,17 @@ def generate_rolling_origins(
     ):
         origin = dates[origin_index]
 
-        test_start_index = (
-            origin_index + 1
-        )
+        test_start_index = origin_index + 1
 
-        test_end_index = (
-            origin_index
-            + forecast_horizon
-        )
+        test_end_index = origin_index + forecast_horizon
 
         splits.append(
             RollingOriginSplit(
                 origin=origin,
                 train_start=dates[0],
                 train_end=origin,
-                test_start=dates[
-                    test_start_index
-                ],
-                test_end=dates[
-                    test_end_index
-                ],
+                test_start=dates[test_start_index],
+                test_end=dates[test_end_index],
                 horizon=forecast_horizon,
             )
         )
@@ -165,44 +124,23 @@ def slice_rolling_origin(
     """Return train and test data for one split."""
 
     if date_column not in series.columns:
-        raise ValueError(
-            f"Missing date column: {date_column}"
-        )
+        raise ValueError(f"Missing date column: {date_column}")
 
     data = series.copy()
 
-    data[date_column] = pd.to_datetime(
-        data[date_column]
-    )
+    data[date_column] = pd.to_datetime(data[date_column])
 
-    train = data.loc[
-        data[date_column]
-        <= split.train_end
-    ].copy()
+    train = data.loc[data[date_column] <= split.train_end].copy()
 
     test = data.loc[
-        (
-            data[date_column]
-            >= split.test_start
-        )
-        & (
-            data[date_column]
-            <= split.test_end
-        )
+        (data[date_column] >= split.test_start) & (data[date_column] <= split.test_end)
     ].copy()
 
-    train = train.sort_values(
-        date_column
-    ).reset_index(drop=True)
+    train = train.sort_values(date_column).reset_index(drop=True)
 
-    test = test.sort_values(
-        date_column
-    ).reset_index(drop=True)
+    test = test.sort_values(date_column).reset_index(drop=True)
 
     if len(test) != split.horizon:
-        raise ValueError(
-            "Test window does not contain "
-            f"{split.horizon} observations."
-        )
+        raise ValueError(f"Test window does not contain {split.horizon} observations.")
 
     return train, test

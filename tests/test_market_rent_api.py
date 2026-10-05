@@ -26,17 +26,9 @@ def test_client_sets_required_headers(
     """Client should configure required MBIE request headers."""
     client = MarketRentAPIClient(settings=settings)
 
-    assert (
-        client.session.headers[
-            "Ocp-Apim-Subscription-Key"
-        ]
-        == "test-key"
-    )
+    assert client.session.headers["Ocp-Apim-Subscription-Key"] == "test-key"
 
-    assert (
-        client.session.headers["Accept"]
-        == "application/json"
-    )
+    assert client.session.headers["Accept"] == "application/json"
 
     client.close()
 

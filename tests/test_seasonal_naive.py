@@ -29,9 +29,7 @@ def make_train_test() -> tuple[
     train = pd.DataFrame(
         {
             "period_date": train_dates,
-            "value": list(
-                range(1, 13)
-            ),
+            "value": list(range(1, 13)),
         }
     )
 
@@ -63,9 +61,7 @@ def test_seasonal_naive_uses_previous_year() -> None:
         seasonal_period=12,
     )
 
-    assert result[
-        "predicted"
-    ].tolist() == [
+    assert result["predicted"].tolist() == [
         1.0,
         2.0,
         3.0,
@@ -85,9 +81,7 @@ def test_horizon_steps_are_sequential() -> None:
         test,
     )
 
-    assert result[
-        "horizon_step"
-    ].tolist() == [
+    assert result["horizon_step"].tolist() == [
         1,
         2,
         3,
@@ -113,9 +107,7 @@ def test_reference_period_is_twelve_months_back() -> None:
         freq="MS",
     )
 
-    assert pd.DatetimeIndex(
-        result["reference_period"]
-    ).equals(expected)
+    assert pd.DatetimeIndex(result["reference_period"]).equals(expected)
 
 
 def test_future_actuals_do_not_change_forecast() -> None:
@@ -144,11 +136,7 @@ def test_future_actuals_do_not_change_forecast() -> None:
         changed_test,
     )
 
-    assert first[
-        "predicted"
-    ].tolist() == second[
-        "predicted"
-    ].tolist()
+    assert first["predicted"].tolist() == second["predicted"].tolist()
 
 
 def test_error_is_actual_minus_predicted() -> None:
@@ -161,23 +149,11 @@ def test_error_is_actual_minus_predicted() -> None:
         test,
     )
 
-    assert result.iloc[0][
-        "error"
-    ] == pytest.approx(
-        100.0
-    )
+    assert result.iloc[0]["error"] == pytest.approx(100.0)
 
-    assert result.iloc[0][
-        "absolute_error"
-    ] == pytest.approx(
-        100.0
-    )
+    assert result.iloc[0]["absolute_error"] == pytest.approx(100.0)
 
-    assert result.iloc[0][
-        "squared_error"
-    ] == pytest.approx(
-        10000.0
-    )
+    assert result.iloc[0]["squared_error"] == pytest.approx(10000.0)
 
 
 def test_missing_reference_period_is_rejected() -> None:
@@ -185,10 +161,7 @@ def test_missing_reference_period_is_rejected() -> None:
 
     train, test = make_train_test()
 
-    train = train.loc[
-        train["period_date"]
-        != pd.Timestamp("2019-01-01")
-    ].copy()
+    train = train.loc[train["period_date"] != pd.Timestamp("2019-01-01")].copy()
 
     with pytest.raises(
         ValueError,

@@ -20,9 +20,7 @@ def test_mae() -> None:
         [110, 190, 330],
     )
 
-    assert result == pytest.approx(
-        50 / 3
-    )
+    assert result == pytest.approx(50 / 3)
 
 
 def test_rmse() -> None:
@@ -33,18 +31,9 @@ def test_rmse() -> None:
         [110, 190, 330],
     )
 
-    expected = math.sqrt(
-        (
-            10**2
-            + 10**2
-            + 30**2
-        )
-        / 3
-    )
+    expected = math.sqrt((10**2 + 10**2 + 30**2) / 3)
 
-    assert result == pytest.approx(
-        expected
-    )
+    assert result == pytest.approx(expected)
 
 
 def test_smape_perfect_forecast() -> None:
@@ -55,9 +44,7 @@ def test_smape_perfect_forecast() -> None:
         [100, 200, 300],
     )
 
-    assert result == pytest.approx(
-        0.0
-    )
+    assert result == pytest.approx(0.0)
 
 
 def test_smape_handles_both_zero() -> None:
@@ -68,22 +55,9 @@ def test_smape_handles_both_zero() -> None:
         [0, 110],
     )
 
-    expected = (
-        (
-            0
-            + (
-                2
-                * 10
-                / 210
-            )
-        )
-        / 2
-        * 100
-    )
+    expected = (0 + (2 * 10 / 210)) / 2 * 100
 
-    assert result == pytest.approx(
-        expected
-    )
+    assert result == pytest.approx(expected)
 
 
 def test_calculate_forecast_metrics() -> None:

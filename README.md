@@ -62,7 +62,17 @@ The project is developed primarily using GitHub Codespaces.
 Install the core and development dependencies with:
 
 ```bash
-pip install -e ".[dev]"
+pip install -e ".[dev,forecasting,dashboard]"
+```
+
+The repository includes `requirements-tested.txt`, which records the exact
+direct dependency versions used for the validated development environment.
+
+For the closest reproduction of the validated environment:
+
+```bash
+pip install -r requirements-tested.txt
+pip install -e . --no-deps
 ```
 
 Run tests:
@@ -88,4 +98,4 @@ See `.env.example` for the required configuration variables.
 
 ## Current Development Stage
 
-Phase 1 — Foundations and Data Infrastructure.
+Phase 5 — Analytics, forecasting, anomaly detection and the Streamlit dashboard are implemented. Phase 6 focuses on packaging, documentation, final quality assurance and reporting.

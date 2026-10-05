@@ -118,9 +118,7 @@ def _summary() -> pd.DataFrame:
 
 
 def test_valid_summary_passes_all_checks() -> None:
-    validation = validate_anomaly_summary(
-        _summary()
-    )
+    validation = validate_anomaly_summary(_summary())
 
     assert validation["passed"].all()
 
@@ -140,9 +138,7 @@ def test_duplicate_series_period_fails() -> None:
         ValueError,
         match="unique_series_period",
     ):
-        validate_anomaly_summary(
-            duplicate
-        )
+        validate_anomaly_summary(duplicate)
 
 
 def test_invalid_status_fails() -> None:
@@ -156,9 +152,7 @@ def test_invalid_status_fails() -> None:
         ValueError,
         match="valid_overall_status",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_overall_alert_union_is_validated() -> None:
@@ -173,9 +167,7 @@ def test_overall_alert_union_is_validated() -> None:
         ValueError,
         match="overall_alert_union",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_confirmed_requires_both_alerts() -> None:
@@ -190,9 +182,7 @@ def test_confirmed_requires_both_alerts() -> None:
         ValueError,
         match="confirmed_anomaly_logic",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_unavailable_requires_no_detector() -> None:
@@ -207,9 +197,7 @@ def test_unavailable_requires_no_detector() -> None:
         ValueError,
         match="unavailable_status_logic",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_detector_coverage_is_validated() -> None:
@@ -224,9 +212,7 @@ def test_detector_coverage_is_validated() -> None:
         ValueError,
         match="detector_coverage_logic",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_alert_requires_alert_severity() -> None:
@@ -241,19 +227,13 @@ def test_alert_requires_alert_severity() -> None:
         ValueError,
         match="alert_severity_consistency",
     ):
-        validate_anomaly_summary(
-            frame
-        )
+        validate_anomaly_summary(frame)
 
 
 def test_metadata_contains_core_sections() -> None:
-    metadata = build_anomaly_metadata(
-        _summary()
-    )
+    metadata = build_anomaly_metadata(_summary())
 
-    categories = set(
-        metadata["category"]
-    )
+    categories = set(metadata["category"])
 
     assert {
         "dataset",
@@ -266,18 +246,14 @@ def test_metadata_contains_core_sections() -> None:
 
 
 def test_metadata_counts_outputs() -> None:
-    metadata = build_anomaly_metadata(
-        _summary()
-    )
+    metadata = build_anomaly_metadata(_summary())
 
-    values = (
-        metadata.set_index(
-            [
-                "category",
-                "item",
-            ]
-        )["value"]
-    )
+    values = metadata.set_index(
+        [
+            "category",
+            "item",
+        ]
+    )["value"]
 
     assert (
         int(

@@ -45,51 +45,29 @@ def validate_model_predictions(
 ) -> None:
     """Validate one model's prediction frame."""
 
-    missing = set(
-        REQUIRED_COLUMNS
-    ).difference(
-        predictions.columns
-    )
+    missing = set(REQUIRED_COLUMNS).difference(predictions.columns)
 
     if missing:
-        raise ValueError(
-            "Prediction data is missing required columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Prediction data is missing required columns: {sorted(missing)}")
 
     if predictions.empty:
-        raise ValueError(
-            "Prediction data cannot be empty."
-        )
+        raise ValueError("Prediction data cannot be empty.")
 
     if predictions["model"].nunique() != 1:
-        raise ValueError(
-            "Each prediction frame must contain "
-            "exactly one model."
-        )
+        raise ValueError("Each prediction frame must contain exactly one model.")
 
-    if predictions[
-        KEY_COLUMNS
-    ].duplicated().any():
-        raise ValueError(
-            "Prediction data contains duplicate forecast keys."
-        )
+    if predictions[KEY_COLUMNS].duplicated().any():
+        raise ValueError("Prediction data contains duplicate forecast keys.")
 
     numeric = predictions[
         [
             "actual",
             "predicted",
         ]
-    ].to_numpy(
-        dtype=float
-    )
+    ].to_numpy(dtype=float)
 
-    if not np.isfinite(
-        numeric
-    ).all():
-        raise ValueError(
-            "Prediction values must be finite."
-        )
+    if not np.isfinite(numeric).all():
+        raise ValueError("Prediction values must be finite.")
 
 
 def validate_prediction_alignment(
@@ -98,78 +76,40 @@ def validate_prediction_alignment(
     """Verify all models were evaluated on identical observations."""
 
     if len(model_frames) < 2:
-        raise ValueError(
-            "At least two model prediction frames are required."
-        )
+        raise ValueError("At least two model prediction frames are required.")
 
     for frame in model_frames:
-        validate_model_predictions(
-            frame
-        )
+        validate_model_predictions(frame)
 
     reference = (
-        model_frames[0][
-            KEY_COLUMNS
-            + METADATA_COLUMNS
-            + ["actual"]
-        ]
-        .sort_values(
-            KEY_COLUMNS
-        )
+        model_frames[0][KEY_COLUMNS + METADATA_COLUMNS + ["actual"]]
+        .sort_values(KEY_COLUMNS)
         .reset_index(drop=True)
     )
 
-    reference_keys = reference[
-        KEY_COLUMNS
-    ]
+    reference_keys = reference[KEY_COLUMNS]
 
     for frame in model_frames[1:]:
         candidate = (
-            frame[
-                KEY_COLUMNS
-                + METADATA_COLUMNS
-                + ["actual"]
-            ]
-            .sort_values(
-                KEY_COLUMNS
-            )
+            frame[KEY_COLUMNS + METADATA_COLUMNS + ["actual"]]
+            .sort_values(KEY_COLUMNS)
             .reset_index(drop=True)
         )
 
-        if not candidate[
-            KEY_COLUMNS
-        ].equals(
-            reference_keys
-        ):
-            raise ValueError(
-                "Models were not evaluated on "
-                "identical forecast observations."
-            )
+        if not candidate[KEY_COLUMNS].equals(reference_keys):
+            raise ValueError("Models were not evaluated on identical forecast observations.")
 
         for column in METADATA_COLUMNS:
-            if not candidate[
-                column
-            ].equals(
-                reference[column]
-            ):
-                raise ValueError(
-                    "Model prediction metadata does not align "
-                    f"for column: {column}"
-                )
+            if not candidate[column].equals(reference[column]):
+                raise ValueError(f"Model prediction metadata does not align for column: {column}")
 
         if not np.allclose(
-            candidate["actual"].to_numpy(
-                dtype=float
-            ),
-            reference["actual"].to_numpy(
-                dtype=float
-            ),
+            candidate["actual"].to_numpy(dtype=float),
+            reference["actual"].to_numpy(dtype=float),
             rtol=0.0,
             atol=1e-12,
         ):
-            raise ValueError(
-                "Actual values differ between model evaluations."
-            )
+            raise ValueError("Actual values differ between model evaluations.")
 
 
 def combine_predictions(
@@ -177,29 +117,16 @@ def combine_predictions(
 ) -> pd.DataFrame:
     """Combine aligned model prediction frames."""
 
-    validate_prediction_alignment(
-        model_frames
-    )
+    validate_prediction_alignment(model_frames)
 
     combined = pd.concat(
         model_frames,
         ignore_index=True,
     )
 
-    model_rank = {
-        model: index
-        for index, model in enumerate(
-            MODEL_ORDER
-        )
-    }
+    model_rank = {model: index for index, model in enumerate(MODEL_ORDER)}
 
-    combined["_model_order"] = (
-        combined["model"]
-        .map(model_rank)
-        .fillna(
-            len(MODEL_ORDER)
-        )
-    )
+    combined["_model_order"] = combined["model"].map(model_rank).fillna(len(MODEL_ORDER))
 
     combined = combined.sort_values(
         [
@@ -208,13 +135,9 @@ def combine_predictions(
             "origin",
             "horizon_step",
         ]
-    ).drop(
-        columns="_model_order"
-    )
+    ).drop(columns="_model_order")
 
-    return combined.reset_index(
-        drop=True
-    )
+    return combined.reset_index(drop=True)
 
 
 def _metric_row(
@@ -243,9 +166,7 @@ def build_metrics_by_origin(
         "origin",
     ]
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for keys, group in predictions.groupby(
         columns,
@@ -260,28 +181,24 @@ def build_metrics_by_origin(
             )
         )
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            _metric_row(
-                group
-            )
-        )
+        row.update(_metric_row(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "series_id",
-            "origin",
-            "model",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "series_id",
+                "origin",
+                "model",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_metrics_by_series(
@@ -298,9 +215,7 @@ def build_metrics_by_series(
         "location_name",
     ]
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for keys, group in predictions.groupby(
         columns,
@@ -315,31 +230,25 @@ def build_metrics_by_series(
             )
         )
 
-        row["n_origins"] = group[
-            "origin"
-        ].nunique()
+        row["n_origins"] = group["origin"].nunique()
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            _metric_row(
-                group
-            )
-        )
+        row.update(_metric_row(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "series_id",
-            "model",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "series_id",
+                "model",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_metrics_by_horizon(
@@ -353,9 +262,7 @@ def build_metrics_by_horizon(
         "horizon_step",
     ]
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for keys, group in predictions.groupby(
         columns,
@@ -369,31 +276,25 @@ def build_metrics_by_horizon(
             )
         )
 
-        row["n_series"] = group[
-            "series_id"
-        ].nunique()
+        row["n_series"] = group["series_id"].nunique()
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            _metric_row(
-                group
-            )
-        )
+        row.update(_metric_row(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "horizon_step",
-            "model",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "horizon_step",
+                "model",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_model_comparison(
@@ -401,9 +302,7 @@ def build_model_comparison(
 ) -> pd.DataFrame:
     """Build target-level model rankings and baseline improvements."""
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for (
         model_name,
@@ -418,37 +317,23 @@ def build_model_comparison(
         row = {
             "model": model_name,
             "metric": metric_name,
-            "n_series": group[
-                "series_id"
-            ].nunique(),
-            "n_forecasts": len(
-                group
-            ),
+            "n_series": group["series_id"].nunique(),
+            "n_forecasts": len(group),
         }
 
-        row.update(
-            _metric_row(
-                group
-            )
-        )
+        row.update(_metric_row(group))
 
         rows.append(row)
 
-    comparison = pd.DataFrame(
-        rows
-    )
+    comparison = pd.DataFrame(rows)
 
     for metric_name in [
         "mae",
         "rmse",
         "smape",
     ]:
-        comparison[
-            f"rank_{metric_name}"
-        ] = (
-            comparison.groupby(
-                "metric"
-            )[metric_name]
+        comparison[f"rank_{metric_name}"] = (
+            comparison.groupby("metric")[metric_name]
             .rank(
                 method="min",
                 ascending=True,
@@ -457,8 +342,7 @@ def build_model_comparison(
         )
 
     baseline = comparison.loc[
-        comparison["model"]
-        == BASELINE_MODEL,
+        comparison["model"] == BASELINE_MODEL,
         [
             "metric",
             "mae",
@@ -468,9 +352,7 @@ def build_model_comparison(
     ].copy()
 
     if baseline["metric"].duplicated().any():
-        raise ValueError(
-            "Baseline model has duplicate metric rows."
-        )
+        raise ValueError("Baseline model has duplicate metric rows.")
 
     baseline = baseline.rename(
         columns={
@@ -487,38 +369,31 @@ def build_model_comparison(
         validate="many_to_one",
     )
 
-    if comparison[
-        [
-            "baseline_mae",
-            "baseline_rmse",
-            "baseline_smape",
+    if (
+        comparison[
+            [
+                "baseline_mae",
+                "baseline_rmse",
+                "baseline_smape",
+            ]
         ]
-    ].isna().any().any():
-        raise ValueError(
-            "Seasonal Naive baseline is missing "
-            "for one or more target metrics."
-        )
+        .isna()
+        .any()
+        .any()
+    ):
+        raise ValueError("Seasonal Naive baseline is missing for one or more target metrics.")
 
     for metric_name in [
         "mae",
         "rmse",
         "smape",
     ]:
-        baseline_column = (
-            f"baseline_{metric_name}"
-        )
+        baseline_column = f"baseline_{metric_name}"
 
-        improvement_column = (
-            f"{metric_name}_improvement_vs_baseline_pct"
-        )
+        improvement_column = f"{metric_name}_improvement_vs_baseline_pct"
 
-        comparison[
-            improvement_column
-        ] = (
-            (
-                comparison[baseline_column]
-                - comparison[metric_name]
-            )
+        comparison[improvement_column] = (
+            (comparison[baseline_column] - comparison[metric_name])
             / comparison[baseline_column]
             * 100.0
         )
@@ -557,19 +432,12 @@ def build_series_model_winners(
         "smape",
     }
 
-    missing = required.difference(
-        metrics_by_series.columns
-    )
+    missing = required.difference(metrics_by_series.columns)
 
     if missing:
-        raise ValueError(
-            "Series metrics are missing columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Series metrics are missing columns: {sorted(missing)}")
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for series_id, group in metrics_by_series.groupby(
         "series_id",
@@ -587,38 +455,24 @@ def build_series_model_winners(
         rows.append(
             {
                 "series_id": series_id,
-                "metric": best[
-                    "metric"
-                ],
-                "geography_level": best[
-                    "geography_level"
-                ],
-                "location_id": best[
-                    "location_id"
-                ],
-                "location_name": best[
-                    "location_name"
-                ],
-                "best_model": best[
-                    "model"
-                ],
-                "best_mae": best[
-                    "mae"
-                ],
-                "best_rmse": best[
-                    "rmse"
-                ],
-                "best_smape": best[
-                    "smape"
-                ],
+                "metric": best["metric"],
+                "geography_level": best["geography_level"],
+                "location_id": best["location_id"],
+                "location_name": best["location_name"],
+                "best_model": best["model"],
+                "best_mae": best["mae"],
+                "best_rmse": best["rmse"],
+                "best_smape": best["smape"],
             }
         )
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "location_name",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "location_name",
+            ]
+        )
+        .reset_index(drop=True)
+    )

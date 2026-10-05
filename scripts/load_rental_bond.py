@@ -26,38 +26,26 @@ def find_latest_staging_file(
     dataset: str,
 ) -> Path:
     """Return the latest staging CSV for one Rental Bond dataset."""
-    files = list(
-        DEFAULT_STAGING_ROOT.rglob(
-            f"rental_bond_{dataset}_*.csv"
-        )
-    )
+    files = list(DEFAULT_STAGING_ROOT.rglob(f"rental_bond_{dataset}_*.csv"))
 
     if not files:
         raise FileNotFoundError(
-            "No Rental Bond staging CSV files "
-            f"were found for dataset: {dataset}"
+            f"No Rental Bond staging CSV files were found for dataset: {dataset}"
         )
 
-    return max(
-        files
-    )
+    return max(files)
 
 
 def build_parser() -> argparse.ArgumentParser:
     """Create command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Load a Rental Bond staging CSV "
-            "into PostgreSQL."
-        )
+        description=("Load a Rental Bond staging CSV into PostgreSQL.")
     )
 
     parser.add_argument(
         "dataset",
         choices=SUPPORTED_DATASETS,
-        help=(
-            "Rental Bond dataset to load."
-        ),
+        help=("Rental Bond dataset to load."),
     )
 
     parser.add_argument(
@@ -79,33 +67,21 @@ def main() -> int:
 
     try:
         staging_path = (
-            args.input
-            if args.input is not None
-            else find_latest_staging_file(
-                args.dataset
-            )
+            args.input if args.input is not None else find_latest_staging_file(args.dataset)
         )
 
         print("=" * 60)
         print("Rental Bond database load")
         print("=" * 60)
 
-        print(
-            f"Dataset      : {args.dataset}"
-        )
+        print(f"Dataset      : {args.dataset}")
 
-        print(
-            f"Staging file : {staging_path}"
-        )
+        print(f"Staging file : {staging_path}")
 
         print()
-        print(
-            "Validating lineage and loading data..."
-        )
+        print("Validating lineage and loading data...")
 
-        result = load_rental_bond_staging(
-            staging_path
-        )
+        result = load_rental_bond_staging(staging_path)
 
     except (
         FileNotFoundError,
@@ -115,52 +91,35 @@ def main() -> int:
     ) as exc:
         print()
         print("Database load FAILED")
-        print(
-            f"Error: {exc}"
-        )
+        print(f"Error: {exc}")
 
         return 1
 
     if result.dataset != args.dataset:
         print()
         print("Database load FAILED")
-        print(
-            "Error: loaded dataset does not match "
-            "the requested dataset."
-        )
+        print("Error: loaded dataset does not match the requested dataset.")
 
         return 1
 
     print()
     print("Database load successful.")
 
-    print(
-        f"Dataset       : {result.dataset}"
-    )
+    print(f"Dataset       : {result.dataset}")
 
-    print(
-        f"Snapshot ID   : {result.snapshot_id}"
-    )
+    print(f"Snapshot ID   : {result.snapshot_id}")
 
-    print(
-        f"Rows processed: {result.rows_processed}"
-    )
+    print(f"Rows processed: {result.rows_processed}")
 
-    print(
-        f"Raw snapshot  : {result.raw_snapshot}"
-    )
+    print(f"Raw snapshot  : {result.raw_snapshot}")
 
     print()
     print("=" * 60)
-    print(
-        "Rental Bond database load PASSED"
-    )
+    print("Rental Bond database load PASSED")
     print("=" * 60)
 
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(
-        main()
-    )
+    sys.exit(main())

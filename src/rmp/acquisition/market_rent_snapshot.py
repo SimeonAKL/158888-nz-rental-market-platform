@@ -94,9 +94,7 @@ def acquire_market_rent_snapshot(
     acquisition_time = retrieved_at or datetime.now(UTC)
 
     if acquisition_time.tzinfo is None:
-        raise ValueError(
-            "retrieved_at must be timezone-aware."
-        )
+        raise ValueError("retrieved_at must be timezone-aware.")
 
     acquisition_time = acquisition_time.astimezone(UTC)
 
@@ -114,31 +112,17 @@ def acquire_market_rent_snapshot(
         exist_ok=True,
     )
 
-    timestamp = acquisition_time.strftime(
-        "%Y%m%dT%H%M%S%fZ"
-    )
+    timestamp = acquisition_time.strftime("%Y%m%dT%H%M%S%fZ")
 
-    safe_area_definition = _safe_filename_component(
-        area_definition
-    )
+    safe_area_definition = _safe_filename_component(area_definition)
 
-    safe_period = _safe_filename_component(
-        period_ending
-    )
+    safe_period = _safe_filename_component(period_ending)
 
-    base_filename = (
-        "statistics_"
-        f"{safe_area_definition}_"
-        f"{safe_period}_"
-        f"{timestamp}"
-    )
+    base_filename = f"statistics_{safe_area_definition}_{safe_period}_{timestamp}"
 
     raw_path = snapshot_dir / f"{base_filename}.json"
 
-    metadata_path = (
-        snapshot_dir
-        / f"{base_filename}.metadata.json"
-    )
+    metadata_path = snapshot_dir / f"{base_filename}.metadata.json"
 
     owns_client = client is None
 
@@ -156,80 +140,47 @@ def acquire_market_rent_snapshot(
 
         raw_bytes = _serialise_json(payload)
 
-        raw_sha256 = calculate_sha256(
-            raw_bytes
-        )
+        raw_sha256 = calculate_sha256(raw_bytes)
 
         request_parameters: dict[str, Any] = {
             "period-ending": period_ending,
             "num-months": num_months,
             "area-definition": area_definition,
-            "include-aggregates": (
-                "true"
-                if include_aggregates
-                else "false"
-            ),
+            "include-aggregates": ("true" if include_aggregates else "false"),
         }
 
         if area_labels:
-            request_parameters["area-labels"] = (
-                area_labels
-            )
+            request_parameters["area-labels"] = area_labels
 
         if area_codes:
-            request_parameters["area-codes"] = (
-                area_codes
-            )
+            request_parameters["area-codes"] = area_codes
 
         metadata = {
             "metadata_schema_version": 1,
-            "source": (
-                "MBIE / Tenancy Services "
-                "Market Rent API"
-            ),
-            "publisher": (
-                "Ministry of Business, "
-                "Innovation and Employment"
-            ),
-            "environment": (
-                api_client.settings.environment
-            ),
-            "endpoint": (
-                f"{api_client.settings.base_url}"
-                "/statistics"
-            ),
-            "retrieved_at_utc": (
-                acquisition_time.isoformat()
-            ),
-            "request_parameters": (
-                request_parameters
-            ),
+            "source": ("MBIE / Tenancy Services Market Rent API"),
+            "publisher": ("Ministry of Business, Innovation and Employment"),
+            "environment": (api_client.settings.environment),
+            "endpoint": (f"{api_client.settings.base_url}/statistics"),
+            "retrieved_at_utc": (acquisition_time.isoformat()),
+            "request_parameters": (request_parameters),
             "raw_file": raw_path.name,
             "file_size_bytes": len(raw_bytes),
             "sha256": raw_sha256,
         }
 
-        metadata_bytes = _serialise_json(
-            metadata
-        )
+        metadata_bytes = _serialise_json(metadata)
 
         # Exclusive creation protects immutable raw snapshots.
         with raw_path.open("xb") as raw_file:
             raw_file.write(raw_bytes)
 
         try:
-            with metadata_path.open(
-                "xb"
-            ) as metadata_file:
-                metadata_file.write(
-                    metadata_bytes
-                )
+            with metadata_path.open("xb") as metadata_file:
+                metadata_file.write(metadata_bytes)
 
         except Exception:
             # Avoid leaving an incomplete snapshot pair.
-            raw_path.unlink(
-                missing_ok=True
-            )
+            raw_path.unlink(missing_ok=True)
             raise
 
     finally:

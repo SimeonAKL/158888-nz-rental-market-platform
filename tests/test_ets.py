@@ -42,13 +42,9 @@ def make_training_series(
     for index in range(n_months):
         trend = 500.0 + (2.0 * index)
 
-        seasonal = seasonal_pattern[
-            index % 12
-        ]
+        seasonal = seasonal_pattern[index % 12]
 
-        values.append(
-            trend + seasonal
-        )
+        values.append(trend + seasonal)
 
     return pd.DataFrame(
         {
@@ -65,8 +61,7 @@ def make_forecast_periods(
     """Create consecutive months immediately after training."""
 
     return pd.date_range(
-        train["period_date"].max()
-        + pd.offsets.MonthBegin(1),
+        train["period_date"].max() + pd.offsets.MonthBegin(1),
         periods=horizon,
         freq="MS",
     )
@@ -77,9 +72,7 @@ def test_ets_returns_requested_horizon() -> None:
 
     train = make_training_series()
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     result = ets_forecast(
         train,
@@ -88,13 +81,9 @@ def test_ets_returns_requested_horizon() -> None:
 
     assert len(result) == 6
 
-    assert pd.DatetimeIndex(
-        result["forecast_period"]
-    ).equals(periods)
+    assert pd.DatetimeIndex(result["forecast_period"]).equals(periods)
 
-    assert np.isfinite(
-        result["predicted"]
-    ).all()
+    assert np.isfinite(result["predicted"]).all()
 
 
 def test_ets_is_deterministic() -> None:
@@ -102,9 +91,7 @@ def test_ets_is_deterministic() -> None:
 
     train = make_training_series()
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     first = ets_forecast(
         train,
@@ -116,13 +103,7 @@ def test_ets_is_deterministic() -> None:
         periods,
     )
 
-    assert first[
-        "predicted"
-    ].to_numpy() == pytest.approx(
-        second[
-            "predicted"
-        ].to_numpy()
-    )
+    assert first["predicted"].to_numpy() == pytest.approx(second["predicted"].to_numpy())
 
 
 def test_ets_does_not_modify_training_data() -> None:
@@ -130,13 +111,9 @@ def test_ets_does_not_modify_training_data() -> None:
 
     train = make_training_series()
 
-    original = train.copy(
-        deep=True
-    )
+    original = train.copy(deep=True)
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     ets_forecast(
         train,
@@ -152,13 +129,9 @@ def test_ets_does_not_modify_training_data() -> None:
 def test_ets_rejects_insufficient_history() -> None:
     """At least two complete seasonal cycles are required."""
 
-    train = make_training_series(
-        n_months=23
-    )
+    train = make_training_series(n_months=23)
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     with pytest.raises(
         ValueError,
@@ -175,15 +148,9 @@ def test_ets_rejects_missing_month() -> None:
 
     train = make_training_series()
 
-    train = train.drop(
-        index=10
-    ).reset_index(
-        drop=True
-    )
+    train = train.drop(index=10).reset_index(drop=True)
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     with pytest.raises(
         ValueError,
@@ -201,8 +168,7 @@ def test_ets_rejects_nonconsecutive_forecast_periods() -> None:
     train = make_training_series()
 
     periods = pd.date_range(
-        train["period_date"].max()
-        + pd.offsets.MonthBegin(2),
+        train["period_date"].max() + pd.offsets.MonthBegin(2),
         periods=6,
         freq="MS",
     )
@@ -222,9 +188,7 @@ def test_ets_rejects_invalid_seasonal_period() -> None:
 
     train = make_training_series()
 
-    periods = make_forecast_periods(
-        train
-    )
+    periods = make_forecast_periods(train)
 
     with pytest.raises(
         ValueError,

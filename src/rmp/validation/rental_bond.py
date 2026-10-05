@@ -50,9 +50,7 @@ def _validate_timeframe(
 ) -> None:
     """Validate the Rental Bond monthly date format."""
     if not isinstance(value, str):
-        raise RentalBondValidationError(
-            f"Row {row_number}: TimeFrame must be a string."
-        )
+        raise RentalBondValidationError(f"Row {row_number}: TimeFrame must be a string.")
 
     try:
         day_text, month_text, year_text = value.split("/")
@@ -64,14 +62,11 @@ def _validate_timeframe(
         )
 
     except (ValueError, TypeError) as exc:
-        raise RentalBondValidationError(
-            f"Row {row_number}: invalid TimeFrame '{value}'."
-        ) from exc
+        raise RentalBondValidationError(f"Row {row_number}: invalid TimeFrame '{value}'.") from exc
 
     if parsed.day != 1:
         raise RentalBondValidationError(
-            f"Row {row_number}: TimeFrame must represent "
-            "the first day of a month."
+            f"Row {row_number}: TimeFrame must represent the first day of a month."
         )
 
 
@@ -80,9 +75,7 @@ def validate_rental_bond_dataframe(
 ) -> pd.DataFrame:
     """Validate an official Rental Bond dataframe."""
     if dataframe.empty:
-        raise RentalBondValidationError(
-            "Rental Bond dataset is empty."
-        )
+        raise RentalBondValidationError("Rental Bond dataset is empty.")
 
     actual_columns = dataframe.columns.tolist()
 
@@ -95,20 +88,10 @@ def validate_rental_bond_dataframe(
         )
 
     if dataframe["location"].isna().any():
-        raise RentalBondValidationError(
-            "Rental Bond dataset contains missing location values."
-        )
+        raise RentalBondValidationError("Rental Bond dataset contains missing location values.")
 
-    if (
-        dataframe["location"]
-        .astype(str)
-        .str.strip()
-        .eq("")
-        .any()
-    ):
-        raise RentalBondValidationError(
-            "Rental Bond dataset contains blank location values."
-        )
+    if dataframe["location"].astype(str).str.strip().eq("").any():
+        raise RentalBondValidationError("Rental Bond dataset contains blank location values.")
 
     for row_number, value in enumerate(
         dataframe["TimeFrame"],
@@ -121,9 +104,7 @@ def validate_rental_bond_dataframe(
 
     for column in INTEGER_COLUMNS:
         if dataframe[column].isna().any():
-            raise RentalBondValidationError(
-                f"Column '{column}' contains missing values."
-            )
+            raise RentalBondValidationError(f"Column '{column}' contains missing values.")
 
         converted = pd.to_numeric(
             dataframe[column],
@@ -131,16 +112,10 @@ def validate_rental_bond_dataframe(
         )
 
         if converted.isna().any():
-            raise RentalBondValidationError(
-                f"Column '{column}' contains non-numeric values."
-            )
+            raise RentalBondValidationError(f"Column '{column}' contains non-numeric values.")
 
-        if not (
-            converted % 1 == 0
-        ).all():
-            raise RentalBondValidationError(
-                f"Column '{column}' must contain whole numbers."
-            )
+        if not (converted % 1 == 0).all():
+            raise RentalBondValidationError(f"Column '{column}' must contain whole numbers.")
 
     for column in NUMERIC_COLUMNS:
         converted = pd.to_numeric(
@@ -149,9 +124,7 @@ def validate_rental_bond_dataframe(
         )
 
         if converted.isna().any():
-            raise RentalBondValidationError(
-                f"Column '{column}' contains invalid numeric values."
-            )
+            raise RentalBondValidationError(f"Column '{column}' contains invalid numeric values.")
 
     return dataframe
 
@@ -161,14 +134,10 @@ def validate_rental_bond_file(
 ) -> pd.DataFrame:
     """Read and validate a Rental Bond CSV file."""
     if not path.exists():
-        raise RentalBondValidationError(
-            f"Rental Bond file does not exist: {path}"
-        )
+        raise RentalBondValidationError(f"Rental Bond file does not exist: {path}")
 
     if path.suffix.lower() != ".csv":
-        raise RentalBondValidationError(
-            "Rental Bond input file must be CSV."
-        )
+        raise RentalBondValidationError("Rental Bond input file must be CSV.")
 
     try:
         dataframe = pd.read_csv(
@@ -184,10 +153,6 @@ def validate_rental_bond_file(
         OSError,
         pd.errors.ParserError,
     ) as exc:
-        raise RentalBondValidationError(
-            f"Unable to read Rental Bond CSV: {path}"
-        ) from exc
+        raise RentalBondValidationError(f"Unable to read Rental Bond CSV: {path}") from exc
 
-    return validate_rental_bond_dataframe(
-        dataframe
-    )
+    return validate_rental_bond_dataframe(dataframe)

@@ -26,19 +26,12 @@ def find_latest_raw_snapshot(
     """Return the latest raw snapshot for a Rental Bond dataset."""
     files = [
         path
-        for path in DEFAULT_RAW_ROOT.rglob(
-            f"rental_bond_{dataset}_*.csv"
-        )
-        if not path.name.endswith(
-            ".metadata.csv"
-        )
+        for path in DEFAULT_RAW_ROOT.rglob(f"rental_bond_{dataset}_*.csv")
+        if not path.name.endswith(".metadata.csv")
     ]
 
     if not files:
-        raise FileNotFoundError(
-            "No Rental Bond raw snapshots found "
-            f"for dataset: {dataset}"
-        )
+        raise FileNotFoundError(f"No Rental Bond raw snapshots found for dataset: {dataset}")
 
     return max(files)
 
@@ -46,28 +39,19 @@ def find_latest_raw_snapshot(
 def build_parser() -> argparse.ArgumentParser:
     """Create command-line argument parser."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Transform an official Rental Bond "
-            "raw CSV into staging format."
-        )
+        description=("Transform an official Rental Bond raw CSV into staging format.")
     )
 
     parser.add_argument(
         "dataset",
         choices=SUPPORTED_DATASETS,
-        help=(
-            "Rental Bond dataset to transform."
-        ),
+        help=("Rental Bond dataset to transform."),
     )
 
     parser.add_argument(
         "--input",
         type=Path,
-        help=(
-            "Optional raw CSV path. "
-            "If omitted, the latest matching "
-            "snapshot is used."
-        ),
+        help=("Optional raw CSV path. If omitted, the latest matching snapshot is used."),
     )
 
     return parser
@@ -79,36 +63,20 @@ def main() -> int:
     args = parser.parse_args()
 
     try:
-        raw_path = (
-            args.input
-            if args.input is not None
-            else find_latest_raw_snapshot(
-                args.dataset
-            )
-        )
+        raw_path = args.input if args.input is not None else find_latest_raw_snapshot(args.dataset)
 
         print("=" * 60)
         print("Rental Bond staging transformation")
         print("=" * 60)
 
-        print(
-            f"Dataset     : {args.dataset}"
-        )
+        print(f"Dataset     : {args.dataset}")
 
-        print(
-            f"Raw snapshot: {raw_path}"
-        )
+        print(f"Raw snapshot: {raw_path}")
 
         print()
-        print(
-            "Validating and transforming data..."
-        )
+        print("Validating and transforming data...")
 
-        staging_path = (
-            write_rental_bond_staging_csv(
-                raw_path
-            )
-        )
+        staging_path = write_rental_bond_staging_csv(raw_path)
 
     except (
         FileNotFoundError,
@@ -118,30 +86,22 @@ def main() -> int:
     ) as exc:
         print()
         print("Transformation FAILED")
-        print(
-            f"Error: {exc}"
-        )
+        print(f"Error: {exc}")
 
         return 1
 
     print()
     print("Transformation successful.")
 
-    print(
-        f"Staging CSV : {staging_path}"
-    )
+    print(f"Staging CSV : {staging_path}")
 
     print()
     print("=" * 60)
-    print(
-        "Rental Bond transformation PASSED"
-    )
+    print("Rental Bond transformation PASSED")
     print("=" * 60)
 
     return 0
 
 
 if __name__ == "__main__":
-    sys.exit(
-        main()
-    )
+    sys.exit(main())

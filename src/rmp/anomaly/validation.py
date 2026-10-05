@@ -118,51 +118,24 @@ def validate_anomaly_summary(
         "has_forecast_record",
     }
 
-    missing = required_columns.difference(
-        summary.columns
-    )
+    missing = required_columns.difference(summary.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required anomaly summary columns: "
-            + ", ".join(sorted(missing))
-        )
+        raise ValueError("Missing required anomaly summary columns: " + ", ".join(sorted(missing)))
 
     df = summary.copy()
 
-    df["period_date"] = pd.to_datetime(
-        df["period_date"]
-    )
+    df["period_date"] = pd.to_datetime(df["period_date"])
 
-    historical_available = (
-        df["historical_detector_available"]
-        .fillna(False)
-        .astype(bool)
-    )
+    historical_available = df["historical_detector_available"].fillna(False).astype(bool)
 
-    forecast_available = (
-        df["forecast_detector_available"]
-        .fillna(False)
-        .astype(bool)
-    )
+    forecast_available = df["forecast_detector_available"].fillna(False).astype(bool)
 
-    historical_alert = (
-        df["historical_dashboard_alert"]
-        .fillna(False)
-        .astype(bool)
-    )
+    historical_alert = df["historical_dashboard_alert"].fillna(False).astype(bool)
 
-    forecast_alert = (
-        df["forecast_dashboard_alert"]
-        .fillna(False)
-        .astype(bool)
-    )
+    forecast_alert = df["forecast_dashboard_alert"].fillna(False).astype(bool)
 
-    overall_alert = (
-        df["overall_dashboard_alert"]
-        .fillna(False)
-        .astype(bool)
-    )
+    overall_alert = df["overall_dashboard_alert"].fillna(False).astype(bool)
 
     records: list[dict[str, object]] = []
 
@@ -182,20 +155,11 @@ def validate_anomaly_summary(
             passed=duplicate_count == 0,
             observed=duplicate_count,
             expected=0,
-            details=(
-                "Each series-period must appear "
-                "exactly once."
-            ),
+            details=("Each series-period must appear exactly once."),
         )
     )
 
-    invalid_status = int(
-        (
-            ~df["overall_status"].isin(
-                ALLOWED_OVERALL_STATUS
-            )
-        ).sum()
-    )
+    invalid_status = int((~df["overall_status"].isin(ALLOWED_OVERALL_STATUS)).sum())
 
     records.append(
         _check_record(
@@ -203,20 +167,11 @@ def validate_anomaly_summary(
             passed=invalid_status == 0,
             observed=invalid_status,
             expected=0,
-            details=(
-                "Overall status must use the "
-                "approved status vocabulary."
-            ),
+            details=("Overall status must use the approved status vocabulary."),
         )
     )
 
-    invalid_severity = int(
-        (
-            ~df["overall_severity"].isin(
-                ALLOWED_SEVERITY
-            )
-        ).sum()
-    )
+    invalid_severity = int((~df["overall_severity"].isin(ALLOWED_SEVERITY)).sum())
 
     records.append(
         _check_record(
@@ -224,20 +179,11 @@ def validate_anomaly_summary(
             passed=invalid_severity == 0,
             observed=invalid_severity,
             expected=0,
-            details=(
-                "Overall severity must be normal, "
-                "moderate, high, or unavailable."
-            ),
+            details=("Overall severity must be normal, moderate, high, or unavailable."),
         )
     )
 
-    invalid_direction = int(
-        (
-            ~df["overall_direction"].isin(
-                ALLOWED_DIRECTION
-            )
-        ).sum()
-    )
+    invalid_direction = int((~df["overall_direction"].isin(ALLOWED_DIRECTION)).sum())
 
     records.append(
         _check_record(
@@ -245,20 +191,11 @@ def validate_anomaly_summary(
             passed=invalid_direction == 0,
             observed=invalid_direction,
             expected=0,
-            details=(
-                "Overall direction must use the "
-                "approved direction vocabulary."
-            ),
+            details=("Overall direction must use the approved direction vocabulary."),
         )
     )
 
-    invalid_coverage = int(
-        (
-            ~df["detector_coverage"].isin(
-                ALLOWED_COVERAGE
-            )
-        ).sum()
-    )
+    invalid_coverage = int((~df["detector_coverage"].isin(ALLOWED_COVERAGE)).sum())
 
     records.append(
         _check_record(
@@ -266,24 +203,13 @@ def validate_anomaly_summary(
             passed=invalid_coverage == 0,
             observed=invalid_coverage,
             expected=0,
-            details=(
-                "Detector coverage must use the "
-                "approved coverage vocabulary."
-            ),
+            details=("Detector coverage must use the approved coverage vocabulary."),
         )
     )
 
-    expected_overall_alert = (
-        historical_alert
-        | forecast_alert
-    )
+    expected_overall_alert = historical_alert | forecast_alert
 
-    alert_mismatch = int(
-        (
-            overall_alert
-            != expected_overall_alert
-        ).sum()
-    )
+    alert_mismatch = int((overall_alert != expected_overall_alert).sum())
 
     records.append(
         _check_record(
@@ -291,29 +217,15 @@ def validate_anomaly_summary(
             passed=alert_mismatch == 0,
             observed=alert_mismatch,
             expected=0,
-            details=(
-                "Overall dashboard alert must equal "
-                "historical OR forecast alert."
-            ),
+            details=("Overall dashboard alert must equal historical OR forecast alert."),
         )
     )
 
-    confirmed_expected = (
-        historical_alert
-        & forecast_alert
-    )
+    confirmed_expected = historical_alert & forecast_alert
 
-    confirmed_actual = (
-        df["overall_status"]
-        == "confirmed_anomaly"
-    )
+    confirmed_actual = df["overall_status"] == "confirmed_anomaly"
 
-    confirmed_mismatch = int(
-        (
-            confirmed_actual
-            != confirmed_expected
-        ).sum()
-    )
+    confirmed_mismatch = int((confirmed_actual != confirmed_expected).sum())
 
     records.append(
         _check_record(
@@ -321,29 +233,15 @@ def validate_anomaly_summary(
             passed=confirmed_mismatch == 0,
             observed=confirmed_mismatch,
             expected=0,
-            details=(
-                "Confirmed anomaly requires both "
-                "dashboard alert types."
-            ),
+            details=("Confirmed anomaly requires both dashboard alert types."),
         )
     )
 
-    historical_only_status = (
-        df["overall_status"]
-        == "historical_alert"
-    )
+    historical_only_status = df["overall_status"] == "historical_alert"
 
-    historical_only_expected = (
-        historical_alert
-        & ~forecast_alert
-    )
+    historical_only_expected = historical_alert & ~forecast_alert
 
-    historical_status_mismatch = int(
-        (
-            historical_only_status
-            != historical_only_expected
-        ).sum()
-    )
+    historical_status_mismatch = int((historical_only_status != historical_only_expected).sum())
 
     records.append(
         _check_record(
@@ -351,29 +249,15 @@ def validate_anomaly_summary(
             passed=historical_status_mismatch == 0,
             observed=historical_status_mismatch,
             expected=0,
-            details=(
-                "Historical alert status requires "
-                "historical alert only."
-            ),
+            details=("Historical alert status requires historical alert only."),
         )
     )
 
-    forecast_only_status = (
-        df["overall_status"]
-        == "forecast_alert"
-    )
+    forecast_only_status = df["overall_status"] == "forecast_alert"
 
-    forecast_only_expected = (
-        forecast_alert
-        & ~historical_alert
-    )
+    forecast_only_expected = forecast_alert & ~historical_alert
 
-    forecast_status_mismatch = int(
-        (
-            forecast_only_status
-            != forecast_only_expected
-        ).sum()
-    )
+    forecast_status_mismatch = int((forecast_only_status != forecast_only_expected).sum())
 
     records.append(
         _check_record(
@@ -381,29 +265,15 @@ def validate_anomaly_summary(
             passed=forecast_status_mismatch == 0,
             observed=forecast_status_mismatch,
             expected=0,
-            details=(
-                "Forecast alert status requires "
-                "forecast alert only."
-            ),
+            details=("Forecast alert status requires forecast alert only."),
         )
     )
 
-    no_detector_available = (
-        ~historical_available
-        & ~forecast_available
-    )
+    no_detector_available = ~historical_available & ~forecast_available
 
-    unavailable_status = (
-        df["overall_status"]
-        == "unavailable"
-    )
+    unavailable_status = df["overall_status"] == "unavailable"
 
-    unavailable_mismatch = int(
-        (
-            unavailable_status
-            != no_detector_available
-        ).sum()
-    )
+    unavailable_mismatch = int((unavailable_status != no_detector_available).sum())
 
     records.append(
         _check_record(
@@ -411,30 +281,17 @@ def validate_anomaly_summary(
             passed=unavailable_mismatch == 0,
             observed=unavailable_mismatch,
             expected=0,
-            details=(
-                "Overall status is unavailable only "
-                "when neither detector is available."
-            ),
+            details=("Overall status is unavailable only when neither detector is available."),
         )
     )
 
     normal_expected = (
-        (historical_available | forecast_available)
-        & ~historical_alert
-        & ~forecast_alert
+        (historical_available | forecast_available) & ~historical_alert & ~forecast_alert
     )
 
-    normal_actual = (
-        df["overall_status"]
-        == "normal"
-    )
+    normal_actual = df["overall_status"] == "normal"
 
-    normal_mismatch = int(
-        (
-            normal_actual
-            != normal_expected
-        ).sum()
-    )
+    normal_mismatch = int((normal_actual != normal_expected).sum())
 
     records.append(
         _check_record(
@@ -442,10 +299,7 @@ def validate_anomaly_summary(
             passed=normal_mismatch == 0,
             observed=normal_mismatch,
             expected=0,
-            details=(
-                "Normal requires detector coverage "
-                "and no active dashboard alert."
-            ),
+            details=("Normal requires detector coverage and no active dashboard alert."),
         )
     )
 
@@ -455,27 +309,13 @@ def validate_anomaly_summary(
         dtype="object",
     )
 
-    expected_coverage.loc[
-        historical_available
-        & ~forecast_available
-    ] = "historical_only"
+    expected_coverage.loc[historical_available & ~forecast_available] = "historical_only"
 
-    expected_coverage.loc[
-        ~historical_available
-        & forecast_available
-    ] = "forecast_only"
+    expected_coverage.loc[~historical_available & forecast_available] = "forecast_only"
 
-    expected_coverage.loc[
-        historical_available
-        & forecast_available
-    ] = "both"
+    expected_coverage.loc[historical_available & forecast_available] = "both"
 
-    coverage_mismatch = int(
-        (
-            df["detector_coverage"]
-            != expected_coverage
-        ).sum()
-    )
+    coverage_mismatch = int((df["detector_coverage"] != expected_coverage).sum())
 
     records.append(
         _check_record(
@@ -483,10 +323,7 @@ def validate_anomaly_summary(
             passed=coverage_mismatch == 0,
             observed=coverage_mismatch,
             expected=0,
-            details=(
-                "Detector coverage must match "
-                "historical and forecast availability."
-            ),
+            details=("Detector coverage must match historical and forecast availability."),
         )
     )
 
@@ -508,23 +345,12 @@ def validate_anomaly_summary(
             passed=alert_severity_invalid == 0,
             observed=alert_severity_invalid,
             expected=0,
-            details=(
-                "Every dashboard alert must have "
-                "moderate or high severity."
-            ),
+            details=("Every dashboard alert must have moderate or high severity."),
         )
     )
 
     non_alert_severity_invalid = int(
-        (
-            (
-                df["overall_status"]
-                == "normal"
-            )
-            & df["overall_severity"].ne(
-                "normal"
-            )
-        ).sum()
+        ((df["overall_status"] == "normal") & df["overall_severity"].ne("normal")).sum()
     )
 
     records.append(
@@ -533,23 +359,12 @@ def validate_anomaly_summary(
             passed=non_alert_severity_invalid == 0,
             observed=non_alert_severity_invalid,
             expected=0,
-            details=(
-                "Normal observations must have "
-                "normal overall severity."
-            ),
+            details=("Normal observations must have normal overall severity."),
         )
     )
 
     unavailable_severity_invalid = int(
-        (
-            (
-                df["overall_status"]
-                == "unavailable"
-            )
-            & df["overall_severity"].ne(
-                "unavailable"
-            )
-        ).sum()
+        ((df["overall_status"] == "unavailable") & df["overall_severity"].ne("unavailable")).sum()
     )
 
     records.append(
@@ -558,20 +373,12 @@ def validate_anomaly_summary(
             passed=unavailable_severity_invalid == 0,
             observed=unavailable_severity_invalid,
             expected=0,
-            details=(
-                "Unavailable observations must have "
-                "unavailable overall severity."
-            ),
+            details=("Unavailable observations must have unavailable overall severity."),
         )
     )
 
     forecast_without_record = int(
-        (
-            forecast_available
-            & ~df[
-                "has_forecast_record"
-            ].fillna(False).astype(bool)
-        ).sum()
+        (forecast_available & ~df["has_forecast_record"].fillna(False).astype(bool)).sum()
     )
 
     records.append(
@@ -580,10 +387,7 @@ def validate_anomaly_summary(
             passed=forecast_without_record == 0,
             observed=forecast_without_record,
             expected=0,
-            details=(
-                "Forecast detector availability "
-                "requires a matched forecast record."
-            ),
+            details=("Forecast detector availability requires a matched forecast record."),
         )
     )
 
@@ -595,10 +399,7 @@ def validate_anomaly_summary(
             "check_name",
         ].tolist()
 
-        raise ValueError(
-            "Anomaly summary validation failed: "
-            + ", ".join(failed)
-        )
+        raise ValueError("Anomaly summary validation failed: " + ", ".join(failed))
 
     return validation
 
@@ -609,50 +410,21 @@ def build_anomaly_metadata(
     """Build reproducibility metadata for Phase 5A."""
     df = summary.copy()
 
-    df["period_date"] = pd.to_datetime(
-        df["period_date"]
-    )
+    df["period_date"] = pd.to_datetime(df["period_date"])
 
-    historical_alerts = int(
-        df[
-            "historical_dashboard_alert"
-        ].sum()
-    )
+    historical_alerts = int(df["historical_dashboard_alert"].sum())
 
-    forecast_alerts = int(
-        df[
-            "forecast_dashboard_alert"
-        ].sum()
-    )
+    forecast_alerts = int(df["forecast_dashboard_alert"].sum())
 
-    overall_alerts = int(
-        df[
-            "overall_dashboard_alert"
-        ].sum()
-    )
+    overall_alerts = int(df["overall_dashboard_alert"].sum())
 
-    confirmed = int(
-        (
-            df["overall_status"]
-            == "confirmed_anomaly"
-        ).sum()
-    )
+    confirmed = int((df["overall_status"] == "confirmed_anomaly").sum())
 
-    historical_rent = (
-        PRACTICAL_THRESHOLDS[
-            "median_rent"
-        ]
-    )
+    historical_rent = PRACTICAL_THRESHOLDS["median_rent"]
 
-    historical_bonds = (
-        PRACTICAL_THRESHOLDS[
-            "bonds_lodged"
-        ]
-    )
+    historical_bonds = PRACTICAL_THRESHOLDS["bonds_lodged"]
 
-    metadata: list[
-        tuple[str, str, object]
-    ] = [
+    metadata: list[tuple[str, str, object]] = [
         (
             "dataset",
             "rows",
@@ -681,11 +453,7 @@ def build_anomaly_metadata(
         (
             "dataset",
             "forecast_records",
-            int(
-                df[
-                    "has_forecast_record"
-                ].sum()
-            ),
+            int(df["has_forecast_record"].sum()),
         ),
         (
             "historical_detector",
@@ -795,32 +563,17 @@ def build_anomaly_metadata(
         (
             "outputs",
             "overall_high",
-            int(
-                (
-                    df["overall_severity"]
-                    == "high"
-                ).sum()
-            ),
+            int((df["overall_severity"] == "high").sum()),
         ),
         (
             "outputs",
             "overall_moderate",
-            int(
-                (
-                    df["overall_severity"]
-                    == "moderate"
-                ).sum()
-            ),
+            int((df["overall_severity"] == "moderate").sum()),
         ),
         (
             "outputs",
             "overall_unavailable",
-            int(
-                (
-                    df["overall_status"]
-                    == "unavailable"
-                ).sum()
-            ),
+            int((df["overall_status"] == "unavailable").sum()),
         ),
     ]
 

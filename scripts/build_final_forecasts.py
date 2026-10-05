@@ -15,22 +15,13 @@ from rmp.forecasting.selection import (
     select_forecasting_series,
 )
 
-PANEL_PATH = Path(
-    "data/processed/analytics/monthly_panel.csv"
-)
+PANEL_PATH = Path("data/processed/analytics/monthly_panel.csv")
 
-CATALOG_PATH = Path(
-    "data/processed/analytics/series_catalog.csv"
-)
+CATALOG_PATH = Path("data/processed/analytics/series_catalog.csv")
 
-WINNERS_PATH = Path(
-    "data/processed/forecasting/series_model_winners.csv"
-)
+WINNERS_PATH = Path("data/processed/forecasting/series_model_winners.csv")
 
-OUTPUT_PATH = Path(
-    "data/processed/forecasting/"
-    "final_forward_forecasts.csv"
-)
+OUTPUT_PATH = Path("data/processed/forecasting/final_forward_forecasts.csv")
 
 
 def main() -> None:
@@ -45,20 +36,16 @@ def main() -> None:
         parse_dates=["continuous_start"],
     )
 
-    winners = pd.read_csv(
-        WINNERS_PATH
-    )
+    winners = pd.read_csv(WINNERS_PATH)
 
     history = select_forecasting_series(
         panel,
         catalog,
     )
 
-    all_forecasts = (
-        build_all_model_forward_forecasts(
-            history,
-            horizon=DEFAULT_FORWARD_HORIZON,
-        )
+    all_forecasts = build_all_model_forward_forecasts(
+        history,
+        horizon=DEFAULT_FORWARD_HORIZON,
     )
 
     final = select_winner_forward_forecasts(
@@ -77,30 +64,13 @@ def main() -> None:
         index=False,
     )
 
-    print(
-        "Final forward forecasting complete."
-    )
+    print("Final forward forecasting complete.")
     print()
-    print(
-        f"Forecast origin: "
-        f"{final['forecast_origin'].iloc[0]}"
-    )
-    print(
-        "Forecast period: "
-        f"{final['forecast_period'].min()} "
-        "to "
-        f"{final['forecast_period'].max()}"
-    )
-    print(
-        f"Series: {final['series_id'].nunique()}"
-    )
-    print(
-        f"Rows: {len(final)}"
-    )
-    print(
-        "Horizon: "
-        f"{final['horizon_step'].nunique()} months"
-    )
+    print(f"Forecast origin: {final['forecast_origin'].iloc[0]}")
+    print(f"Forecast period: {final['forecast_period'].min()} to {final['forecast_period'].max()}")
+    print(f"Series: {final['series_id'].nunique()}")
+    print(f"Rows: {len(final)}")
+    print(f"Horizon: {final['horizon_step'].nunique()} months")
 
     print()
     print("=== WINNER MODELS ===")
@@ -111,15 +81,12 @@ def main() -> None:
                 "model",
             ]
         ]
-        .drop_duplicates()
-        ["model"]
+        .drop_duplicates()["model"]
         .value_counts()
     )
 
     print()
-    print(
-        f"Output written to: {OUTPUT_PATH}"
-    )
+    print(f"Output written to: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

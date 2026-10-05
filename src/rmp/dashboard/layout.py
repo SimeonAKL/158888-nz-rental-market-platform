@@ -10,8 +10,7 @@ from pathlib import Path
 import streamlit as st
 
 HOME_HERO_IMAGE = (
-    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad"
-    "?auto=format&fit=crop&w=1600&q=80"
+    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&w=1600&q=80"
 )
 
 PAGE_MAX_WIDTH = "1280px"
@@ -764,8 +763,7 @@ div[data-testid="stPageLink"] a:hover {
 def inject_home_styles() -> None:
     """Inject shared CSS for all dashboard pages."""
     css = (
-        _BASE_CSS
-        .replace("__HERO_IMAGE__", HOME_HERO_IMAGE)
+        _BASE_CSS.replace("__HERO_IMAGE__", HOME_HERO_IMAGE)
         .replace("__PAGE_MAX_WIDTH_XL__", PAGE_MAX_WIDTH_XL)
         .replace("__PAGE_MAX_WIDTH__", PAGE_MAX_WIDTH)
     )
@@ -933,9 +931,7 @@ def render_stat_card(
 ) -> None:
     """Render a single statistic card."""
     card_class = "stat-card flat" if flat else "stat-card"
-    note_html = (
-        f'<div class="stat-note">{html.escape(note)}</div>' if note else ""
-    )
+    note_html = f'<div class="stat-note">{html.escape(note)}</div>' if note else ""
     render_html(
         f"""
         <div class="{card_class}">
@@ -949,9 +945,7 @@ def render_stat_card(
 
 def render_card_header(title: str, caption: str = "") -> None:
     """Render a content-card title and optional caption."""
-    caption_html = (
-        f'<div class="card-caption">{html.escape(caption)}</div>' if caption else ""
-    )
+    caption_html = f'<div class="card-caption">{html.escape(caption)}</div>' if caption else ""
     render_html(
         f"""
         <div class="card-title">{html.escape(title)}</div>

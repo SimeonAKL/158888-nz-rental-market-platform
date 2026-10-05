@@ -23,17 +23,11 @@ from rmp.forecasting.splits import (
     slice_rolling_origin,
 )
 
-INPUT_PATH = Path(
-    "data/processed/analytics/monthly_panel.csv"
-)
+INPUT_PATH = Path("data/processed/analytics/monthly_panel.csv")
 
-CATALOG_PATH = Path(
-    "data/processed/analytics/series_catalog.csv"
-)
+CATALOG_PATH = Path("data/processed/analytics/series_catalog.csv")
 
-OUTPUT_DIR = Path(
-    "data/processed/forecasting"
-)
+OUTPUT_DIR = Path("data/processed/forecasting")
 
 MODEL_NAME = "ets_additive_damped"
 
@@ -60,9 +54,7 @@ def load_monthly_panel() -> pd.DataFrame:
     """Load and validate the monthly modelling panel."""
 
     if not INPUT_PATH.exists():
-        raise FileNotFoundError(
-            f"Input file not found: {INPUT_PATH}"
-        )
+        raise FileNotFoundError(f"Input file not found: {INPUT_PATH}")
 
     panel = pd.read_csv(
         INPUT_PATH,
@@ -79,31 +71,27 @@ def load_monthly_panel() -> pd.DataFrame:
         "value",
     }
 
-    missing = required.difference(
-        panel.columns
-    )
+    missing = required.difference(panel.columns)
 
     if missing:
-        raise ValueError(
-            "Monthly panel is missing required columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Monthly panel is missing required columns: {sorted(missing)}")
 
     if panel.empty:
-        raise ValueError(
-            "Monthly panel is empty."
-        )
+        raise ValueError("Monthly panel is empty.")
 
-    if panel[
-        [
-            "period_date",
-            "series_id",
-            "value",
+    if (
+        panel[
+            [
+                "period_date",
+                "series_id",
+                "value",
+            ]
         ]
-    ].isna().any().any():
-        raise ValueError(
-            "Monthly panel contains missing modelling values."
-        )
+        .isna()
+        .any()
+        .any()
+    ):
+        raise ValueError("Monthly panel contains missing modelling values.")
 
     return panel.sort_values(
         [
@@ -113,14 +101,11 @@ def load_monthly_panel() -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
-
 def load_series_catalog() -> pd.DataFrame:
     """Load Phase 3 forecasting-eligibility metadata."""
 
     if not CATALOG_PATH.exists():
-        raise FileNotFoundError(
-            f"Input file not found: {CATALOG_PATH}"
-        )
+        raise FileNotFoundError(f"Input file not found: {CATALOG_PATH}")
 
     catalog = pd.read_csv(
         CATALOG_PATH,
@@ -134,20 +119,13 @@ def load_series_catalog() -> pd.DataFrame:
         "eligible_for_forecasting",
     }
 
-    missing = required.difference(
-        catalog.columns
-    )
+    missing = required.difference(catalog.columns)
 
     if missing:
-        raise ValueError(
-            "Series catalog is missing required columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Series catalog is missing required columns: {sorted(missing)}")
 
     if catalog.empty:
-        raise ValueError(
-            "Series catalog is empty."
-        )
+        raise ValueError("Series catalog is empty.")
 
     return catalog
 
@@ -157,9 +135,7 @@ def run_forecasts(
 ) -> pd.DataFrame:
     """Run ETS forecasts over all series and rolling origins."""
 
-    prediction_frames: list[
-        pd.DataFrame
-    ] = []
+    prediction_frames: list[pd.DataFrame] = []
 
     grouped = panel.groupby(
         "series_id",
@@ -167,28 +143,20 @@ def run_forecasts(
     )
 
     for series_id, series in grouped:
-        series = series.sort_values(
-            "period_date"
-        ).reset_index(drop=True)
+        series = series.sort_values("period_date").reset_index(drop=True)
 
         metadata = series.iloc[0]
 
         splits = generate_rolling_origins(
             series["period_date"],
-            forecast_horizon=(
-                DEFAULT_FORECAST_HORIZON
-            ),
+            forecast_horizon=(DEFAULT_FORECAST_HORIZON),
             n_origins=DEFAULT_N_ORIGINS,
-            min_history_months=(
-                DEFAULT_MIN_HISTORY_MONTHS
-            ),
+            min_history_months=(DEFAULT_MIN_HISTORY_MONTHS),
         )
 
         if len(splits) != DEFAULT_N_ORIGINS:
             raise ValueError(
-                f"{series_id} generated "
-                f"{len(splits)} origins; "
-                f"expected {DEFAULT_N_ORIGINS}."
+                f"{series_id} generated {len(splits)} origins; expected {DEFAULT_N_ORIGINS}."
             )
 
         for split in splits:
@@ -201,54 +169,29 @@ def run_forecasts(
                 forecast = ets_forecast(
                     train,
                     test["period_date"],
-                    seasonal_period=(
-                        DEFAULT_SEASONAL_PERIOD
-                    ),
+                    seasonal_period=(DEFAULT_SEASONAL_PERIOD),
                 )
             except Exception as exc:
                 raise RuntimeError(
-                    "ETS forecasting failed for "
-                    f"{series_id} at origin "
-                    f"{split.origin.date()}."
+                    f"ETS forecasting failed for {series_id} at origin {split.origin.date()}."
                 ) from exc
 
-            actual = test[
-                "value"
-            ].to_numpy(
-                dtype=float
-            )
+            actual = test["value"].to_numpy(dtype=float)
 
-            predicted = forecast[
-                "predicted"
-            ].to_numpy(
-                dtype=float
-            )
+            predicted = forecast["predicted"].to_numpy(dtype=float)
 
-            error = (
-                actual
-                - predicted
-            )
+            error = actual - predicted
 
             result = pd.DataFrame(
                 {
                     "model": MODEL_NAME,
                     "series_id": series_id,
-                    "metric": metadata[
-                        "metric"
-                    ],
-                    "geography_level": metadata[
-                        "geography_level"
-                    ],
-                    "location_id": metadata[
-                        "location_id"
-                    ],
-                    "location_name": metadata[
-                        "location_name"
-                    ],
+                    "metric": metadata["metric"],
+                    "geography_level": metadata["geography_level"],
+                    "location_id": metadata["location_id"],
+                    "location_name": metadata["location_name"],
                     "origin": split.origin,
-                    "forecast_period": forecast[
-                        "forecast_period"
-                    ],
+                    "forecast_period": forecast["forecast_period"],
                     "horizon_step": range(
                         1,
                         len(test) + 1,
@@ -256,33 +199,29 @@ def run_forecasts(
                     "actual": actual,
                     "predicted": predicted,
                     "error": error,
-                    "absolute_error": np.abs(
-                        error
-                    ),
-                    "squared_error": np.square(
-                        error
-                    ),
+                    "absolute_error": np.abs(error),
+                    "squared_error": np.square(error),
                 }
             )
 
-            prediction_frames.append(
-                result
-            )
+            prediction_frames.append(result)
 
     predictions = pd.concat(
         prediction_frames,
         ignore_index=True,
     )
 
-    return predictions[
-        PREDICTION_COLUMNS
-    ].sort_values(
-        [
-            "series_id",
-            "origin",
-            "horizon_step",
-        ]
-    ).reset_index(drop=True)
+    return (
+        predictions[PREDICTION_COLUMNS]
+        .sort_values(
+            [
+                "series_id",
+                "origin",
+                "horizon_step",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def calculate_group_metrics(
@@ -311,9 +250,7 @@ def build_metrics_by_origin(
         "origin",
     ]
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for keys, group in predictions.groupby(
         group_columns,
@@ -328,26 +265,22 @@ def build_metrics_by_origin(
             )
         )
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            calculate_group_metrics(
-                group
-            )
-        )
+        row.update(calculate_group_metrics(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "series_id",
-            "origin",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "series_id",
+                "origin",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_metrics_by_series(
@@ -364,9 +297,7 @@ def build_metrics_by_series(
         "location_name",
     ]
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
     for keys, group in predictions.groupby(
         group_columns,
@@ -381,30 +312,24 @@ def build_metrics_by_series(
             )
         )
 
-        row["n_origins"] = group[
-            "origin"
-        ].nunique()
+        row["n_origins"] = group["origin"].nunique()
 
-        row["n_forecasts"] = len(
-            group
-        )
+        row["n_forecasts"] = len(group)
 
-        row.update(
-            calculate_group_metrics(
-                group
-            )
-        )
+        row.update(calculate_group_metrics(group))
 
         rows.append(row)
 
-    return pd.DataFrame(
-        rows
-    ).sort_values(
-        [
-            "metric",
-            "series_id",
-        ]
-    ).reset_index(drop=True)
+    return (
+        pd.DataFrame(rows)
+        .sort_values(
+            [
+                "metric",
+                "series_id",
+            ]
+        )
+        .reset_index(drop=True)
+    )
 
 
 def build_summary(
@@ -412,54 +337,34 @@ def build_summary(
 ) -> pd.DataFrame:
     """Build overall and target-level ETS summaries."""
 
-    rows: list[
-        dict[str, object]
-    ] = []
+    rows: list[dict[str, object]] = []
 
-    overall_metrics = (
-        calculate_group_metrics(
-            predictions
-        )
-    )
+    overall_metrics = calculate_group_metrics(predictions)
 
     rows.append(
         {
             "model": MODEL_NAME,
             "scope": "overall",
             "metric": "all",
-            "n_series": predictions[
-                "series_id"
-            ].nunique(),
-            "n_forecasts": len(
-                predictions
-            ),
+            "n_series": predictions["series_id"].nunique(),
+            "n_forecasts": len(predictions),
             **overall_metrics,
         }
     )
 
-    for metric_name, group in (
-        predictions.groupby(
-            "metric",
-            sort=True,
-        )
+    for metric_name, group in predictions.groupby(
+        "metric",
+        sort=True,
     ):
-        metric_values = (
-            calculate_group_metrics(
-                group
-            )
-        )
+        metric_values = calculate_group_metrics(group)
 
         rows.append(
             {
                 "model": MODEL_NAME,
                 "scope": "metric",
                 "metric": metric_name,
-                "n_series": group[
-                    "series_id"
-                ].nunique(),
-                "n_forecasts": len(
-                    group
-                ),
+                "n_series": group["series_id"].nunique(),
+                "n_forecasts": len(group),
                 **metric_values,
             }
         )
@@ -473,45 +378,22 @@ def validate_predictions(
 ) -> None:
     """Validate expected Phase 4.2 forecast output."""
 
-    n_series = panel[
-        "series_id"
-    ].nunique()
+    n_series = panel["series_id"].nunique()
 
-    expected_rows = (
-        n_series
-        * DEFAULT_N_ORIGINS
-        * DEFAULT_FORECAST_HORIZON
-    )
+    expected_rows = n_series * DEFAULT_N_ORIGINS * DEFAULT_FORECAST_HORIZON
 
     if len(predictions) != expected_rows:
         raise ValueError(
-            "Unexpected prediction count: "
-            f"{len(predictions)}; "
-            f"expected {expected_rows}."
+            f"Unexpected prediction count: {len(predictions)}; expected {expected_rows}."
         )
 
-    if predictions[
-        "series_id"
-    ].nunique() != n_series:
-        raise ValueError(
-            "Not all series produced forecasts."
-        )
+    if predictions["series_id"].nunique() != n_series:
+        raise ValueError("Not all series produced forecasts.")
 
-    origins_per_series = (
-        predictions.groupby(
-            "series_id"
-        )["origin"]
-        .nunique()
-    )
+    origins_per_series = predictions.groupby("series_id")["origin"].nunique()
 
-    if not (
-        origins_per_series
-        == DEFAULT_N_ORIGINS
-    ).all():
-        raise ValueError(
-            "Each series must have exactly "
-            f"{DEFAULT_N_ORIGINS} origins."
-        )
+    if not (origins_per_series == DEFAULT_N_ORIGINS).all():
+        raise ValueError(f"Each series must have exactly {DEFAULT_N_ORIGINS} origins.")
 
     expected_horizons = set(
         range(
@@ -526,19 +408,10 @@ def validate_predictions(
             "origin",
         ]
     ):
-        observed_horizons = set(
-            group[
-                "horizon_step"
-            ].tolist()
-        )
+        observed_horizons = set(group["horizon_step"].tolist())
 
-        if (
-            observed_horizons
-            != expected_horizons
-        ):
-            raise ValueError(
-                "Invalid forecast horizon steps."
-            )
+        if observed_horizons != expected_horizons:
+            raise ValueError("Invalid forecast horizon steps.")
 
     numeric_columns = [
         "actual",
@@ -548,19 +421,10 @@ def validate_predictions(
         "squared_error",
     ]
 
-    values = predictions[
-        numeric_columns
-    ].to_numpy(
-        dtype=float
-    )
+    values = predictions[numeric_columns].to_numpy(dtype=float)
 
-    if not np.isfinite(
-        values
-    ).all():
-        raise ValueError(
-            "ETS forecast results contain "
-            "missing or non-finite values."
-        )
+    if not np.isfinite(values).all():
+        raise ValueError("ETS forecast results contain missing or non-finite values.")
 
 
 def main() -> None:
@@ -574,30 +438,18 @@ def main() -> None:
         catalog,
     )
 
-    predictions = run_forecasts(
-        panel
-    )
+    predictions = run_forecasts(panel)
 
     validate_predictions(
         panel,
         predictions,
     )
 
-    metrics_by_origin = (
-        build_metrics_by_origin(
-            predictions
-        )
-    )
+    metrics_by_origin = build_metrics_by_origin(predictions)
 
-    metrics_by_series = (
-        build_metrics_by_series(
-            predictions
-        )
-    )
+    metrics_by_series = build_metrics_by_series(predictions)
 
-    summary = build_summary(
-        predictions
-    )
+    summary = build_summary(predictions)
 
     OUTPUT_DIR.mkdir(
         parents=True,
@@ -605,55 +457,34 @@ def main() -> None:
     )
 
     predictions.to_csv(
-        OUTPUT_DIR
-        / "statistical_model_predictions.csv",
+        OUTPUT_DIR / "statistical_model_predictions.csv",
         index=False,
     )
 
     metrics_by_origin.to_csv(
-        OUTPUT_DIR
-        / "statistical_model_metrics_by_origin.csv",
+        OUTPUT_DIR / "statistical_model_metrics_by_origin.csv",
         index=False,
     )
 
     metrics_by_series.to_csv(
-        OUTPUT_DIR
-        / "statistical_model_metrics_by_series.csv",
+        OUTPUT_DIR / "statistical_model_metrics_by_series.csv",
         index=False,
     )
 
     summary.to_csv(
-        OUTPUT_DIR
-        / "statistical_model_summary.csv",
+        OUTPUT_DIR / "statistical_model_summary.csv",
         index=False,
     )
 
-    print(
-        "ETS rolling-origin evaluation complete."
-    )
-    print(
-        f"Series: {panel['series_id'].nunique()}"
-    )
-    print(
-        f"Predictions: {len(predictions)}"
-    )
-    print(
-        f"Origins per series: {DEFAULT_N_ORIGINS}"
-    )
-    print(
-        "Forecast horizon: "
-        f"{DEFAULT_FORECAST_HORIZON}"
-    )
+    print("ETS rolling-origin evaluation complete.")
+    print(f"Series: {panel['series_id'].nunique()}")
+    print(f"Predictions: {len(predictions)}")
+    print(f"Origins per series: {DEFAULT_N_ORIGINS}")
+    print(f"Forecast horizon: {DEFAULT_FORECAST_HORIZON}")
     print()
-    print(
-        summary.to_string(
-            index=False
-        )
-    )
+    print(summary.to_string(index=False))
     print()
-    print(
-        f"Outputs written to: {OUTPUT_DIR}"
-    )
+    print(f"Outputs written to: {OUTPUT_DIR}")
 
 
 if __name__ == "__main__":

@@ -31,13 +31,9 @@ class MarketRentAPIClient:
         self.session = requests.Session()
         self.session.headers.update(
             {
-                "Ocp-Apim-Subscription-Key": (
-                    self.settings.subscription_key
-                ),
+                "Ocp-Apim-Subscription-Key": (self.settings.subscription_key),
                 "Accept": "application/json",
-                "User-Agent": (
-                    "158888-NZ-Rental-Market-Platform/1.0"
-                ),
+                "User-Agent": ("158888-NZ-Rental-Market-Platform/1.0"),
             }
         )
 
@@ -66,10 +62,7 @@ class MarketRentAPIClient:
             If the request times out, fails, returns a non-success
             HTTP status, or does not contain valid JSON.
         """
-        url = (
-            f"{self.settings.base_url}/"
-            f"{endpoint.lstrip('/')}"
-        )
+        url = f"{self.settings.base_url}/{endpoint.lstrip('/')}"
 
         try:
             response = self.session.get(
@@ -82,27 +75,21 @@ class MarketRentAPIClient:
 
         except requests.Timeout as exc:
             raise MarketRentAPIError(
-                "Market Rent API request timed out after "
-                f"{self.timeout} seconds."
+                f"Market Rent API request timed out after {self.timeout} seconds."
             ) from exc
 
         except requests.HTTPError as exc:
-            raise MarketRentAPIError(
-                self._build_http_error_message(exc)
-            ) from exc
+            raise MarketRentAPIError(self._build_http_error_message(exc)) from exc
 
         except requests.RequestException as exc:
-            raise MarketRentAPIError(
-                "Unable to connect to the Market Rent API."
-            ) from exc
+            raise MarketRentAPIError("Unable to connect to the Market Rent API.") from exc
 
         try:
             return response.json()
 
         except requests.JSONDecodeError as exc:
             raise MarketRentAPIError(
-                "Market Rent API returned a response "
-                "that was not valid JSON."
+                "Market Rent API returned a response that was not valid JSON."
             ) from exc
 
     @staticmethod
@@ -113,10 +100,7 @@ class MarketRentAPIClient:
         response = exc.response
 
         if response is None:
-            return (
-                "Market Rent API returned an HTTP error "
-                "with no response details."
-            )
+            return "Market Rent API returned an HTTP error with no response details."
 
         status_code = response.status_code
 
@@ -130,31 +114,16 @@ class MarketRentAPIClient:
 
         response_text = response.text.strip()
 
-        if (
-            len(response_text)
-            > MAX_ERROR_RESPONSE_CHARS
-        ):
-            response_text = (
-                response_text[
-                    :MAX_ERROR_RESPONSE_CHARS
-                ]
-                + "..."
-            )
+        if len(response_text) > MAX_ERROR_RESPONSE_CHARS:
+            response_text = response_text[:MAX_ERROR_RESPONSE_CHARS] + "..."
 
-        message = (
-            f"Market Rent API returned HTTP "
-            f"{status_code}."
-        )
+        message = f"Market Rent API returned HTTP {status_code}."
 
         if request_id:
-            message += (
-                f" Request ID: {request_id}."
-            )
+            message += f" Request ID: {request_id}."
 
         if response_text:
-            message += (
-                f" Response: {response_text}"
-            )
+            message += f" Response: {response_text}"
 
         return message
 
@@ -168,13 +137,9 @@ class MarketRentAPIClient:
     ) -> Any:
         """Return details for one geographic area definition."""
         if not area_definition.strip():
-            raise ValueError(
-                "area_definition must not be empty."
-            )
+            raise ValueError("area_definition must not be empty.")
 
-        return self._get(
-            f"area-definitions/{area_definition}"
-        )
+        return self._get(f"area-definitions/{area_definition}")
 
     def get_statistics(
         self,
@@ -188,40 +153,26 @@ class MarketRentAPIClient:
     ) -> Any:
         """Retrieve Market Rent statistics."""
         if not 1 <= num_months <= 24:
-            raise ValueError(
-                "num_months must be between 1 and 24."
-            )
+            raise ValueError("num_months must be between 1 and 24.")
 
         if not period_ending.strip():
-            raise ValueError(
-                "period_ending must not be empty."
-            )
+            raise ValueError("period_ending must not be empty.")
 
         if not area_definition.strip():
-            raise ValueError(
-                "area_definition must not be empty."
-            )
+            raise ValueError("area_definition must not be empty.")
 
         params: dict[str, Any] = {
             "period-ending": period_ending,
             "num-months": num_months,
             "area-definition": area_definition,
-            "include-aggregates": (
-                "true"
-                if include_aggregates
-                else "false"
-            ),
+            "include-aggregates": ("true" if include_aggregates else "false"),
         }
 
         if area_labels:
-            params["area-labels"] = ",".join(
-                area_labels
-            )
+            params["area-labels"] = ",".join(area_labels)
 
         if area_codes:
-            params["area-codes"] = ",".join(
-                area_codes
-            )
+            params["area-codes"] = ",".join(area_codes)
 
         return self._get(
             "statistics",

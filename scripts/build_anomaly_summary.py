@@ -11,82 +11,41 @@ def main() -> None:
     """Build dashboard-ready consolidated anomaly output."""
     summary = build_anomaly_summary_output()
 
-    alerts = summary[
-        summary["overall_dashboard_alert"]
-    ]
+    alerts = summary[summary["overall_dashboard_alert"]]
 
-    print(
-        "Anomaly consolidation complete."
-    )
+    print("Anomaly consolidation complete.")
     print()
 
-    print(
-        f"Rows: {len(summary)}"
-    )
+    print(f"Rows: {len(summary)}")
 
-    print(
-        "Series: "
-        f"{summary['series_id'].nunique()}"
-    )
+    print(f"Series: {summary['series_id'].nunique()}")
 
-    print(
-        "Periods: "
-        f"{summary['period_date'].nunique()}"
-    )
+    print(f"Periods: {summary['period_date'].nunique()}")
 
-    print(
-        "Rows with forecast records: "
-        f"{summary['has_forecast_record'].sum()}"
-    )
+    print(f"Rows with forecast records: {summary['has_forecast_record'].sum()}")
 
-    print(
-        "Overall dashboard alerts: "
-        f"{len(alerts)}"
-    )
+    print(f"Overall dashboard alerts: {len(alerts)}")
 
     print()
     print("=== OVERALL STATUS ===")
 
-    print(
-        summary[
-            "overall_status"
-        ].value_counts(
-            dropna=False
-        )
-    )
+    print(summary["overall_status"].value_counts(dropna=False))
 
     print()
     print("=== OVERALL SEVERITY ===")
 
-    print(
-        summary[
-            "overall_severity"
-        ].value_counts(
-            dropna=False
-        )
-    )
+    print(summary["overall_severity"].value_counts(dropna=False))
 
     print()
     print("=== DETECTOR COVERAGE ===")
 
-    print(
-        summary[
-            "detector_coverage"
-        ].value_counts(
-            dropna=False
-        )
-    )
+    print(summary["detector_coverage"].value_counts(dropna=False))
 
     if not alerts.empty:
         print()
-        print(
-            "=== CONSOLIDATED ALERTS "
-            "WITH FORECAST COVERAGE ==="
-        )
+        print("=== CONSOLIDATED ALERTS WITH FORECAST COVERAGE ===")
 
-        recent = alerts[
-            alerts["has_forecast_record"]
-        ].copy()
+        recent = alerts[alerts["has_forecast_record"]].copy()
 
         columns = [
             column
@@ -112,17 +71,15 @@ def main() -> None:
         ]
 
         print(
-            recent[
-                columns
-            ].sort_values(
+            recent[columns]
+            .sort_values(
                 [
                     "period_date",
                     "location_name",
                     "metric",
                 ]
-            ).to_string(
-                index=False
             )
+            .to_string(index=False)
         )
 
 

@@ -61,44 +61,27 @@ def build_future_periods(
 ) -> tuple[pd.Timestamp, pd.DatetimeIndex]:
     """Return the common forecast origin and future monthly periods."""
     if horizon < 1:
-        raise ValueError(
-            "Forecast horizon must be at least 1."
-        )
+        raise ValueError("Forecast horizon must be at least 1.")
 
     if history.empty:
-        raise ValueError(
-            "Forecasting history cannot be empty."
-        )
+        raise ValueError("Forecasting history cannot be empty.")
 
     if "series_id" not in history.columns:
-        raise ValueError(
-            "Forecasting history is missing series_id."
-        )
+        raise ValueError("Forecasting history is missing series_id.")
 
     if "period_date" not in history.columns:
-        raise ValueError(
-            "Forecasting history is missing period_date."
-        )
+        raise ValueError("Forecasting history is missing period_date.")
 
     data = history.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
-    end_dates = data.groupby(
-        "series_id"
-    )["period_date"].max()
+    end_dates = data.groupby("series_id")["period_date"].max()
 
     if end_dates.nunique() != 1:
-        raise ValueError(
-            "All forecast-eligible series must end "
-            "at the same forecast origin."
-        )
+        raise ValueError("All forecast-eligible series must end at the same forecast origin.")
 
-    origin = pd.Timestamp(
-        end_dates.iloc[0]
-    )
+    origin = pd.Timestamp(end_dates.iloc[0])
 
     future_periods = pd.date_range(
         start=origin + pd.offsets.MonthBegin(1),
@@ -120,39 +103,24 @@ def seasonal_naive_future_forecast(
         "value",
     }
 
-    missing = required.difference(
-        history.columns
-    )
+    missing = required.difference(history.columns)
 
     if missing:
-        raise ValueError(
-            "Seasonal-naive history is missing columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Seasonal-naive history is missing columns: {sorted(missing)}")
 
     if history.empty:
-        raise ValueError(
-            "Seasonal-naive history cannot be empty."
-        )
+        raise ValueError("Seasonal-naive history cannot be empty.")
 
     data = history.copy()
 
-    data["period_date"] = pd.to_datetime(
-        data["period_date"]
-    )
+    data["period_date"] = pd.to_datetime(data["period_date"])
 
-    data = data.sort_values(
-        "period_date"
-    ).reset_index(drop=True)
+    data = data.sort_values("period_date").reset_index(drop=True)
 
     if data["period_date"].duplicated().any():
-        raise ValueError(
-            "Seasonal-naive history contains duplicate periods."
-        )
+        raise ValueError("Seasonal-naive history contains duplicate periods.")
 
-    history_values = data.set_index(
-        "period_date"
-    )["value"]
+    history_values = data.set_index("period_date")["value"]
 
     rows: list[dict[str, object]] = []
 
@@ -160,30 +128,16 @@ def seasonal_naive_future_forecast(
         forecast_periods,
         start=1,
     ):
-        reference_period = (
-            pd.Timestamp(forecast_period)
-            - pd.DateOffset(
-                months=seasonal_period
-            )
-        )
+        reference_period = pd.Timestamp(forecast_period) - pd.DateOffset(months=seasonal_period)
 
         if reference_period not in history_values.index:
-            raise ValueError(
-                "Seasonal reference period "
-                f"{reference_period.date()} is unavailable."
-            )
+            raise ValueError(f"Seasonal reference period {reference_period.date()} is unavailable.")
 
-        predicted = float(
-            history_values.loc[
-                reference_period
-            ]
-        )
+        predicted = float(history_values.loc[reference_period])
 
         rows.append(
             {
-                "forecast_period": pd.Timestamp(
-                    forecast_period
-                ),
+                "forecast_period": pd.Timestamp(forecast_period),
                 "reference_period": reference_period,
                 "horizon_step": horizon_step,
                 "predicted": predicted,
@@ -201,16 +155,12 @@ def _series_metadata(
 
     for column in METADATA_COLUMNS:
         if column not in series.columns:
-            raise ValueError(
-                f"Forecast history is missing {column}."
-            )
+            raise ValueError(f"Forecast history is missing {column}.")
 
         values = series[column].drop_duplicates()
 
         if len(values) != 1:
-            raise ValueError(
-                f"Series metadata is not unique for {column}."
-            )
+            raise ValueError(f"Series metadata is not unique for {column}.")
 
         metadata[column] = values.iloc[0]
 
@@ -229,15 +179,11 @@ def build_seasonal_naive_forward_forecasts(
         "series_id",
         sort=True,
     ):
-        metadata = _series_metadata(
-            series
-        )
+        metadata = _series_metadata(series)
 
-        forecast = (
-            seasonal_naive_future_forecast(
-                series,
-                forecast_periods,
-            )
+        forecast = seasonal_naive_future_forecast(
+            series,
+            forecast_periods,
         )
 
         result = forecast[
@@ -251,9 +197,7 @@ def build_seasonal_naive_forward_forecasts(
         for column, value in metadata.items():
             result[column] = value
 
-        result["model"] = (
-            SEASONAL_NAIVE_MODEL
-        )
+        result["model"] = SEASONAL_NAIVE_MODEL
         result["forecast_origin"] = origin
 
         frames.append(result)
@@ -276,9 +220,7 @@ def build_ets_forward_forecasts(
         "series_id",
         sort=True,
     ):
-        metadata = _series_metadata(
-            series
-        )
+        metadata = _series_metadata(series)
 
         try:
             forecast = ets_forecast(
@@ -286,10 +228,7 @@ def build_ets_forward_forecasts(
                 forecast_periods,
             )
         except Exception as exc:
-            raise RuntimeError(
-                "Final ETS forecasting failed for "
-                f"{series_id}."
-            ) from exc
+            raise RuntimeError(f"Final ETS forecasting failed for {series_id}.") from exc
 
         result = forecast.copy()
 
@@ -330,21 +269,14 @@ def build_xgboost_forward_forecasts(
                 forecast_periods,
             )
         except Exception as exc:
-            raise RuntimeError(
-                "Final pooled XGBoost forecasting "
-                f"failed for {metric}."
-            ) from exc
+            raise RuntimeError(f"Final pooled XGBoost forecasting failed for {metric}.") from exc
 
         result = forecast.copy()
 
         result["model"] = XGBOOST_MODEL
         result["forecast_origin"] = origin
 
-        frames.append(
-            result[
-                MODEL_FORECAST_COLUMNS
-            ]
-        )
+        frames.append(result[MODEL_FORECAST_COLUMNS])
 
     return pd.concat(
         frames,
@@ -357,19 +289,15 @@ def build_all_model_forward_forecasts(
     horizon: int = DEFAULT_FORWARD_HORIZON,
 ) -> pd.DataFrame:
     """Generate final-origin forecasts from all candidate models."""
-    origin, forecast_periods = (
-        build_future_periods(
-            history,
-            horizon=horizon,
-        )
+    origin, forecast_periods = build_future_periods(
+        history,
+        horizon=horizon,
     )
 
-    seasonal = (
-        build_seasonal_naive_forward_forecasts(
-            history,
-            origin,
-            forecast_periods,
-        )
+    seasonal = build_seasonal_naive_forward_forecasts(
+        history,
+        origin,
+        forecast_periods,
     )
 
     ets = build_ets_forward_forecasts(
@@ -378,12 +306,10 @@ def build_all_model_forward_forecasts(
         forecast_periods,
     )
 
-    xgboost = (
-        build_xgboost_forward_forecasts(
-            history,
-            origin,
-            forecast_periods,
-        )
+    xgboost = build_xgboost_forward_forecasts(
+        history,
+        origin,
+        forecast_periods,
     )
 
     combined = pd.concat(
@@ -404,23 +330,15 @@ def build_all_model_forward_forecasts(
     )
 
     if duplicate_keys.any():
-        raise ValueError(
-            "Forward forecasts contain duplicate keys."
-        )
+        raise ValueError("Forward forecasts contain duplicate keys.")
 
     numeric_predictions = pd.to_numeric(
         combined["predicted"],
         errors="coerce",
-    ).to_numpy(
-        dtype=float
-    )
+    ).to_numpy(dtype=float)
 
-    if not np.isfinite(
-        numeric_predictions
-    ).all():
-        raise ValueError(
-            "Forward forecasts contain non-finite predictions."
-        )
+    if not np.isfinite(numeric_predictions).all():
+        raise ValueError("Forward forecasts contain non-finite predictions.")
 
     return combined.sort_values(
         [
@@ -445,37 +363,21 @@ def select_winner_forward_forecasts(
         "best_smape",
     }
 
-    missing = required_winner_columns.difference(
-        winners.columns
-    )
+    missing = required_winner_columns.difference(winners.columns)
 
     if missing:
-        raise ValueError(
-            "Winner metadata is missing columns: "
-            f"{sorted(missing)}"
-        )
+        raise ValueError(f"Winner metadata is missing columns: {sorted(missing)}")
 
     if winners.empty:
-        raise ValueError(
-            "Winner metadata cannot be empty."
-        )
+        raise ValueError("Winner metadata cannot be empty.")
 
     if winners["series_id"].duplicated().any():
-        raise ValueError(
-            "Winner metadata contains duplicate series."
-        )
+        raise ValueError("Winner metadata contains duplicate series.")
 
-    unknown_models = set(
-        winners["best_model"].unique()
-    ).difference(
-        SUPPORTED_MODELS
-    )
+    unknown_models = set(winners["best_model"].unique()).difference(SUPPORTED_MODELS)
 
     if unknown_models:
-        raise ValueError(
-            "Unsupported winner models: "
-            f"{sorted(unknown_models)}"
-        )
+        raise ValueError(f"Unsupported winner models: {sorted(unknown_models)}")
 
     winner_metadata = winners[
         [
@@ -494,40 +396,21 @@ def select_winner_forward_forecasts(
         validate="many_to_one",
     )
 
-    selected = merged.loc[
-        merged["model"]
-        == merged["best_model"]
-    ].copy()
+    selected = merged.loc[merged["model"] == merged["best_model"]].copy()
 
-    expected_series = set(
-        winners["series_id"]
-    )
+    expected_series = set(winners["series_id"])
 
-    observed_series = set(
-        selected["series_id"]
-    )
+    observed_series = set(selected["series_id"])
 
     if observed_series != expected_series:
-        missing_series = sorted(
-            expected_series.difference(
-                observed_series
-            )
-        )
+        missing_series = sorted(expected_series.difference(observed_series))
 
-        raise ValueError(
-            "Final forecasts are missing winner series: "
-            f"{missing_series}"
-        )
+        raise ValueError(f"Final forecasts are missing winner series: {missing_series}")
 
-    counts = selected.groupby(
-        "series_id"
-    )["horizon_step"].count()
+    counts = selected.groupby("series_id")["horizon_step"].count()
 
     if not counts.eq(horizon).all():
-        raise ValueError(
-            "Each winner series must have exactly "
-            f"{horizon} forward forecasts."
-        )
+        raise ValueError(f"Each winner series must have exactly {horizon} forward forecasts.")
 
     selected = selected.rename(
         columns={
@@ -537,11 +420,13 @@ def select_winner_forward_forecasts(
         }
     )
 
-    return selected[
-        FINAL_FORECAST_COLUMNS
-    ].sort_values(
-        [
-            "series_id",
-            "horizon_step",
-        ]
-    ).reset_index(drop=True)
+    return (
+        selected[FINAL_FORECAST_COLUMNS]
+        .sort_values(
+            [
+                "series_id",
+                "horizon_step",
+            ]
+        )
+        .reset_index(drop=True)
+    )

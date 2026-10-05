@@ -46,17 +46,9 @@ def _ordered_metrics(
     metrics: list[str],
 ) -> list[str]:
     """Sort metrics by configured order, then alphabetically."""
-    known = [
-        metric
-        for metric in METRIC_ORDER
-        if metric in metrics
-    ]
+    known = [metric for metric in METRIC_ORDER if metric in metrics]
 
-    others = sorted(
-        metric
-        for metric in metrics
-        if metric not in METRIC_ORDER
-    )
+    others = sorted(metric for metric in metrics if metric not in METRIC_ORDER)
 
     return known + others
 
@@ -69,9 +61,7 @@ def _slots(
     if use_sidebar:
         return [st.sidebar] * count
 
-    return list(
-        st.columns(count)
-    )
+    return list(st.columns(count))
 
 
 # ---------------------------------------------------------------------
@@ -96,13 +86,7 @@ def series_selector(
         use_sidebar,
     )
 
-    geography_levels = sorted(
-        data[
-            "geography_level"
-        ]
-        .dropna()
-        .unique()
-    )
+    geography_levels = sorted(data["geography_level"].dropna().unique())
 
     geography_level = geography_slot.selectbox(
         "Geography level",
@@ -111,18 +95,9 @@ def series_selector(
         key=f"{key_prefix}_geography",
     )
 
-    geography_data = data[
-        data["geography_level"]
-        == geography_level
-    ]
+    geography_data = data[data["geography_level"] == geography_level]
 
-    locations = sorted(
-        geography_data[
-            "location_name"
-        ]
-        .dropna()
-        .unique()
-    )
+    locations = sorted(geography_data["location_name"].dropna().unique())
 
     location_name = location_slot.selectbox(
         "Location",
@@ -130,20 +105,9 @@ def series_selector(
         key=f"{key_prefix}_location",
     )
 
-    location_data = geography_data[
-        geography_data["location_name"]
-        == location_name
-    ]
+    location_data = geography_data[geography_data["location_name"] == location_name]
 
-    metrics = _ordered_metrics(
-        list(
-            location_data[
-                "metric"
-            ]
-            .dropna()
-            .unique()
-        )
-    )
+    metrics = _ordered_metrics(list(location_data["metric"].dropna().unique()))
 
     metric = metric_slot.selectbox(
         "Indicator",
@@ -182,23 +146,12 @@ def date_range_selector(
         history is selected.
     """
 
-    months = sorted(
-        pd.to_datetime(
-            data[date_column]
-        )
-        .dropna()
-        .unique()
-    )
+    months = sorted(pd.to_datetime(data[date_column]).dropna().unique())
 
-    months = [
-        pd.Timestamp(month)
-        for month in months
-    ]
+    months = [pd.Timestamp(month) for month in months]
 
     if not months:
-        raise ValueError(
-            "No dates available for the period selector."
-        )
+        raise ValueError("No dates available for the period selector.")
 
     if len(months) == 1:
         return (
@@ -212,27 +165,16 @@ def date_range_selector(
     default_start = first
 
     if default_years is not None:
-        cutoff = (
-            last
-            - pd.DateOffset(
-                years=default_years,
-            )
+        cutoff = last - pd.DateOffset(
+            years=default_years,
         )
 
         default_start = next(
-            (
-                month
-                for month in months
-                if month >= cutoff
-            ),
+            (month for month in months if month >= cutoff),
             first,
         )
 
-    target = (
-        st.sidebar
-        if use_sidebar
-        else st
-    )
+    target = st.sidebar if use_sidebar else st
 
     if default_years is None:
         guidance = (
@@ -256,11 +198,7 @@ def date_range_selector(
             default_start,
             last,
         ),
-        format_func=lambda month: (
-            month.strftime(
-                "%b %Y"
-            )
-        ),
+        format_func=lambda month: month.strftime("%b %Y"),
         key=f"{key_prefix}_period",
     )
 
@@ -285,23 +223,12 @@ def filter_series(
     """Filter a dataframe to one selected series."""
 
     mask = (
-        (
-            data["geography_level"]
-            == geography_level
-        )
-        & (
-            data["location_name"]
-            == location_name
-        )
-        & (
-            data["metric"]
-            == metric
-        )
+        (data["geography_level"] == geography_level)
+        & (data["location_name"] == location_name)
+        & (data["metric"] == metric)
     )
 
-    return data[
-        mask
-    ].copy()
+    return data[mask].copy()
 
 
 def filter_date_range(
@@ -313,11 +240,6 @@ def filter_date_range(
 ) -> pd.DataFrame:
     """Filter a dataframe to an inclusive date range."""
 
-    dates = pd.to_datetime(
-        data[date_column]
-    )
+    dates = pd.to_datetime(data[date_column])
 
-    return data[
-        (dates >= start_date)
-        & (dates <= end_date)
-    ].copy()
+    return data[(dates >= start_date) & (dates <= end_date)].copy()

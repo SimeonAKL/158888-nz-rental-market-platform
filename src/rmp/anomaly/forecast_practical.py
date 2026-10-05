@@ -30,117 +30,66 @@ def add_forecast_practical_significance(
         "forecast_score_available",
     }
 
-    missing = required_columns.difference(
-        anomalies.columns
-    )
+    missing = required_columns.difference(anomalies.columns)
 
     if missing:
-        raise ValueError(
-            "Missing required columns: "
-            + ", ".join(sorted(missing))
-        )
+        raise ValueError("Missing required columns: " + ", ".join(sorted(missing)))
 
     result = anomalies.copy()
 
-    result[
-        "forecast_practical_significance_available"
-    ] = (
-        result["forecast_residual"].notna()
-        & result["forecast_residual_pct"].notna()
+    result["forecast_practical_significance_available"] = (
+        result["forecast_residual"].notna() & result["forecast_residual_pct"].notna()
     )
 
-    result[
-        "forecast_practical_significance"
-    ] = False
+    result["forecast_practical_significance"] = False
 
     rent_mask = (
-        result["metric"].eq("median_rent")
-        & result[
-            "forecast_practical_significance_available"
-        ]
+        result["metric"].eq("median_rent") & result["forecast_practical_significance_available"]
     )
 
     bonds_mask = (
-        result["metric"].eq("bonds_lodged")
-        & result[
-            "forecast_practical_significance_available"
-        ]
+        result["metric"].eq("bonds_lodged") & result["forecast_practical_significance_available"]
     )
 
     result.loc[
         rent_mask,
         "forecast_practical_significance",
-    ] = (
-        result.loc[
-            rent_mask,
-            "forecast_residual",
-        ].abs().ge(FORECAST_RENT_ABS_THRESHOLD)
-        & result.loc[
-            rent_mask,
-            "forecast_residual_pct",
-        ].abs().ge(FORECAST_RENT_PCT_THRESHOLD)
-    )
+    ] = result.loc[
+        rent_mask,
+        "forecast_residual",
+    ].abs().ge(FORECAST_RENT_ABS_THRESHOLD) & result.loc[
+        rent_mask,
+        "forecast_residual_pct",
+    ].abs().ge(FORECAST_RENT_PCT_THRESHOLD)
 
     result.loc[
         bonds_mask,
         "forecast_practical_significance",
-    ] = (
-        result.loc[
-            bonds_mask,
-            "forecast_residual",
-        ].abs().ge(FORECAST_BONDS_ABS_THRESHOLD)
-        | result.loc[
-            bonds_mask,
-            "forecast_residual_pct",
-        ].abs().ge(FORECAST_BONDS_PCT_THRESHOLD)
+    ] = result.loc[
+        bonds_mask,
+        "forecast_residual",
+    ].abs().ge(FORECAST_BONDS_ABS_THRESHOLD) | result.loc[
+        bonds_mask,
+        "forecast_residual_pct",
+    ].abs().ge(FORECAST_BONDS_PCT_THRESHOLD)
+
+    statistical_available = result["forecast_score_available"].fillna(False).astype(bool)
+
+    result["forecast_statistical_anomaly"] = (
+        result["forecast_is_anomaly"].fillna(False).astype(bool)
     )
 
-    statistical_available = (
-        result[
-            "forecast_score_available"
-        ]
-        .fillna(False)
-        .astype(bool)
-    )
-
-    result[
-        "forecast_statistical_anomaly"
-    ] = (
-        result[
-            "forecast_is_anomaly"
-        ]
-        .fillna(False)
-        .astype(bool)
-    )
-
-    result[
-        "forecast_dashboard_alert"
-    ] = (
+    result["forecast_dashboard_alert"] = (
         statistical_available
-        & result[
-            "forecast_statistical_anomaly"
-        ]
-        & result[
-            "forecast_practical_significance"
-        ]
+        & result["forecast_statistical_anomaly"]
+        & result["forecast_practical_significance"]
     )
 
-    result[
-        "forecast_alert_status"
-    ] = np.select(
+    result["forecast_alert_status"] = np.select(
         [
-            (
-                ~statistical_available
-                | ~result[
-                    "forecast_practical_significance_available"
-                ]
-            ),
-            result[
-                "forecast_dashboard_alert"
-            ],
-            result[
-                "forecast_statistical_anomaly"
-            ],
+            (~statistical_available | ~result["forecast_practical_significance_available"]),
+            result["forecast_dashboard_alert"],
+            result["forecast_statistical_anomaly"],
         ],
         [
             "unavailable",

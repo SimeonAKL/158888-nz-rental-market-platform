@@ -9,101 +9,49 @@ from rmp.anomaly.pipeline import (
 
 def main() -> None:
     """Run forecast residual anomaly detection."""
-    anomalies = (
-        build_forecast_anomaly_output()
-    )
+    anomalies = build_forecast_anomaly_output()
 
-    available = anomalies[
-        anomalies["forecast_score_available"]
-    ]
+    available = anomalies[anomalies["forecast_score_available"]]
 
-    detected = anomalies[
-        anomalies["forecast_is_anomaly"]
-    ]
+    detected = anomalies[anomalies["forecast_is_anomaly"]]
 
-    moderate = detected[
-        detected["forecast_severity"]
-        == "moderate"
-    ]
+    moderate = detected[detected["forecast_severity"] == "moderate"]
 
-    high = detected[
-        detected["forecast_severity"]
-        == "high"
-    ]
+    high = detected[detected["forecast_severity"] == "high"]
 
-    print(
-        "Forecast residual anomaly "
-        "detection complete."
-    )
+    print("Forecast residual anomaly detection complete.")
     print()
 
-    print(
-        f"Rows: {len(anomalies)}"
-    )
+    print(f"Rows: {len(anomalies)}")
 
-    print(
-        "Series: "
-        f"{anomalies['series_id'].nunique()}"
-    )
+    print(f"Series: {anomalies['series_id'].nunique()}")
 
-    print(
-        "Models used: "
-        f"{anomalies['model'].nunique()}"
-    )
+    print(f"Models used: {anomalies['model'].nunique()}")
 
-    print(
-        "Score-available rows: "
-        f"{len(available)}"
-    )
+    print(f"Score-available rows: {len(available)}")
 
-    print(
-        "Detected anomalies: "
-        f"{len(detected)}"
-    )
+    print(f"Detected anomalies: {len(detected)}")
 
-    print(
-        "Moderate anomalies: "
-        f"{len(moderate)}"
-    )
+    print(f"Moderate anomalies: {len(moderate)}")
 
-    print(
-        "High anomalies: "
-        f"{len(high)}"
-    )
+    print(f"High anomalies: {len(high)}")
 
     print()
     print("=== WINNER MODELS USED ===")
 
-    print(
-        anomalies[
-            "model"
-        ].value_counts()
-    )
+    print(anomalies["model"].value_counts())
 
     print()
     print("=== SCALE METHODS ===")
 
-    print(
-        anomalies[
-            "forecast_scale_method"
-        ].value_counts(
-            dropna=False
-        )
-    )
+    print(anomalies["forecast_scale_method"].value_counts(dropna=False))
 
     if not detected.empty:
         print()
-        print(
-            "=== MOST EXTREME FORECAST "
-            "RESIDUAL ANOMALIES ==="
-        )
+        print("=== MOST EXTREME FORECAST RESIDUAL ANOMALIES ===")
 
         extreme = (
-            detected.assign(
-                absolute_score=detected[
-                    "forecast_anomaly_score"
-                ].abs()
-            )
+            detected.assign(absolute_score=detected["forecast_anomaly_score"].abs())
             .sort_values(
                 "absolute_score",
                 ascending=False,
@@ -131,13 +79,7 @@ def main() -> None:
             if column in extreme.columns
         ]
 
-        print(
-            extreme[
-                columns
-            ].to_string(
-                index=False
-            )
-        )
+        print(extreme[columns].to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -43,9 +43,7 @@ def create_database_engine():
         database=config["database"],
     )
 
-    return create_engine(
-        database_url
-    )
+    return create_engine(database_url)
 
 
 def load_clean_rental_bond() -> pd.DataFrame:
@@ -90,53 +88,31 @@ def save_csv(
         index=False,
     )
 
-    print(
-        f"Saved: {path}"
-    )
+    print(f"Saved: {path}")
 
 
 def main() -> None:
     """Build all Phase 3 analytics datasets."""
 
-    print(
-        "Loading clean rental bond data..."
-    )
+    print("Loading clean rental bond data...")
 
     source = load_clean_rental_bond()
 
-    print(
-        f"Loaded rows: {len(source):,}"
-    )
+    print(f"Loaded rows: {len(source):,}")
 
-    panel = build_monthly_panel(
-        source
-    )
+    panel = build_monthly_panel(source)
 
-    catalog = build_series_catalog(
-        panel
-    )
+    catalog = build_series_catalog(panel)
 
-    quality = build_quality_summary(
-        panel
-    )
+    quality = build_quality_summary(panel)
 
-    historical_summary = (
-        build_historical_summary(
-            panel
-        )
-    )
+    historical_summary = build_historical_summary(panel)
 
-    monthly_seasonality = (
-        build_monthly_seasonality_summary(
-            panel
-        )
-    )
+    monthly_seasonality = build_monthly_seasonality_summary(panel)
 
-    recent_history = (
-        build_recent_history_summary(
-            panel,
-            recent_months=24,
-        )
+    recent_history = build_recent_history_summary(
+        panel,
+        recent_months=24,
     )
 
     readiness = build_modelling_readiness(
@@ -145,12 +121,7 @@ def main() -> None:
         quality,
     )
 
-    output_dir = (
-        PROJECT_ROOT
-        / "data"
-        / "processed"
-        / "analytics"
-    )
+    output_dir = PROJECT_ROOT / "data" / "processed" / "analytics"
 
     output_dir.mkdir(
         parents=True,
@@ -159,123 +130,68 @@ def main() -> None:
 
     save_csv(
         panel,
-        output_dir
-        / "monthly_panel.csv",
+        output_dir / "monthly_panel.csv",
     )
 
     save_csv(
         catalog,
-        output_dir
-        / "series_catalog.csv",
+        output_dir / "series_catalog.csv",
     )
 
     save_csv(
         quality,
-        output_dir
-        / "quality_summary.csv",
+        output_dir / "quality_summary.csv",
     )
 
     save_csv(
         historical_summary,
-        output_dir
-        / "historical_summary.csv",
+        output_dir / "historical_summary.csv",
     )
 
     save_csv(
         monthly_seasonality,
-        output_dir
-        / "monthly_seasonality.csv",
+        output_dir / "monthly_seasonality.csv",
     )
 
     save_csv(
         recent_history,
-        output_dir
-        / "recent_history_summary.csv",
+        output_dir / "recent_history_summary.csv",
     )
 
     save_csv(
         readiness,
-        output_dir
-        / "modelling_readiness.csv",
+        output_dir / "modelling_readiness.csv",
     )
 
-    print(
-        "\n=== Analytics summary ==="
-    )
+    print("\n=== Analytics summary ===")
 
-    print(
-        f"Panel rows: {len(panel):,}"
-    )
+    print(f"Panel rows: {len(panel):,}")
 
-    print(
-        "Series: "
-        f"{panel['series_id'].nunique()}"
-    )
+    print(f"Series: {panel['series_id'].nunique()}")
 
-    print(
-        "Date range: "
-        f"{panel['period_date'].min().date()} "
-        "to "
-        f"{panel['period_date'].max().date()}"
-    )
+    print(f"Date range: {panel['period_date'].min().date()} to {panel['period_date'].max().date()}")
 
-    print(
-        "Eligible series: "
-        f"{int(catalog['eligible_for_forecasting'].sum())}"
-        f"/{len(catalog)}"
-    )
+    print(f"Eligible series: {int(catalog['eligible_for_forecasting'].sum())}/{len(catalog)}")
 
-    print(
-        "Complete series: "
-        f"{int((catalog['missing_months'] == 0).sum())}"
-        f"/{len(catalog)}"
-    )
+    print(f"Complete series: {int((catalog['missing_months'] == 0).sum())}/{len(catalog)}")
 
-    print(
-        "Quality PASS: "
-        f"{int((quality['status'] == 'PASS').sum())}"
-        f"/{len(quality)}"
-    )
+    print(f"Quality PASS: {int((quality['status'] == 'PASS').sum())}/{len(quality)}")
 
-    print(
-        "Historical summaries: "
-        f"{len(historical_summary)}"
-    )
+    print(f"Historical summaries: {len(historical_summary)}")
 
-    print(
-        "Monthly seasonality rows: "
-        f"{len(monthly_seasonality)}"
-    )
+    print(f"Monthly seasonality rows: {len(monthly_seasonality)}")
 
-    print(
-        "Recent-history summaries: "
-        f"{len(recent_history)}"
-    )
+    print(f"Recent-history summaries: {len(recent_history)}")
 
-    print(
-        "Modelling ready: "
-        f"{bool(readiness.iloc[0]['dataset_ready'])}"
-    )
+    print(f"Modelling ready: {bool(readiness.iloc[0]['dataset_ready'])}")
 
-    print(
-        "\nObservations per series:"
-    )
+    print("\nObservations per series:")
 
-    print(
-        catalog[
-            "n_observations"
-        ].value_counts().sort_index()
-    )
+    print(catalog["n_observations"].value_counts().sort_index())
 
-    print(
-        "\nCompleteness rates:"
-    )
+    print("\nCompleteness rates:")
 
-    print(
-        catalog[
-            "completeness_rate"
-        ].value_counts().sort_index()
-    )
+    print(catalog["completeness_rate"].value_counts().sort_index())
 
 
 if __name__ == "__main__":

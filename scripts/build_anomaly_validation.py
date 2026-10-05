@@ -9,13 +9,9 @@ from rmp.anomaly.pipeline import (
 
 def main() -> None:
     """Run final anomaly validation and metadata build."""
-    validation, metadata = (
-        build_anomaly_validation_outputs()
-    )
+    validation, metadata = build_anomaly_validation_outputs()
 
-    print(
-        "Phase 5A anomaly validation complete."
-    )
+    print("Phase 5A anomaly validation complete.")
     print()
 
     print(
@@ -44,19 +40,13 @@ def main() -> None:
                 "observed",
                 "expected",
             ]
-        ].to_string(
-            index=False
-        )
+        ].to_string(index=False)
     )
 
     print()
     print("=== METADATA ===")
 
-    print(
-        metadata.to_string(
-            index=False
-        )
-    )
+    print(metadata.to_string(index=False))
 
 
 if __name__ == "__main__":

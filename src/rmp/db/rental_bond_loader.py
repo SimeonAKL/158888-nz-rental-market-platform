@@ -91,14 +91,11 @@ def infer_raw_snapshot_path(
 ) -> Path:
     """Infer the raw CSV path corresponding to a staging CSV."""
     try:
-        relative_path = staging_path.resolve().relative_to(
-            staging_root.resolve()
-        )
+        relative_path = staging_path.resolve().relative_to(staging_root.resolve())
 
     except ValueError as exc:
         raise RentalBondLoadError(
-            "Staging file is outside the configured "
-            "Rental Bond staging directory."
+            "Staging file is outside the configured Rental Bond staging directory."
         ) from exc
 
     return raw_root.resolve() / relative_path
@@ -109,14 +106,10 @@ def read_rental_bond_staging(
 ) -> pd.DataFrame:
     """Read and validate a Rental Bond staging CSV."""
     if not staging_path.exists():
-        raise RentalBondLoadError(
-            f"Staging file does not exist: {staging_path}"
-        )
+        raise RentalBondLoadError(f"Staging file does not exist: {staging_path}")
 
     if staging_path.suffix.lower() != ".csv":
-        raise RentalBondLoadError(
-            "Rental Bond staging file must be CSV."
-        )
+        raise RentalBondLoadError("Rental Bond staging file must be CSV.")
 
     dataframe = pd.read_csv(
         staging_path,
@@ -124,20 +117,13 @@ def read_rental_bond_staging(
     )
 
     if dataframe.empty:
-        raise RentalBondLoadError(
-            "Rental Bond staging CSV is empty."
-        )
+        raise RentalBondLoadError("Rental Bond staging CSV is empty.")
 
-    missing_columns = [
-        column
-        for column in OUTPUT_COLUMNS
-        if column not in dataframe.columns
-    ]
+    missing_columns = [column for column in OUTPUT_COLUMNS if column not in dataframe.columns]
 
     if missing_columns:
         raise RentalBondLoadError(
-            "Rental Bond staging CSV is missing columns: "
-            f"{', '.join(missing_columns)}"
+            f"Rental Bond staging CSV is missing columns: {', '.join(missing_columns)}"
         )
 
     return dataframe
@@ -148,19 +134,13 @@ def _parse_retrieved_at(
 ) -> datetime:
     """Parse a timezone-aware retrieval timestamp."""
     try:
-        retrieved_at = datetime.fromisoformat(
-            value
-        )
+        retrieved_at = datetime.fromisoformat(value)
 
     except ValueError as exc:
-        raise RentalBondLoadError(
-            "Invalid retrieved_at_utc timestamp."
-        ) from exc
+        raise RentalBondLoadError("Invalid retrieved_at_utc timestamp.") from exc
 
     if retrieved_at.tzinfo is None:
-        raise RentalBondLoadError(
-            "retrieved_at_utc must be timezone-aware."
-        )
+        raise RentalBondLoadError("retrieved_at_utc must be timezone-aware.")
 
     return retrieved_at
 
@@ -172,9 +152,7 @@ def _parse_boolean(
     if isinstance(value, bool):
         return value
 
-    normalised = str(
-        value
-    ).strip().lower()
+    normalised = str(value).strip().lower()
 
     if normalised == "true":
         return True
@@ -182,9 +160,7 @@ def _parse_boolean(
     if normalised == "false":
         return False
 
-    raise RentalBondLoadError(
-        f"Invalid boolean value: {value}"
-    )
+    raise RentalBondLoadError(f"Invalid boolean value: {value}")
 
 
 def _required_integer(
@@ -194,28 +170,18 @@ def _required_integer(
 ) -> int:
     """Convert a required staging value to integer."""
     try:
-        numeric_value = float(
-            value
-        )
+        numeric_value = float(value)
 
     except (
         TypeError,
         ValueError,
     ) as exc:
-        raise RentalBondLoadError(
-            f"Column '{column}' contains "
-            "a non-numeric value."
-        ) from exc
+        raise RentalBondLoadError(f"Column '{column}' contains a non-numeric value.") from exc
 
     if not numeric_value.is_integer():
-        raise RentalBondLoadError(
-            f"Column '{column}' must contain "
-            "whole-number values."
-        )
+        raise RentalBondLoadError(f"Column '{column}' must contain whole-number values.")
 
-    return int(
-        numeric_value
-    )
+    return int(numeric_value)
 
 
 def _required_decimal(
@@ -225,19 +191,14 @@ def _required_decimal(
 ) -> Decimal:
     """Convert a required staging value to Decimal."""
     try:
-        return Decimal(
-            str(value)
-        )
+        return Decimal(str(value))
 
     except (
         InvalidOperation,
         TypeError,
         ValueError,
     ) as exc:
-        raise RentalBondLoadError(
-            f"Column '{column}' contains "
-            "a non-numeric value."
-        ) from exc
+        raise RentalBondLoadError(f"Column '{column}' contains a non-numeric value.") from exc
 
 
 def validate_snapshot_lineage(
@@ -251,74 +212,43 @@ def validate_snapshot_lineage(
     bool,
 ]:
     """Validate staging-to-raw Rental Bond lineage."""
-    metadata_raw_file = metadata.get(
-        "raw_file"
-    )
+    metadata_raw_file = metadata.get("raw_file")
 
     if metadata_raw_file != raw_path.name:
-        raise RentalBondLoadError(
-            "Metadata raw_file does not match "
-            "the raw snapshot filename."
-        )
+        raise RentalBondLoadError("Metadata raw_file does not match the raw snapshot filename.")
 
-    dataset = metadata.get(
-        "dataset"
-    )
+    dataset = metadata.get("dataset")
 
     if dataset not in SUPPORTED_DATASETS:
-        raise RentalBondLoadError(
-            "Snapshot metadata contains an "
-            "unsupported Rental Bond dataset."
-        )
+        raise RentalBondLoadError("Snapshot metadata contains an unsupported Rental Bond dataset.")
 
-    metadata_checksum = metadata.get(
-        "sha256"
-    )
+    metadata_checksum = metadata.get("sha256")
 
     if not isinstance(
         metadata_checksum,
         str,
     ):
-        raise RentalBondLoadError(
-            "Snapshot metadata is missing sha256."
-        )
+        raise RentalBondLoadError("Snapshot metadata is missing sha256.")
 
-    actual_checksum = calculate_sha256(
-        raw_path.read_bytes()
-    )
+    actual_checksum = calculate_sha256(raw_path.read_bytes())
 
     if actual_checksum != metadata_checksum:
         raise RentalBondLoadError(
-            "Raw Rental Bond snapshot checksum does "
-            "not match snapshot metadata."
+            "Raw Rental Bond snapshot checksum does not match snapshot metadata."
         )
 
-    source_snapshots = set(
-        dataframe[
-            "source_snapshot"
-        ].astype(str)
-    )
+    source_snapshots = set(dataframe["source_snapshot"].astype(str))
 
-    if source_snapshots != {
-        raw_path.name
-    }:
+    if source_snapshots != {raw_path.name}:
         raise RentalBondLoadError(
-            "Staging source_snapshot does not match "
-            "the Rental Bond raw snapshot."
+            "Staging source_snapshot does not match the Rental Bond raw snapshot."
         )
 
-    geography_levels = set(
-        dataframe[
-            "geography_level"
-        ].astype(str)
-    )
+    geography_levels = set(dataframe["geography_level"].astype(str))
 
-    if geography_levels != {
-        dataset
-    }:
+    if geography_levels != {dataset}:
         raise RentalBondLoadError(
-            "Staging geography_level does not match "
-            "the Rental Bond dataset metadata."
+            "Staging geography_level does not match the Rental Bond dataset metadata."
         )
 
     metadata_retrieved_at = _parse_retrieved_at(
@@ -331,50 +261,27 @@ def validate_snapshot_lineage(
     )
 
     staging_timestamps = {
-        _parse_retrieved_at(
-            str(value)
-        )
-        for value in dataframe[
-            "retrieved_at_utc"
-        ]
+        _parse_retrieved_at(str(value)) for value in dataframe["retrieved_at_utc"]
     }
 
-    if staging_timestamps != {
-        metadata_retrieved_at
-    }:
+    if staging_timestamps != {metadata_retrieved_at}:
         raise RentalBondLoadError(
-            "Staging retrieved_at_utc does not match "
-            "Rental Bond snapshot metadata."
+            "Staging retrieved_at_utc does not match Rental Bond snapshot metadata."
         )
 
-    metadata_provisional = metadata.get(
-        "provisional"
-    )
+    metadata_provisional = metadata.get("provisional")
 
     if not isinstance(
         metadata_provisional,
         bool,
     ):
-        raise RentalBondLoadError(
-            "Snapshot metadata provisional flag "
-            "must be boolean."
-        )
+        raise RentalBondLoadError("Snapshot metadata provisional flag must be boolean.")
 
-    staging_provisional = {
-        _parse_boolean(
-            value
-        )
-        for value in dataframe[
-            "is_provisional"
-        ]
-    }
+    staging_provisional = {_parse_boolean(value) for value in dataframe["is_provisional"]}
 
-    if staging_provisional != {
-        metadata_provisional
-    }:
+    if staging_provisional != {metadata_provisional}:
         raise RentalBondLoadError(
-            "Staging is_provisional does not match "
-            "Rental Bond snapshot metadata."
+            "Staging is_provisional does not match Rental Bond snapshot metadata."
         )
 
     return (
@@ -391,57 +298,32 @@ def prepare_rental_bond_records(
     is_provisional: bool,
 ) -> list[dict[str, Any]]:
     """Convert staging rows into database-ready records."""
-    records: list[
-        dict[str, Any]
-    ] = []
+    records: list[dict[str, Any]] = []
 
     for index, row in dataframe.iterrows():
         try:
-            period_date = date.fromisoformat(
-                str(
-                    row[
-                        "period_date"
-                    ]
-                )
-            )
+            period_date = date.fromisoformat(str(row["period_date"]))
 
         except ValueError as exc:
-            raise RentalBondLoadError(
-                f"Row {index} contains "
-                "an invalid period_date."
-            ) from exc
+            raise RentalBondLoadError(f"Row {index} contains an invalid period_date.") from exc
 
-        geography_level = str(
-            row[
-                "geography_level"
-            ]
-        )
+        geography_level = str(row["geography_level"])
 
         if geography_level not in SUPPORTED_DATASETS:
             raise RentalBondLoadError(
-                f"Row {index} contains an unsupported "
-                f"geography_level: {geography_level}"
+                f"Row {index} contains an unsupported geography_level: {geography_level}"
             )
 
-        location_name = str(
-            row[
-                "location_name"
-            ]
-        ).strip()
+        location_name = str(row["location_name"]).strip()
 
         if not location_name:
-            raise RentalBondLoadError(
-                f"Row {index} contains "
-                "a blank location_name."
-            )
+            raise RentalBondLoadError(f"Row {index} contains a blank location_name.")
 
         record: dict[str, Any] = {
             "period_date": period_date,
             "geography_level": geography_level,
             "location_id": _required_integer(
-                row[
-                    "location_id"
-                ],
+                row["location_id"],
                 column="location_id",
             ),
             "location_name": location_name,
@@ -450,24 +332,18 @@ def prepare_rental_bond_records(
         }
 
         for column in INTEGER_COLUMNS:
-            record[
-                column
-            ] = _required_integer(
+            record[column] = _required_integer(
                 row[column],
                 column=column,
             )
 
         for column in NUMERIC_COLUMNS:
-            record[
-                column
-            ] = _required_decimal(
+            record[column] = _required_decimal(
                 row[column],
                 column=column,
             )
 
-        records.append(
-            record
-        )
+        records.append(record)
 
     return records
 
@@ -481,9 +357,7 @@ def register_snapshot(
     row_count: int,
 ) -> int:
     """Register a Rental Bond snapshot or reuse an existing one."""
-    source_name = (
-        f"rental_bond_{dataset}"
-    )
+    source_name = f"rental_bond_{dataset}"
 
     retrieved_at = _parse_retrieved_at(
         str(
@@ -494,9 +368,7 @@ def register_snapshot(
         )
     )
 
-    metadata_path = raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    metadata_path = raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
     request_parameters = {
         "dataset": dataset,
@@ -541,38 +413,23 @@ def register_snapshot(
         ),
         {
             "source_name": source_name,
-            "source_url": metadata.get(
-                "source_url"
-            ),
+            "source_url": metadata.get("source_url"),
             "file_name": raw_path.name,
             "retrieved_at": retrieved_at,
-            "checksum_sha256": metadata[
-                "sha256"
-            ],
+            "checksum_sha256": metadata["sha256"],
             "row_count": row_count,
             "status": "validated",
-            "notes": (
-                "Rental Bond snapshot registered "
-                "by ETL loader."
-            ),
+            "notes": ("Rental Bond snapshot registered by ETL loader."),
             "environment": None,
-            "request_parameters": json.dumps(
-                request_parameters
-            ),
-            "metadata_file_name": (
-                metadata_path.name
-            ),
+            "request_parameters": json.dumps(request_parameters),
+            "metadata_file_name": (metadata_path.name),
         },
     )
 
-    snapshot_id = (
-        insert_result.scalar_one_or_none()
-    )
+    snapshot_id = insert_result.scalar_one_or_none()
 
     if snapshot_id is not None:
-        return int(
-            snapshot_id
-        )
+        return int(snapshot_id)
 
     existing_result = connection.execute(
         text(
@@ -585,47 +442,31 @@ def register_snapshot(
         ),
         {
             "source_name": source_name,
-            "checksum_sha256": metadata[
-                "sha256"
-            ],
+            "checksum_sha256": metadata["sha256"],
         },
     )
 
-    existing_snapshot_id = (
-        existing_result.scalar_one_or_none()
-    )
+    existing_snapshot_id = existing_result.scalar_one_or_none()
 
     if existing_snapshot_id is None:
-        raise RentalBondLoadError(
-            "Unable to register or locate "
-            "the Rental Bond raw snapshot."
-        )
+        raise RentalBondLoadError("Unable to register or locate the Rental Bond raw snapshot.")
 
-    return int(
-        existing_snapshot_id
-    )
+    return int(existing_snapshot_id)
 
 
 def upsert_rental_bond_records(
     connection: Connection,
     *,
-    records: list[
-        dict[str, Any]
-    ],
+    records: list[dict[str, Any]],
     snapshot_id: int,
     batch_size: int = BATCH_SIZE,
 ) -> None:
     """Bulk UPSERT Rental Bond records into clean.rental_bond."""
     if not records:
-        raise RentalBondLoadError(
-            "No Rental Bond records were "
-            "provided for loading."
-        )
+        raise RentalBondLoadError("No Rental Bond records were provided for loading.")
 
     if batch_size < 1:
-        raise RentalBondLoadError(
-            "Batch size must be at least 1."
-        )
+        raise RentalBondLoadError("Batch size must be at least 1.")
 
     sql = """
         INSERT INTO clean.rental_bond (
@@ -678,56 +519,26 @@ def upsert_rental_bond_records(
 
     values = [
         (
-            record[
-                "period_date"
-            ],
-            record[
-                "geography_level"
-            ],
-            record[
-                "location_id"
-            ],
-            record[
-                "location_name"
-            ],
-            record[
-                "bonds_lodged"
-            ],
-            record[
-                "active_bonds"
-            ],
-            record[
-                "bonds_closed"
-            ],
-            record[
-                "median_rent"
-            ],
-            record[
-                "geometric_mean_rent"
-            ],
-            record[
-                "upper_quartile_rent"
-            ],
-            record[
-                "lower_quartile_rent"
-            ],
-            record[
-                "log_std_dev_weekly_rent"
-            ],
-            record[
-                "is_provisional"
-            ],
+            record["period_date"],
+            record["geography_level"],
+            record["location_id"],
+            record["location_name"],
+            record["bonds_lodged"],
+            record["active_bonds"],
+            record["bonds_closed"],
+            record["median_rent"],
+            record["geometric_mean_rent"],
+            record["upper_quartile_rent"],
+            record["lower_quartile_rent"],
+            record["log_std_dev_weekly_rent"],
+            record["is_provisional"],
             snapshot_id,
-            record[
-                "retrieved_at"
-            ],
+            record["retrieved_at"],
         )
         for record in records
     ]
 
-    dbapi_connection = (
-        connection.connection.driver_connection
-    )
+    dbapi_connection = connection.connection.driver_connection
 
     cursor = dbapi_connection.cursor()
 
@@ -773,27 +584,16 @@ def load_rental_bond_staging(
     engine: Engine | None = None,
 ) -> RentalBondLoadResult:
     """Load one Rental Bond staging CSV into PostgreSQL."""
-    dataframe = read_rental_bond_staging(
-        staging_path
-    )
+    dataframe = read_rental_bond_staging(staging_path)
 
-    resolved_raw_path = (
-        raw_path
-        if raw_path is not None
-        else infer_raw_snapshot_path(
-            staging_path
-        )
-    )
+    resolved_raw_path = raw_path if raw_path is not None else infer_raw_snapshot_path(staging_path)
 
     if not resolved_raw_path.exists():
         raise RentalBondLoadError(
-            "Corresponding Rental Bond raw snapshot "
-            f"does not exist: {resolved_raw_path}"
+            f"Corresponding Rental Bond raw snapshot does not exist: {resolved_raw_path}"
         )
 
-    metadata = load_snapshot_metadata(
-        resolved_raw_path
-    )
+    metadata = load_snapshot_metadata(resolved_raw_path)
 
     (
         dataset,
@@ -813,11 +613,7 @@ def load_rental_bond_staging(
 
     owns_engine = engine is None
 
-    database_engine = (
-        engine
-        if engine is not None
-        else build_database_engine()
-    )
+    database_engine = engine if engine is not None else build_database_engine()
 
     try:
         with database_engine.begin() as connection:

@@ -15,12 +15,7 @@ from rmp.validation.market_rent import (
     validate_market_rent_file,
 )
 
-DEFAULT_STAGING_ROOT = (
-    PROJECT_ROOT
-    / "data"
-    / "staging"
-    / "market_rent"
-)
+DEFAULT_STAGING_ROOT = PROJECT_ROOT / "data" / "staging" / "market_rent"
 
 
 COLUMN_MAPPING = {
@@ -84,9 +79,7 @@ def _normalise_date_string(
     parts = value.strip().split("-")
 
     if len(parts) != 3:
-        raise ValueError(
-            "Date must contain year, month, and day."
-        )
+        raise ValueError("Date must contain year, month, and day.")
 
     try:
         year = int(parts[0])
@@ -94,15 +87,9 @@ def _normalise_date_string(
         day = int(parts[2])
 
     except ValueError as exc:
-        raise ValueError(
-            "Date components must be numeric."
-        ) from exc
+        raise ValueError("Date components must be numeric.") from exc
 
-    return (
-        f"{year:04d}-"
-        f"{month:02d}-"
-        f"{day:02d}"
-    )
+    return f"{year:04d}-{month:02d}-{day:02d}"
 
 
 def parse_period_covered(
@@ -127,41 +114,25 @@ def parse_period_covered(
         If the period string cannot be parsed.
     """
     if not isinstance(period_covered, str):
-        raise MarketRentTransformError(
-            "periodCovered must be a string."
-        )
+        raise MarketRentTransformError("periodCovered must be a string.")
 
     parts = period_covered.split("/")
 
     if len(parts) != 2:
         raise MarketRentTransformError(
-            "periodCovered must contain "
-            "a start and end date separated by '/'."
+            "periodCovered must contain a start and end date separated by '/'."
         )
 
     try:
-        start_date = date.fromisoformat(
-            _normalise_date_string(
-                parts[0]
-            )
-        )
+        start_date = date.fromisoformat(_normalise_date_string(parts[0]))
 
-        end_date = date.fromisoformat(
-            _normalise_date_string(
-                parts[1]
-            )
-        )
+        end_date = date.fromisoformat(_normalise_date_string(parts[1]))
 
     except ValueError as exc:
-        raise MarketRentTransformError(
-            "periodCovered contains an invalid date."
-        ) from exc
+        raise MarketRentTransformError("periodCovered contains an invalid date.") from exc
 
     if start_date > end_date:
-        raise MarketRentTransformError(
-            "periodCovered start date must not "
-            "be after the end date."
-        )
+        raise MarketRentTransformError("periodCovered start date must not be after the end date.")
 
     return (
         start_date.isoformat(),
@@ -173,9 +144,7 @@ def get_metadata_path(
     raw_path: Path,
 ) -> Path:
     """Return the metadata path associated with a raw snapshot."""
-    return raw_path.with_name(
-        f"{raw_path.stem}.metadata.json"
-    )
+    return raw_path.with_name(f"{raw_path.stem}.metadata.json")
 
 
 def load_snapshot_metadata(
@@ -198,40 +167,24 @@ def load_snapshot_metadata(
     MarketRentTransformError
         If metadata is missing or invalid.
     """
-    metadata_path = get_metadata_path(
-        raw_path
-    )
+    metadata_path = get_metadata_path(raw_path)
 
     if not metadata_path.exists():
-        raise MarketRentTransformError(
-            "Market Rent metadata file does not exist: "
-            f"{metadata_path}"
-        )
+        raise MarketRentTransformError(f"Market Rent metadata file does not exist: {metadata_path}")
 
     try:
-        metadata = json.loads(
-            metadata_path.read_text(
-                encoding="utf-8"
-            )
-        )
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
 
     except json.JSONDecodeError as exc:
         raise MarketRentTransformError(
-            "Market Rent metadata file "
-            f"is not valid JSON: {metadata_path}"
+            f"Market Rent metadata file is not valid JSON: {metadata_path}"
         ) from exc
 
     if not isinstance(metadata, dict):
-        raise MarketRentTransformError(
-            "Market Rent metadata must be "
-            "a JSON object."
-        )
+        raise MarketRentTransformError("Market Rent metadata must be a JSON object.")
 
     if "retrieved_at_utc" not in metadata:
-        raise MarketRentTransformError(
-            "Market Rent metadata is missing "
-            "'retrieved_at_utc'."
-        )
+        raise MarketRentTransformError("Market Rent metadata is missing 'retrieved_at_utc'.")
 
     return metadata
 
@@ -258,25 +211,15 @@ def transform_market_rent_payload(
     pandas.DataFrame
         Standardised Market Rent staging data.
     """
-    period_start, period_end = (
-        parse_period_covered(
-            payload["periodCovered"]
-        )
-    )
+    period_start, period_end = parse_period_covered(payload["periodCovered"])
 
-    area_definition = str(
-        payload["areaDefinition"]
-    )
+    area_definition = str(payload["areaDefinition"])
 
     items = payload["items"]
 
-    dataframe = pd.DataFrame(
-        items
-    )
+    dataframe = pd.DataFrame(items)
 
-    dataframe = dataframe.rename(
-        columns=COLUMN_MAPPING
-    )
+    dataframe = dataframe.rename(columns=COLUMN_MAPPING)
 
     dataframe.insert(
         0,
@@ -296,33 +239,20 @@ def transform_market_rent_payload(
         period_start,
     )
 
-    dataframe["source_snapshot"] = (
-        source_snapshot
-    )
+    dataframe["source_snapshot"] = source_snapshot
 
-    dataframe["retrieved_at_utc"] = (
-        retrieved_at_utc
-    )
+    dataframe["retrieved_at_utc"] = retrieved_at_utc
 
-    missing_columns = [
-        column
-        for column in OUTPUT_COLUMNS
-        if column not in dataframe.columns
-    ]
+    missing_columns = [column for column in OUTPUT_COLUMNS if column not in dataframe.columns]
 
     if missing_columns:
-        missing = ", ".join(
-            missing_columns
-        )
+        missing = ", ".join(missing_columns)
 
         raise MarketRentTransformError(
-            "Transformed Market Rent data "
-            f"is missing columns: {missing}"
+            f"Transformed Market Rent data is missing columns: {missing}"
         )
 
-    dataframe = dataframe[
-        OUTPUT_COLUMNS
-    ].copy()
+    dataframe = dataframe[OUTPUT_COLUMNS].copy()
 
     return dataframe
 
@@ -348,26 +278,19 @@ def transform_market_rent_file(
         If validation or transformation fails.
     """
     try:
-        payload = validate_market_rent_file(
-            raw_path
-        )
+        payload = validate_market_rent_file(raw_path)
 
     except MarketRentValidationError as exc:
         raise MarketRentTransformError(
-            "Raw Market Rent snapshot failed "
-            "schema validation."
+            "Raw Market Rent snapshot failed schema validation."
         ) from exc
 
-    metadata = load_snapshot_metadata(
-        raw_path
-    )
+    metadata = load_snapshot_metadata(raw_path)
 
     return transform_market_rent_payload(
         payload,
         source_snapshot=raw_path.name,
-        retrieved_at_utc=str(
-            metadata["retrieved_at_utc"]
-        ),
+        retrieved_at_utc=str(metadata["retrieved_at_utc"]),
     )
 
 
@@ -376,45 +299,29 @@ def get_staging_path(
     staging_root: Path | None = None,
 ) -> Path:
     """Build the staging CSV path for one raw snapshot."""
-    root = (
-        staging_root
-        if staging_root is not None
-        else DEFAULT_STAGING_ROOT
-    )
+    root = staging_root if staging_root is not None else DEFAULT_STAGING_ROOT
 
     try:
         year = raw_path.parents[2].name
         month = raw_path.parents[1].name
         day = raw_path.parents[0].name
 
-        if not (
-            year.isdigit()
-            and month.isdigit()
-            and day.isdigit()
-        ):
+        if not (year.isdigit() and month.isdigit() and day.isdigit()):
             raise ValueError
 
     except (IndexError, ValueError) as exc:
         raise MarketRentTransformError(
-            "Raw snapshot path does not contain "
-            "the expected YYYY/MM/DD structure."
+            "Raw snapshot path does not contain the expected YYYY/MM/DD structure."
         ) from exc
 
-    output_dir = (
-        root
-        / year
-        / month
-        / day
-    )
+    output_dir = root / year / month / day
 
     output_dir.mkdir(
         parents=True,
         exist_ok=True,
     )
 
-    return output_dir / (
-        f"{raw_path.stem}.csv"
-    )
+    return output_dir / (f"{raw_path.stem}.csv")
 
 
 def write_market_rent_staging_csv(
@@ -441,9 +348,7 @@ def write_market_rent_staging_csv(
     FileExistsError
         If the staging output already exists.
     """
-    dataframe = transform_market_rent_file(
-        raw_path
-    )
+    dataframe = transform_market_rent_file(raw_path)
 
     output_path = get_staging_path(
         raw_path,
@@ -451,10 +356,7 @@ def write_market_rent_staging_csv(
     )
 
     if output_path.exists():
-        raise FileExistsError(
-            "Staging file already exists: "
-            f"{output_path}"
-        )
+        raise FileExistsError(f"Staging file already exists: {output_path}")
 
     dataframe.to_csv(
         output_path,

@@ -25,75 +25,45 @@ def seasonal_naive_forecast(
     """
 
     if seasonal_period < 1:
-        raise ValueError(
-            "seasonal_period must be at least 1."
-        )
+        raise ValueError("seasonal_period must be at least 1.")
 
     required = {
         date_column,
         value_column,
     }
 
-    missing_train = required.difference(
-        train.columns
-    )
-    missing_test = required.difference(
-        test.columns
-    )
+    missing_train = required.difference(train.columns)
+    missing_test = required.difference(test.columns)
 
     if missing_train:
-        raise ValueError(
-            "Missing required train columns: "
-            f"{sorted(missing_train)}"
-        )
+        raise ValueError(f"Missing required train columns: {sorted(missing_train)}")
 
     if missing_test:
-        raise ValueError(
-            "Missing required test columns: "
-            f"{sorted(missing_test)}"
-        )
+        raise ValueError(f"Missing required test columns: {sorted(missing_test)}")
 
     if train.empty:
-        raise ValueError(
-            "Training data cannot be empty."
-        )
+        raise ValueError("Training data cannot be empty.")
 
     if test.empty:
-        raise ValueError(
-            "Test data cannot be empty."
-        )
+        raise ValueError("Test data cannot be empty.")
 
     train_data = train.copy()
     test_data = test.copy()
 
-    train_data[date_column] = pd.to_datetime(
-        train_data[date_column]
-    )
-    test_data[date_column] = pd.to_datetime(
-        test_data[date_column]
-    )
+    train_data[date_column] = pd.to_datetime(train_data[date_column])
+    test_data[date_column] = pd.to_datetime(test_data[date_column])
 
-    train_data = train_data.sort_values(
-        date_column
-    ).reset_index(drop=True)
+    train_data = train_data.sort_values(date_column).reset_index(drop=True)
 
-    test_data = test_data.sort_values(
-        date_column
-    ).reset_index(drop=True)
+    test_data = test_data.sort_values(date_column).reset_index(drop=True)
 
     if train_data[date_column].duplicated().any():
-        raise ValueError(
-            "Training data contains duplicate periods."
-        )
+        raise ValueError("Training data contains duplicate periods.")
 
     if test_data[date_column].duplicated().any():
-        raise ValueError(
-            "Test data contains duplicate periods."
-        )
+        raise ValueError("Test data contains duplicate periods.")
 
-    history = train_data.set_index(
-        date_column
-    )[value_column]
+    history = train_data.set_index(date_column)[value_column]
 
     rows: list[dict[str, object]] = []
 
@@ -101,20 +71,11 @@ def seasonal_naive_forecast(
         test_data.itertuples(index=False),
         start=1,
     ):
-        forecast_period = pd.Timestamp(
-            getattr(row, date_column)
-        )
+        forecast_period = pd.Timestamp(getattr(row, date_column))
 
-        actual = float(
-            getattr(row, value_column)
-        )
+        actual = float(getattr(row, value_column))
 
-        reference_period = (
-            forecast_period
-            - pd.DateOffset(
-                months=seasonal_period
-            )
-        )
+        reference_period = forecast_period - pd.DateOffset(months=seasonal_period)
 
         if reference_period not in history.index:
             raise ValueError(
@@ -123,9 +84,7 @@ def seasonal_naive_forecast(
                 "is not available in the training data."
             )
 
-        predicted = float(
-            history.loc[reference_period]
-        )
+        predicted = float(history.loc[reference_period])
 
         error = actual - predicted
 
