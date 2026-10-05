@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import altair as alt
 import pandas as pd
 import streamlit as st
 
@@ -11,6 +14,72 @@ from rmp.dashboard.data import (
     load_monthly_panel,
     load_series_model_winners,
 )
+from rmp.dashboard.filters import (
+    geography_label,
+    metric_axis_label,
+    metric_label,
+    series_selector,
+)
+from rmp.dashboard.formatters import (
+    format_percentage,
+    format_value,
+)
+from rmp.dashboard.layout import (
+    inject_home_styles,
+    render_card_header,
+    render_filter_header,
+    render_legend,
+    render_page_hero,
+    render_series_header,
+    render_source_note,
+    render_stat_card,
+    render_top_navigation,
+    tone_for,
+)
+
+# ---------------------------------------------------------------------
+# Page configuration
+# ---------------------------------------------------------------------
+
+st.set_page_config(
+    page_title="Forecasting",
+    page_icon="🔮",
+    layout="wide",
+    initial_sidebar_state="collapsed",
+)
+
+inject_home_styles()
+render_top_navigation(
+    active_page="Forecasting",
+)
+
+PROJECT_ROOT = (
+    Path(__file__)
+    .resolve()
+    .parents[1]
+)
+
+HERO_IMAGE_PATH = (
+    PROJECT_ROOT
+    / "assets"
+    / "forecasting_hero.jpg"
+)
+
+
+# ---------------------------------------------------------------------
+# Chart palette
+# ---------------------------------------------------------------------
+
+BLUE = "#1769ff"
+DARK_BLUE = "#0b57d0"
+LIGHT_BLUE = "#8fc4ff"
+PALE_BLUE = "#e8f2ff"
+
+LABEL_COLOR = "#71809c"
+TITLE_COLOR = "#52617e"
+TICK_COLOR = "#d7dfeb"
+GRID_COLOR = "#edf1f7"
+
 
 MODEL_LABELS = {
     "seasonal_naive": "Seasonal Naive",
@@ -20,51 +89,10 @@ MODEL_LABELS = {
     ),
 }
 
-METRIC_LABELS = {
-    "median_rent": "Median Weekly Rent",
-    "bonds_lodged": "New Bond Lodgements",
-}
 
-GEOGRAPHY_LABELS = {
-    "region": "Region",
-    "territorial_authority": (
-        "Territorial Authority"
-    ),
-}
-
-
-def format_value(
-    value: float,
-    metric: str,
-) -> str:
-    """Format a model value for dashboard display."""
-    if pd.isna(value):
-        return "N/A"
-
-    if metric == "median_rent":
-        return f"${value:,.0f}"
-
-    return f"{value:,.0f}"
-
-
-def format_metric_value(
-    value: float,
-) -> str:
-    """Format a forecast-error metric."""
-    if pd.isna(value):
-        return "N/A"
-
-    return f"{value:,.2f}"
-
-
-def format_smape(
-    value: float,
-) -> str:
-    """Format sMAPE as a percentage."""
-    if pd.isna(value):
-        return "N/A"
-
-    return f"{value:,.2f}%"
+# ---------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------
 
 
 def model_label(
@@ -73,131 +101,168 @@ def model_label(
     """Return a user-facing model label."""
     return MODEL_LABELS.get(
         model,
-        model,
+        model.replace("_", " ").title(),
     )
 
 
-def metric_label(
+def format_error(
+    value: float,
     metric: str,
 ) -> str:
-    """Return a user-facing metric label."""
-    return METRIC_LABELS.get(
-        metric,
-        metric,
+    """Format forecast-error values."""
+    if pd.isna(value):
+        return "N/A"
+
+    if metric == "median_rent":
+        return f"${value:,.2f}"
+
+    return f"{value:,.2f}"
+
+
+def format_smape(
+    value: float,
+) -> str:
+    """Format sMAPE."""
+    if pd.isna(value):
+        return "N/A"
+
+    return f"{value:,.2f}%"
+
+
+def history_window_options(
+    n_observations: int,
+) -> tuple[list[int], int]:
+    """Return sensible historical-window options."""
+    candidates = [
+        12,
+        24,
+        36,
+        60,
+        84,
+        120,
+    ]
+
+    maximum = min(
+        120,
+        n_observations,
+    )
+
+    options = [
+        value
+        for value in candidates
+        if value <= maximum
+    ]
+
+    if maximum not in options:
+        options.append(maximum)
+
+    options = sorted(
+        set(options)
+    )
+
+    preferred = [
+        value
+        for value in options
+        if value <= 60
+    ]
+
+    default = (
+        max(preferred)
+        if preferred
+        else options[-1]
+    )
+
+    return (
+        options,
+        default,
     )
 
 
-st.set_page_config(
-    page_title="Forecasting",
-    page_icon="📈",
-    layout="wide",
+# ---------------------------------------------------------------------
+# Hero
+# ---------------------------------------------------------------------
+
+render_page_hero(
+    "Forecasting",
+    (
+        "Six-month forward forecasts generated from "
+        "the selected winner model for each "
+        "forecast-eligible rental-market series."
+    ),
+    HERO_IMAGE_PATH,
 )
 
-st.title("Forecasting")
 
-st.caption(
-    "Six-month forward forecasts are generated from the selected "
-    "winner model for each forecast-eligible rental-market series. "
-    "Rolling-origin results are retained below as model-evaluation "
-    "evidence."
-)
-
-
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Data
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
 try:
     panel = load_monthly_panel()
+
     final_forecasts = (
         load_final_forward_forecasts()
     )
+
     winners = (
         load_series_model_winners()
     )
+
     backtest_predictions = (
         load_combined_predictions()
     )
-except (FileNotFoundError, ValueError) as exc:
+
+except (
+    FileNotFoundError,
+    ValueError,
+) as exc:
     st.error(str(exc))
     st.stop()
 
 
-# ---------------------------------------------------------------------------
-# Sidebar filters
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Forecast selection
+# ---------------------------------------------------------------------
 
-st.sidebar.header("Forecast Selection")
+with st.container(
+    key="filters_forecasting",
+):
+    render_filter_header(
+        "Forecast Selection",
+        (
+            "Choose a geography, location, and "
+            "market indicator to review its "
+            "historical series and forecast availability."
+        ),
+    )
 
-geography_options = [
-    level
-    for level in [
-        "region",
-        "territorial_authority",
-    ]
-    if level
-    in panel["geography_level"].dropna().unique()
-]
-
-selected_geography = st.sidebar.selectbox(
-    "Geography level",
-    options=geography_options,
-    format_func=lambda value: (
-        GEOGRAPHY_LABELS.get(
-            value,
-            value,
-        )
-    ),
-)
-
-geography_data = panel.loc[
-    panel["geography_level"]
-    == selected_geography
-].copy()
-
-locations = sorted(
-    geography_data[
-        "location_name"
-    ]
-    .dropna()
-    .unique()
-    .tolist()
-)
-
-selected_location = st.sidebar.selectbox(
-    "Location",
-    options=locations,
-)
-
-location_data = geography_data.loc[
-    geography_data["location_name"]
-    == selected_location
-].copy()
-
-available_metrics = [
-    metric
-    for metric in [
-        "median_rent",
-        "bonds_lodged",
-    ]
-    if metric
-    in location_data["metric"].dropna().unique()
-]
-
-selected_metric = st.sidebar.selectbox(
-    "Metric",
-    options=available_metrics,
-    format_func=metric_label,
-)
+    (
+        selected_geography,
+        selected_location,
+        selected_metric,
+    ) = series_selector(
+        panel,
+        key_prefix="forecasting",
+    )
 
 
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Resolve selected analytical series
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-series_matches = location_data.loc[
-    location_data["metric"]
-    == selected_metric
+series_matches = panel.loc[
+    (
+        panel["geography_level"]
+        == selected_geography
+    )
+    & (
+        panel["location_name"]
+        == selected_location
+    )
+    & (
+        panel["metric"]
+        == selected_metric
+    )
 ].copy()
 
 series_ids = (
@@ -208,8 +273,9 @@ series_ids = (
 
 if len(series_ids) != 1:
     st.error(
-        "The selected geography and metric do not resolve "
-        "to exactly one analytical series."
+        "The selected geography, location, and "
+        "indicator do not resolve to exactly "
+        "one analytical series."
     )
     st.stop()
 
@@ -217,23 +283,30 @@ series_id = str(
     series_ids[0]
 )
 
-history = panel.loc[
-    panel["series_id"]
-    == series_id
-].copy()
-
-history = history.sort_values(
-    "period_date"
-).reset_index(drop=True)
+history = (
+    panel.loc[
+        panel["series_id"]
+        == series_id
+    ]
+    .copy()
+    .sort_values(
+        "period_date"
+    )
+    .reset_index(
+        drop=True
+    )
+)
 
 if history.empty:
     st.warning(
-        "No historical observations are available "
-        "for this series."
+        "No historical observations are "
+        "available for this series."
     )
     st.stop()
 
-latest_observation = history.iloc[-1]
+latest_observation = (
+    history.iloc[-1]
+)
 
 latest_date = pd.Timestamp(
     latest_observation["period_date"]
@@ -243,115 +316,254 @@ latest_value = float(
     latest_observation["value"]
 )
 
+axis_label = metric_axis_label(
+    selected_metric
+)
 
-# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------
 # Series header
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-st.subheader(
-    f"{selected_location} — "
-    f"{metric_label(selected_metric)}"
+render_series_header(
+    (
+        f"{selected_location}"
+        " — "
+        f"{metric_label(selected_metric)}"
+    ),
+    (
+        f"{geography_label(selected_geography)}"
+        "  •  "
+        f"{series_id}"
+        "  •  "
+        f"Latest observation {latest_date:%b %Y}"
+    ),
 )
 
-st.caption(
-    f"{GEOGRAPHY_LABELS.get(selected_geography, selected_geography)} "
-    f"series · {series_id}"
+if (
+    history["is_provisional"]
+    .fillna(False)
+    .any()
+):
+    render_source_note()
+
+
+# ---------------------------------------------------------------------
+# Forecast availability
+# ---------------------------------------------------------------------
+
+series_forecast = (
+    final_forecasts.loc[
+        final_forecasts["series_id"]
+        == series_id
+    ]
+    .copy()
+)
+
+series_winner = (
+    winners.loc[
+        winners["series_id"]
+        == series_id
+    ]
+    .copy()
 )
 
 
-# ---------------------------------------------------------------------------
-# Determine forecast availability
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Historical-only series
+# ---------------------------------------------------------------------
 
-series_forecast = final_forecasts.loc[
-    final_forecasts["series_id"]
-    == series_id
-].copy()
-
-series_winner = winners.loc[
-    winners["series_id"]
-    == series_id
-].copy()
-
-
-if series_forecast.empty or series_winner.empty:
-    current_col, date_col = st.columns(2)
-
-    current_col.metric(
-        "Latest Observed Value",
-        format_value(
-            latest_value,
-            selected_metric,
+if (
+    series_forecast.empty
+    or series_winner.empty
+):
+    historical_specs = [
+        (
+            "Latest Observed Value",
+            format_value(
+                latest_value,
+                selected_metric,
+            ),
+            f"{latest_date:%b %Y}",
+            "",
         ),
-    )
-
-    date_col.metric(
-        "Latest Observation",
-        latest_date.strftime(
-            "%b %Y"
+        (
+            "Forecast Status",
+            "Historical Only",
+            (
+                "No final forward forecast "
+                "for this series"
+            ),
+            "",
         ),
-    )
+    ]
+
+    for column, (
+        label,
+        value,
+        note,
+        tone,
+    ) in zip(
+        st.columns(2),
+        historical_specs,
+    ):
+        with column:
+            render_stat_card(
+                label,
+                value,
+                note,
+                tone,
+            )
 
     if (
-        selected_geography == "territorial_authority"
-        and selected_location == "Auckland"
+        selected_geography
+        == "territorial_authority"
+        and selected_location
+        == "Auckland"
     ):
         st.info(
             "**Auckland forecasts are provided at Region level.** "
             "The Auckland Territorial Authority series is retained "
-            "for historical data analysis only. "
-            "To view Auckland forward forecasts, select "
-            "**Region → Auckland Region**."
+            "for historical analysis only. To view Auckland forward "
+            "forecasts, select **Region → Auckland Region**."
         )
+
     else:
-        st.warning(
-            "Forward forecasting is not available for this series. "
-            "The series remains available for historical analytics "
-            "and historical anomaly detection."
-        )
-
         st.info(
-            "Forecast availability is determined during modelling "
-            "preparation based on data continuity, data quality, "
-            "and the defined forecasting scope."
+            "This series is available for historical analysis "
+            "but is not included in the forecast-eligible "
+            "modelling subset. Forecast availability is determined "
+            "during modelling preparation using data continuity, "
+            "quality requirements, and defined modelling-scope rules."
         )
 
-    st.subheader("Historical Series")
-
-    historical_chart = (
-        history[
-            [
-                "period_date",
-                "value",
-            ]
-        ]
-        .rename(
-            columns={
-                "period_date": "Date",
-                "value": "Observed",
-            }
+    with st.container(
+        key="card_forecasting_historical_only",
+    ):
+        render_card_header(
+            "Historical Series",
+            (
+                "Historical observations remain available "
+                "even when a series is outside the "
+                "forward-forecasting subset."
+            ),
         )
-        .set_index("Date")
-    )
 
-    st.line_chart(
-        historical_chart,
-        y=["Observed"],
-        use_container_width=True,
-    )
+        (
+            window_options,
+            window_default,
+        ) = history_window_options(
+            len(history)
+        )
+
+        history_window = (
+            st.select_slider(
+                "Historical months shown",
+                options=window_options,
+                value=window_default,
+                key=(
+                    "forecasting_"
+                    "historical_only_window"
+                ),
+            )
+        )
+
+        recent_history = (
+            history.tail(
+                history_window
+            )
+        )
+
+        history_chart = (
+            alt.Chart(
+                recent_history
+            )
+            .mark_line(
+                color=BLUE,
+                strokeWidth=2.4,
+            )
+            .encode(
+                x=alt.X(
+                    "period_date:T",
+                    title=None,
+                    axis=alt.Axis(
+                        format="%Y",
+                        grid=False,
+                        labelColor=(
+                            LABEL_COLOR
+                        ),
+                        tickColor=(
+                            TICK_COLOR
+                        ),
+                    ),
+                ),
+                y=alt.Y(
+                    "value:Q",
+                    title=axis_label,
+                    scale=alt.Scale(
+                        zero=False
+                    ),
+                    axis=alt.Axis(
+                        labelColor=(
+                            LABEL_COLOR
+                        ),
+                        titleColor=(
+                            TITLE_COLOR
+                        ),
+                        gridColor=(
+                            GRID_COLOR
+                        ),
+                    ),
+                ),
+                tooltip=[
+                    alt.Tooltip(
+                        "period_date:T",
+                        title="Period",
+                        format="%b %Y",
+                    ),
+                    alt.Tooltip(
+                        "value:Q",
+                        title=axis_label,
+                        format=",.1f",
+                    ),
+                ],
+            )
+            .properties(
+                height=340
+            )
+            .interactive(
+                bind_y=False
+            )
+            .configure_view(
+                strokeWidth=0
+            )
+        )
+
+        st.altair_chart(
+            history_chart,
+            use_container_width=True,
+        )
 
     st.stop()
 
 
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Final forward forecast
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-series_forecast = series_forecast.sort_values(
-    "horizon_step"
-).reset_index(drop=True)
+series_forecast = (
+    series_forecast
+    .sort_values(
+        "horizon_step"
+    )
+    .reset_index(
+        drop=True
+    )
+)
 
-winner = series_winner.iloc[0]
+winner = (
+    series_winner.iloc[0]
+)
 
 winner_model = str(
     winner["best_model"]
@@ -375,16 +587,16 @@ forecast_end = pd.Timestamp(
     ].max()
 )
 
-ending_forecast = float(
-    series_forecast.sort_values(
-        "horizon_step"
-    )["predicted"].iloc[-1]
+first_forecast = float(
+    series_forecast.iloc[0][
+        "predicted"
+    ]
 )
 
-first_forecast = float(
-    series_forecast.sort_values(
-        "horizon_step"
-    )["predicted"].iloc[0]
+ending_forecast = float(
+    series_forecast.iloc[-1][
+        "predicted"
+    ]
 )
 
 forecast_change = (
@@ -392,407 +604,695 @@ forecast_change = (
     - latest_value
 )
 
+forecast_change_pct = None
+
 if latest_value != 0:
     forecast_change_pct = (
         forecast_change
         / abs(latest_value)
-        * 100.0
+        * 100
     )
-else:
-    forecast_change_pct = float("nan")
 
 
-st.subheader("Final 6-Month Forward Forecast")
+# ---------------------------------------------------------------------
+# Forecast headline
+# ---------------------------------------------------------------------
 
-st.caption(
-    "The final forecast uses all available historical observations "
-    "through the forecast origin and the winner model selected from "
-    "Phase 4 rolling-origin validation."
-)
-
-kpi_1, kpi_2, kpi_3, kpi_4 = st.columns(4)
-
-kpi_1.metric(
-    "Latest Observed",
-    format_value(
-        latest_value,
-        selected_metric,
-    ),
-    help=(
-        "Most recent published historical observation "
-        "available to the model."
-    ),
-)
-
-kpi_2.metric(
-    "Winner Model",
-    model_label(
-        winner_model
-    ),
-    help=(
-        "Series-level model selected using Phase 4 "
-        "rolling-origin validation."
-    ),
-)
-
-kpi_3.metric(
-    "Forecast Origin",
-    forecast_origin.strftime(
-        "%b %Y"
-    ),
-    help=(
-        "Latest observed month included when fitting "
-        "the final forecasting model."
-    ),
-)
-
-delta_text = None
-
-if pd.notna(
-    forecast_change_pct
+with st.container(
+    key="card_forecast_headline",
 ):
-    delta_text = (
-        f"{forecast_change_pct:+.1f}% "
-        "vs latest observed"
+    render_card_header(
+        "Final 6-Month Forward Forecast",
+        (
+            "The selected winner model is refitted "
+            "using all available observations through "
+            "the forecast origin before producing "
+            "the six-month future projection."
+        ),
     )
 
-kpi_4.metric(
-    "6-Month Forecast",
-    format_value(
-        ending_forecast,
-        selected_metric,
-    ),
-    delta=delta_text,
-    help=(
-        "Predicted value at forecast horizon 6."
-    ),
-)
-
-
-# ---------------------------------------------------------------------------
-# Historical + future chart
-# ---------------------------------------------------------------------------
-
-st.subheader("Observed History and Forward Forecast")
-
-history_window_months = st.slider(
-    "Historical months shown",
-    min_value=12,
-    max_value=min(
-        120,
-        len(history),
-    ),
-    value=min(
-        60,
-        len(history),
-    ),
-    step=12,
-)
-
-recent_history = history.tail(
-    history_window_months
-)[
-    [
-        "period_date",
-        "value",
-    ]
-].copy()
-
-observed_series = recent_history.rename(
-    columns={
-        "period_date": "Date",
-        "value": "Observed",
-    }
-).set_index("Date")
-
-
-forecast_chart_data = pd.concat(
-    [
-        pd.DataFrame(
-            {
-                "Date": [
-                    forecast_origin
-                ],
-                "Forecast": [
-                    latest_value
-                ],
-            }
+    headline_specs = [
+        (
+            "Latest Observed",
+            format_value(
+                latest_value,
+                selected_metric,
+            ),
+            f"{latest_date:%b %Y}",
+            "",
         ),
+        (
+            "Winner Model",
+            model_label(
+                winner_model
+            ),
+            (
+                "Selected by rolling-origin "
+                "validation"
+            ),
+            "",
+        ),
+        (
+            "Forecast Origin",
+            forecast_origin.strftime(
+                "%b %Y"
+            ),
+            (
+                "Latest month included "
+                "in model fitting"
+            ),
+            "",
+        ),
+        (
+            "6-Month Forecast",
+            format_value(
+                ending_forecast,
+                selected_metric,
+            ),
+            (
+                format_percentage(
+                    forecast_change_pct
+                )
+                + " vs latest observed"
+                if forecast_change_pct
+                is not None
+                else "Change unavailable"
+            ),
+            tone_for(
+                forecast_change_pct
+            ),
+        ),
+    ]
+
+    for column, (
+        label,
+        value,
+        note,
+        tone,
+    ) in zip(
+        st.columns(4),
+        headline_specs,
+    ):
+        with column:
+            render_stat_card(
+                label,
+                value,
+                note,
+                tone,
+            )
+
+
+# ---------------------------------------------------------------------
+# Historical + forecast chart
+# ---------------------------------------------------------------------
+
+with st.container(
+    key="card_forecast_chart",
+):
+    render_card_header(
+        "Observed History and 6-Month Forecast",
+        (
+            "Historical observations are shown alongside "
+            "the final winner-model forecast. The shaded "
+            "area marks the future forecast period."
+        ),
+    )
+
+    render_legend(
+        [
+            (
+                "Observed",
+                LIGHT_BLUE,
+                2,
+            ),
+            (
+                "Forecast",
+                BLUE,
+                4,
+            ),
+        ]
+    )
+
+    (
+        window_options,
+        window_default,
+    ) = history_window_options(
+        len(history)
+    )
+
+    history_window = (
+        st.select_slider(
+            "Historical months shown",
+            options=window_options,
+            value=window_default,
+            key=(
+                "forecasting_"
+                "history_window"
+            ),
+        )
+    )
+
+    recent_history = (
+        history.tail(
+            history_window
+        )[
+            [
+                "period_date",
+                "value",
+            ]
+        ]
+        .copy()
+    )
+
+    forecast_line = pd.concat(
+        [
+            pd.DataFrame(
+                {
+                    "forecast_period": [
+                        forecast_origin
+                    ],
+                    "predicted": [
+                        latest_value
+                    ],
+                }
+            ),
+            series_forecast[
+                [
+                    "forecast_period",
+                    "predicted",
+                ]
+            ],
+        ],
+        ignore_index=True,
+    )
+
+    forecast_band = pd.DataFrame(
+        {
+            "start": [
+                forecast_start
+            ],
+            "end": [
+                forecast_end
+            ],
+        }
+    )
+
+    origin_frame = pd.DataFrame(
+        {
+            "origin": [
+                forecast_origin
+            ]
+        }
+    )
+
+    historical_line = (
+        alt.Chart(
+            recent_history
+        )
+        .mark_line(
+            color=LIGHT_BLUE,
+            strokeWidth=2,
+        )
+        .encode(
+            x=alt.X(
+                "period_date:T",
+                title=None,
+                axis=alt.Axis(
+                    format="%Y",
+                    grid=False,
+                    labelColor=(
+                        LABEL_COLOR
+                    ),
+                    tickColor=(
+                        TICK_COLOR
+                    ),
+                ),
+            ),
+            y=alt.Y(
+                "value:Q",
+                title=axis_label,
+                scale=alt.Scale(
+                    zero=False
+                ),
+                axis=alt.Axis(
+                    labelColor=(
+                        LABEL_COLOR
+                    ),
+                    titleColor=(
+                        TITLE_COLOR
+                    ),
+                    gridColor=(
+                        GRID_COLOR
+                    ),
+                ),
+            ),
+            tooltip=[
+                alt.Tooltip(
+                    "period_date:T",
+                    title="Observed Month",
+                    format="%b %Y",
+                ),
+                alt.Tooltip(
+                    "value:Q",
+                    title="Observed",
+                    format=",.1f",
+                ),
+            ],
+        )
+    )
+
+    forecast_area = (
+        alt.Chart(
+            forecast_band
+        )
+        .mark_rect(
+            color=PALE_BLUE,
+            opacity=0.55,
+        )
+        .encode(
+            x="start:T",
+            x2="end:T",
+        )
+    )
+
+    origin_rule = (
+        alt.Chart(
+            origin_frame
+        )
+        .mark_rule(
+            color="#8ba7d1",
+            strokeDash=[
+                5,
+                4,
+            ],
+            strokeWidth=1.4,
+        )
+        .encode(
+            x="origin:T"
+        )
+    )
+
+    forecast_path = (
+        alt.Chart(
+            forecast_line
+        )
+        .mark_line(
+            color=BLUE,
+            strokeWidth=3,
+            point=alt.OverlayMarkDef(
+                filled=True,
+                fill=DARK_BLUE,
+                size=70,
+            ),
+        )
+        .encode(
+            x=alt.X(
+                "forecast_period:T",
+                title=None,
+            ),
+            y=alt.Y(
+                "predicted:Q",
+                title=axis_label,
+            ),
+            tooltip=[
+                alt.Tooltip(
+                    "forecast_period:T",
+                    title="Forecast Month",
+                    format="%b %Y",
+                ),
+                alt.Tooltip(
+                    "predicted:Q",
+                    title="Forecast",
+                    format=",.1f",
+                ),
+            ],
+        )
+    )
+
+    forecast_chart = (
+        alt.layer(
+            forecast_area,
+            historical_line,
+            origin_rule,
+            forecast_path,
+        )
+        .resolve_scale(
+            y="shared"
+        )
+        .properties(
+            height=380
+        )
+        .interactive(
+            bind_y=False
+        )
+        .configure_view(
+            strokeWidth=0
+        )
+    )
+
+    st.altair_chart(
+        forecast_chart,
+        use_container_width=True,
+    )
+
+    st.caption(
+        "Observed values end at the forecast origin. "
+        f"The future forecast covers {forecast_start:%b %Y} "
+        f"to {forecast_end:%b %Y}."
+    )
+
+
+# ---------------------------------------------------------------------
+# Forecast values
+# ---------------------------------------------------------------------
+
+with st.container(
+    key="card_forecast_values",
+):
+    (
+        forecast_title_col,
+        forecast_button_col,
+    ) = st.columns(
+        [4, 1],
+        vertical_alignment="center",
+    )
+
+    with forecast_title_col:
+        render_card_header(
+            "Forecast Values",
+            (
+                "Six monthly predictions from the "
+                f"{model_label(winner_model)} model."
+            ),
+        )
+
+    download_data = (
+        series_forecast[
+            [
+                "series_id",
+                "metric",
+                "geography_level",
+                "location_id",
+                "location_name",
+                "model",
+                "forecast_origin",
+                "forecast_period",
+                "horizon_step",
+                "predicted",
+                "backtest_mae",
+                "backtest_rmse",
+                "backtest_smape",
+            ]
+        ]
+        .to_csv(
+            index=False
+        )
+        .encode(
+            "utf-8"
+        )
+    )
+
+    with (
+        forecast_button_col,
+        st.container(
+            key="download_forecast",
+        ),
+    ):
+        st.download_button(
+            label="Download CSV",
+            data=download_data,
+            file_name=(
+                f"{series_id}_"
+                "six_month_forecast.csv"
+            ),
+            mime="text/csv",
+            use_container_width=True,
+        )
+
+    display_forecast = (
         series_forecast[
             [
                 "forecast_period",
+                "horizon_step",
                 "predicted",
             ]
-        ].rename(
+        ]
+        .copy()
+    )
+
+    if latest_value != 0:
+        display_forecast[
+            "change_vs_latest_pct"
+        ] = (
+            (
+                display_forecast[
+                    "predicted"
+                ]
+                / latest_value
+                - 1
+            )
+            * 100
+        )
+    else:
+        display_forecast[
+            "change_vs_latest_pct"
+        ] = float("nan")
+
+    display_forecast[
+        "Forecast Month"
+    ] = (
+        display_forecast[
+            "forecast_period"
+        ]
+        .dt.strftime(
+            "%b %Y"
+        )
+    )
+
+    display_forecast[
+        "Predicted Value"
+    ] = [
+        format_value(
+            value,
+            selected_metric,
+        )
+        for value in display_forecast[
+            "predicted"
+        ]
+    ]
+
+    display_forecast[
+        "Change vs Latest"
+    ] = [
+        format_percentage(
+            value
+        )
+        for value in display_forecast[
+            "change_vs_latest_pct"
+        ]
+    ]
+
+    display_forecast = (
+        display_forecast[
+            [
+                "Forecast Month",
+                "horizon_step",
+                "Predicted Value",
+                "Change vs Latest",
+            ]
+        ]
+        .rename(
             columns={
-                "forecast_period": "Date",
-                "predicted": "Forecast",
+                "horizon_step": "Horizon",
             }
+        )
+    )
+
+    st.dataframe(
+        display_forecast,
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+# ---------------------------------------------------------------------
+# Forecast interpretation
+# ---------------------------------------------------------------------
+
+with st.container(
+    key="card_forecast_interpretation",
+):
+    render_card_header(
+        "Forecast Interpretation",
+        (
+            "A concise summary of the forecast "
+            "window and projected movement."
         ),
-    ],
-    ignore_index=True,
-).set_index("Date")
-
-
-combined_index = (
-    observed_series.index
-    .union(
-        forecast_chart_data.index
-    )
-    .sort_values()
-)
-
-chart_data = pd.DataFrame(
-    index=combined_index
-)
-
-chart_data["Observed"] = (
-    observed_series[
-        "Observed"
-    ]
-)
-
-chart_data["Forecast"] = (
-    forecast_chart_data[
-        "Forecast"
-    ]
-)
-
-st.line_chart(
-    chart_data,
-    y=[
-        "Observed",
-        "Forecast",
-    ],
-    use_container_width=True,
-)
-
-st.caption(
-    "Observed values end at the forecast origin. "
-    "The forecast line begins at the final observed value and "
-    f"extends from {forecast_start.strftime('%b %Y')} to "
-    f"{forecast_end.strftime('%b %Y')}."
-)
-
-
-# ---------------------------------------------------------------------------
-# Forecast table
-# ---------------------------------------------------------------------------
-
-st.subheader("Forecast Values")
-
-display_forecast = series_forecast[
-    [
-        "forecast_period",
-        "horizon_step",
-        "predicted",
-    ]
-].copy()
-
-display_forecast["forecast_period"] = (
-    display_forecast[
-        "forecast_period"
-    ].dt.strftime(
-        "%b %Y"
-    )
-)
-
-if selected_metric == "median_rent":
-    display_forecast[
-        "predicted"
-    ] = display_forecast[
-        "predicted"
-    ].map(
-        lambda value: (
-            f"${value:,.0f}"
-        )
-    )
-else:
-    display_forecast[
-        "predicted"
-    ] = display_forecast[
-        "predicted"
-    ].map(
-        lambda value: (
-            f"{value:,.0f}"
-        )
     )
 
-display_forecast = (
-    display_forecast.rename(
-        columns={
-            "forecast_period": (
-                "Forecast Month"
+    interpretation_specs = [
+        (
+            "Forecast Window",
+            (
+                f"{forecast_start:%b %Y}"
+                " – "
+                f"{forecast_end:%b %Y}"
             ),
-            "horizon_step": (
-                "Horizon"
+            "Six-month horizon",
+            "",
+        ),
+        (
+            "First Forecast",
+            format_value(
+                first_forecast,
+                selected_metric,
             ),
-            "predicted": (
-                "Predicted Value"
+            f"{forecast_start:%b %Y}",
+            "",
+        ),
+        (
+            "Change to Horizon 6",
+            format_percentage(
+                forecast_change_pct
             ),
-        }
-    )
-)
-
-st.dataframe(
-    display_forecast,
-    use_container_width=True,
-    hide_index=True,
-)
-
-download_data = series_forecast[
-    [
-        "series_id",
-        "metric",
-        "geography_level",
-        "location_id",
-        "location_name",
-        "model",
-        "forecast_origin",
-        "forecast_period",
-        "horizon_step",
-        "predicted",
-        "backtest_mae",
-        "backtest_rmse",
-        "backtest_smape",
+            (
+                f"{format_value(latest_value, selected_metric)}"
+                " → "
+                f"{format_value(ending_forecast, selected_metric)}"
+            ),
+            tone_for(
+                forecast_change_pct
+            ),
+        ),
     ]
-].to_csv(
-    index=False
-).encode(
-    "utf-8"
-)
 
-st.download_button(
-    label="Download Forecast CSV",
-    data=download_data,
-    file_name=(
-        f"{series_id}_"
-        "six_month_forecast.csv"
-    ),
-    mime="text/csv",
-)
-
-
-# ---------------------------------------------------------------------------
-# Interpretation
-# ---------------------------------------------------------------------------
-
-st.subheader("Forecast Interpretation")
-
-interpretation_1, interpretation_2 = st.columns(2)
-
-with interpretation_1:
-    st.markdown(
-        "**Forecast window**  \n"
-        f"{forecast_start.strftime('%b %Y')} – "
-        f"{forecast_end.strftime('%b %Y')}"
-    )
-
-    st.markdown(
-        "**First forecast**  \n"
-        f"{format_value(first_forecast, selected_metric)}"
-    )
-
-with interpretation_2:
-    st.markdown(
-        "**Six-month forecast**  \n"
-        f"{format_value(ending_forecast, selected_metric)}"
-    )
-
-    if pd.notna(
-        forecast_change_pct
+    for column, (
+        label,
+        value,
+        note,
+        tone,
+    ) in zip(
+        st.columns(3),
+        interpretation_specs,
     ):
-        st.markdown(
-            "**Change from latest observed**  \n"
-            f"{forecast_change:+,.1f} "
-            f"({forecast_change_pct:+.1f}%)"
-        )
+        with column:
+            render_stat_card(
+                label,
+                value,
+                note,
+                tone,
+                flat=True,
+            )
 
-st.info(
-    "Forward forecasts are model-based estimates rather than "
-    "observed rental-market values. They should be interpreted as "
-    "analytical projections and not as guaranteed future outcomes "
-    "or individual property valuations."
-)
+    st.info(
+        "Forward forecasts are model-based analytical "
+        "projections rather than observed rental-market "
+        "values. They should not be interpreted as "
+        "guaranteed future outcomes or individual "
+        "property valuations."
+    )
 
 
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Model evaluation
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-st.divider()
+with st.container(
+    key="card_forecast_evaluation",
+):
+    render_card_header(
+        "Model Evaluation",
+        (
+            "Winner-model performance from historical "
+            "rolling-origin out-of-sample validation. "
+            "These metrics are evaluation evidence and "
+            "are separate from the future forecast above."
+        ),
+    )
 
-st.subheader("Model Evaluation")
+    evaluation_specs = [
+        (
+            "Backtest MAE",
+            format_error(
+                float(
+                    winner["best_mae"]
+                ),
+                selected_metric,
+            ),
+            "Mean Absolute Error",
+        ),
+        (
+            "Backtest RMSE",
+            format_error(
+                float(
+                    winner["best_rmse"]
+                ),
+                selected_metric,
+            ),
+            "Root Mean Squared Error",
+        ),
+        (
+            "Backtest sMAPE",
+            format_smape(
+                float(
+                    winner["best_smape"]
+                )
+            ),
+            (
+                "Symmetric Mean Absolute "
+                "Percentage Error"
+            ),
+        ),
+    ]
 
-st.caption(
-    "The metrics below are calculated from rolling-origin "
-    "out-of-sample evaluation. They are validation evidence and are "
-    "separate from the six-month future forecast shown above."
-)
-
-evaluation_1, evaluation_2, evaluation_3 = st.columns(3)
-
-evaluation_1.metric(
-    "Backtest MAE",
-    format_metric_value(
-        float(
-            winner["best_mae"]
-        )
-    ),
-    help=(
-        "Mean Absolute Error across the historical "
-        "rolling-origin evaluation."
-    ),
-)
-
-evaluation_2.metric(
-    "Backtest RMSE",
-    format_metric_value(
-        float(
-            winner["best_rmse"]
-        )
-    ),
-    help=(
-        "Root Mean Squared Error across the historical "
-        "rolling-origin evaluation."
-    ),
-)
-
-evaluation_3.metric(
-    "Backtest sMAPE",
-    format_smape(
-        float(
-            winner["best_smape"]
-        )
-    ),
-    help=(
-        "Symmetric Mean Absolute Percentage Error across "
-        "the historical rolling-origin evaluation."
-    ),
-)
+    for column, (
+        label,
+        value,
+        note,
+    ) in zip(
+        st.columns(3),
+        evaluation_specs,
+    ):
+        with column:
+            render_stat_card(
+                label,
+                value,
+                note,
+                flat=True,
+            )
 
 
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 # Latest rolling-origin backtest
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
 
-winner_backtest = backtest_predictions.loc[
-    (
-        backtest_predictions["series_id"]
-        == series_id
-    )
-    & (
-        backtest_predictions["model"]
-        == winner_model
-    )
-].copy()
+winner_backtest = (
+    backtest_predictions.loc[
+        (
+            backtest_predictions[
+                "series_id"
+            ]
+            == series_id
+        )
+        & (
+            backtest_predictions[
+                "model"
+            ]
+            == winner_model
+        )
+    ]
+    .copy()
+)
 
 if not winner_backtest.empty:
-    winner_backtest = winner_backtest.sort_values(
-        [
-            "origin",
-            "horizon_step",
-        ]
+    winner_backtest = (
+        winner_backtest
+        .sort_values(
+            [
+                "origin",
+                "horizon_step",
+            ]
+        )
     )
 
     latest_origin = pd.Timestamp(
@@ -801,13 +1301,17 @@ if not winner_backtest.empty:
         ].max()
     )
 
-    latest_backtest = winner_backtest.loc[
-        winner_backtest["origin"]
-        == latest_origin
-    ].copy()
-
-    latest_backtest = latest_backtest.sort_values(
-        "horizon_step"
+    latest_backtest = (
+        winner_backtest.loc[
+            winner_backtest[
+                "origin"
+            ]
+            == latest_origin
+        ]
+        .copy()
+        .sort_values(
+            "horizon_step"
+        )
     )
 
     with st.expander(
@@ -815,102 +1319,182 @@ if not winner_backtest.empty:
         expanded=False,
     ):
         st.caption(
-            "This section shows a historical test window where "
-            "actual observations were withheld from model fitting "
-            "and then compared with predictions."
+            "This historical evaluation window withholds "
+            "actual observations from model fitting and "
+            "then compares the resulting predictions "
+            "with those observed values."
         )
 
         st.markdown(
             "**Evaluation origin:** "
-            f"{latest_origin.strftime('%b %Y')}"
+            f"{latest_origin:%b %Y}"
         )
 
-        backtest_chart = (
+        render_legend(
+            [
+                (
+                    "Actual",
+                    LIGHT_BLUE,
+                    2,
+                ),
+                (
+                    "Predicted",
+                    BLUE,
+                    4,
+                ),
+            ]
+        )
+
+        actual_line = (
+            alt.Chart(
+                latest_backtest
+            )
+            .mark_line(
+                color=LIGHT_BLUE,
+                strokeWidth=2,
+                point=True,
+            )
+            .encode(
+                x=alt.X(
+                    "forecast_period:T",
+                    title=None,
+                ),
+                y=alt.Y(
+                    "actual:Q",
+                    title=axis_label,
+                    scale=alt.Scale(
+                        zero=False
+                    ),
+                ),
+                tooltip=[
+                    alt.Tooltip(
+                        "forecast_period:T",
+                        title="Month",
+                        format="%b %Y",
+                    ),
+                    alt.Tooltip(
+                        "actual:Q",
+                        title="Actual",
+                        format=",.1f",
+                    ),
+                ],
+            )
+        )
+
+        predicted_line = (
+            alt.Chart(
+                latest_backtest
+            )
+            .mark_line(
+                color=BLUE,
+                strokeWidth=3,
+                point=True,
+            )
+            .encode(
+                x="forecast_period:T",
+                y="predicted:Q",
+                tooltip=[
+                    alt.Tooltip(
+                        "forecast_period:T",
+                        title="Month",
+                        format="%b %Y",
+                    ),
+                    alt.Tooltip(
+                        "predicted:Q",
+                        title="Predicted",
+                        format=",.1f",
+                    ),
+                ],
+            )
+        )
+
+        st.altair_chart(
+            (
+                actual_line
+                + predicted_line
+            )
+            .properties(
+                height=280
+            )
+            .configure_view(
+                strokeWidth=0
+            ),
+            use_container_width=True,
+        )
+
+        backtest_table = (
             latest_backtest[
                 [
                     "forecast_period",
+                    "horizon_step",
                     "actual",
                     "predicted",
+                    "absolute_error",
+                ]
+            ]
+            .copy()
+        )
+
+        backtest_table[
+            "Month"
+        ] = (
+            backtest_table[
+                "forecast_period"
+            ]
+            .dt.strftime(
+                "%b %Y"
+            )
+        )
+
+        backtest_table[
+            "Actual"
+        ] = [
+            format_value(
+                value,
+                selected_metric,
+            )
+            for value in backtest_table[
+                "actual"
+            ]
+        ]
+
+        backtest_table[
+            "Predicted"
+        ] = [
+            format_value(
+                value,
+                selected_metric,
+            )
+            for value in backtest_table[
+                "predicted"
+            ]
+        ]
+
+        backtest_table[
+            "Absolute Error"
+        ] = [
+            format_error(
+                value,
+                selected_metric,
+            )
+            for value in backtest_table[
+                "absolute_error"
+            ]
+        ]
+
+        backtest_table = (
+            backtest_table[
+                [
+                    "Month",
+                    "horizon_step",
+                    "Actual",
+                    "Predicted",
+                    "Absolute Error",
                 ]
             ]
             .rename(
                 columns={
-                    "forecast_period": "Date",
-                    "actual": "Actual",
-                    "predicted": "Predicted",
-                }
-            )
-            .set_index("Date")
-        )
-
-        st.line_chart(
-            backtest_chart,
-            y=[
-                "Actual",
-                "Predicted",
-            ],
-            use_container_width=True,
-        )
-
-        backtest_table = latest_backtest[
-            [
-                "forecast_period",
-                "horizon_step",
-                "actual",
-                "predicted",
-                "absolute_error",
-            ]
-        ].copy()
-
-        backtest_table[
-            "forecast_period"
-        ] = backtest_table[
-            "forecast_period"
-        ].dt.strftime(
-            "%b %Y"
-        )
-
-        if selected_metric == "median_rent":
-            for column in [
-                "actual",
-                "predicted",
-                "absolute_error",
-            ]:
-                backtest_table[
-                    column
-                ] = backtest_table[
-                    column
-                ].map(
-                    lambda value: (
-                        f"${value:,.2f}"
-                    )
-                )
-        else:
-            for column in [
-                "actual",
-                "predicted",
-                "absolute_error",
-            ]:
-                backtest_table[
-                    column
-                ] = backtest_table[
-                    column
-                ].map(
-                    lambda value: (
-                        f"{value:,.2f}"
-                    )
-                )
-
-        backtest_table = (
-            backtest_table.rename(
-                columns={
-                    "forecast_period": "Month",
                     "horizon_step": "Horizon",
-                    "actual": "Actual",
-                    "predicted": "Predicted",
-                    "absolute_error": (
-                        "Absolute Error"
-                    ),
                 }
             )
         )
@@ -922,9 +1506,9 @@ if not winner_backtest.empty:
         )
 
 
-# ---------------------------------------------------------------------------
-# Methodology note
-# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------
+# Methodology
+# ---------------------------------------------------------------------
 
 with st.expander(
     "Forecasting Methodology",
@@ -939,10 +1523,9 @@ The forecasting workflow evaluates three candidate models:
 - **ETS (Additive Damped)** — Holt-Winters exponential smoothing
   with additive trend, additive seasonality and a damped trend.
 - **XGBoost (Pooled Recursive)** — pooled machine-learning model
-  using lag, rolling, calendar and geography-aware location
-  features.
+  using lag, rolling, calendar and geography-aware location features.
 
-Models are evaluated using rolling-origin validation with a
+Models are evaluated using **rolling-origin validation** with a
 six-month forecast horizon. MAE, RMSE and sMAPE are used as
 forecast-error measures.
 
@@ -951,8 +1534,8 @@ series. The winner is then refitted using all available historical
 observations through the final forecast origin before generating
 the six-month forward forecast.
 
-The forward forecast therefore represents a genuine future
-projection and is not the same dataset as the historical
-rolling-origin backtest predictions.
+The forward forecast is therefore a **genuine future projection**
+and is separate from the historical rolling-origin backtest
+predictions.
 """
     )

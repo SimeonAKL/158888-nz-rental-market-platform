@@ -95,6 +95,50 @@ def load_series_catalog() -> pd.DataFrame:
 
 
 @st.cache_data(show_spinner=False)
+def load_monthly_seasonality() -> pd.DataFrame:
+    """Load monthly seasonality statistics."""
+    path = (
+        ANALYTICS_DIR
+        / "monthly_seasonality.csv"
+    )
+
+    _require_file(path)
+
+    data = pd.read_csv(path)
+
+    required = {
+        "series_id",
+        "metric",
+        "geography_level",
+        "location_id",
+        "location_name",
+        "month",
+        "median_value",
+        "mean_value",
+        "minimum_value",
+        "maximum_value",
+        "n_observations",
+    }
+
+    missing = required.difference(
+        data.columns
+    )
+
+    if missing:
+        raise ValueError(
+            "Monthly seasonality data is missing required columns: "
+            f"{sorted(missing)}"
+        )
+
+    return data.sort_values(
+        [
+            "series_id",
+            "month",
+        ]
+    ).reset_index(drop=True)
+
+
+@st.cache_data(show_spinner=False)
 def load_combined_predictions() -> pd.DataFrame:
     """Load Phase 4 rolling-origin predictions for all candidate models."""
     path = (
