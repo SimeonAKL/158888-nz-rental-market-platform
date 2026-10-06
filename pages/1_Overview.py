@@ -11,7 +11,11 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from rmp.dashboard.data import load_monthly_panel
+from rmp.dashboard.data import (
+    load_final_forward_forecasts,
+    load_monthly_panel,
+    load_series_catalog,
+)
 from rmp.dashboard.filters import (
     date_range_selector,
     filter_date_range,
@@ -288,6 +292,46 @@ st.markdown(
     line-height: 1.5;
 }}
 
+
+/* ============================================================
+   Data Provenance & Quality
+   ============================================================ */
+
+.overview-provenance-grid {{
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.1rem;
+}}
+
+.overview-provenance-card {{
+    padding: 0.95rem 1rem;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--card-border);
+    box-shadow: var(--card-shadow);
+}}
+
+.overview-provenance-label {{
+    color: #6c7995;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-bottom: 0.35rem;
+}}
+
+.overview-provenance-value {{
+    color: var(--brand-text);
+    font-size: 1.1rem;
+    font-weight: 850;
+    line-height: 1.2;
+}}
+
+.overview-provenance-note {{
+    color: #7c89a3;
+    font-size: 0.74rem;
+    line-height: 1.4;
+    margin-top: 0.35rem;
+}}
 
 /* ============================================================
    KPI Cards
@@ -611,6 +655,8 @@ render_html(
 # ---------------------------------------------------------------------
 
 panel = load_monthly_panel()
+series_catalog = load_series_catalog()
+final_forecasts = load_final_forward_forecasts()
 
 
 # ---------------------------------------------------------------------
@@ -783,6 +829,37 @@ geography_display = (
 
 
 # ---------------------------------------------------------------------
+# System-level provenance and quality summary
+# ---------------------------------------------------------------------
+
+historical_series_count = int(panel["series_id"].nunique())
+
+forecast_eligible_series_count = int(
+    series_catalog["eligible_for_forecasting"].fillna(False).sum()
+)
+
+production_series_count = int(
+    final_forecasts["series_id"].nunique()
+)
+
+production_model = (
+    str(final_forecasts["model"].dropna().iloc[0])
+    if not final_forecasts["model"].dropna().empty
+    else "Unavailable"
+)
+
+forecast_policy = (
+    str(final_forecasts["forecast_policy"].dropna().iloc[0])
+    if not final_forecasts["forecast_policy"].dropna().empty
+    else "Unavailable"
+)
+
+source_snapshot_is_provisional = bool(
+    panel["source_snapshot_provisional"].fillna(False).any()
+)
+
+
+# ---------------------------------------------------------------------
 # Selected series
 # ---------------------------------------------------------------------
 
@@ -829,6 +906,75 @@ if series["source_snapshot_provisional"].fillna(False).any():
         </div>
         """
     )
+
+
+# ---------------------------------------------------------------------
+# Data provenance and quality
+# ---------------------------------------------------------------------
+
+render_html(
+    f"""
+    <div class="overview-card-title">
+        Data Provenance &amp; Quality
+    </div>
+
+    <div class="overview-card-caption">
+        System-level coverage, modelling eligibility, and source-status context
+        for the analytical outputs used by this dashboard.
+    </div>
+
+    <div class="overview-provenance-grid">
+        <div class="overview-provenance-card">
+            <div class="overview-provenance-label">
+                Historical Series
+            </div>
+            <div class="overview-provenance-value">
+                {historical_series_count:,}
+            </div>
+            <div class="overview-provenance-note">
+                Series available in the consolidated monthly analytical panel.
+            </div>
+        </div>
+
+        <div class="overview-provenance-card">
+            <div class="overview-provenance-label">
+                Forecast-Eligible Series
+            </div>
+            <div class="overview-provenance-value">
+                {forecast_eligible_series_count:,}
+            </div>
+            <div class="overview-provenance-note">
+                Series passing modelling-readiness and forecasting eligibility checks.
+            </div>
+        </div>
+
+        <div class="overview-provenance-card">
+            <div class="overview-provenance-label">
+                Production Forecast Series
+            </div>
+            <div class="overview-provenance-value">
+                {production_series_count:,}
+            </div>
+            <div class="overview-provenance-note">
+                Series included in final forward forecasting output.
+            </div>
+        </div>
+
+        <div class="overview-provenance-card">
+            <div class="overview-provenance-label">
+                Source Snapshot Status
+            </div>
+            <div class="overview-provenance-value">
+                {"Provisional" if source_snapshot_is_provisional else "Final"}
+            </div>
+            <div class="overview-provenance-note">
+                Production model: {html.escape(production_model)} ·
+                Policy: {html.escape(forecast_policy)}
+            </div>
+        </div>
+    </div>
+    """
+)
 
 
 # ---------------------------------------------------------------------

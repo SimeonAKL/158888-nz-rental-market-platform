@@ -11,6 +11,7 @@ import streamlit as st
 from rmp.dashboard.data import (
     load_metrics_by_horizon,
     load_model_comparison,
+    load_monthly_panel,
     load_series_model_winners,
 )
 from rmp.dashboard.filters import metric_label
@@ -20,6 +21,7 @@ from rmp.dashboard.layout import (
     render_filter_header,
     render_legend,
     render_page_hero,
+    render_source_note,
     render_stat_card,
     render_top_navigation,
 )
@@ -174,12 +176,18 @@ try:
 
     winners = load_series_model_winners()
 
+    panel = load_monthly_panel()
+
 except (
     FileNotFoundError,
     ValueError,
 ) as exc:
     st.error(str(exc))
     st.stop()
+
+
+if panel["source_snapshot_provisional"].fillna(False).any():
+    render_source_note()
 
 
 # ---------------------------------------------------------------------
@@ -568,7 +576,8 @@ with st.container(
             f"{eligible_series_count:,} forecast-eligible series "
             f"are included for {metric_label(selected_metric)}. "
             "The chart shows how many series selected each "
-            "candidate model as the lowest-MAE winner."
+            "candidate model as the lowest-sMAPE winner, "
+            "with MAE and RMSE used as tie-breakers."
         ),
     )
 
