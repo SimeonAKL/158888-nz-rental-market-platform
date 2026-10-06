@@ -1,4 +1,4 @@
-"""Generate final forward forecasts using series-level winner models."""
+"""Generate research and production forward forecasts."""
 
 from __future__ import annotations
 

@@ -619,6 +619,7 @@ with st.container(
                 title=None,
                 axis=alt.Axis(
                     format="%Y",
+                    tickCount=8,
                     grid=False,
                     labelColor=(LABEL_COLOR),
                     tickColor=(TICK_COLOR),
@@ -924,6 +925,13 @@ with st.container(
         ),
     )
 
+    st.info(
+        f"**Research Winner:** {model_label(research_winner_model)} — "
+        "the descriptive series-level winner from historical "
+        "rolling-origin evaluation. It does not determine the "
+        "fixed-ETS production forecast."
+    )
+
     evaluation_specs = [
         (
             "Backtest MAE",
@@ -992,7 +1000,7 @@ if not winner_backtest.empty:
 
     with st.expander(
         "Latest Rolling-Origin Backtest",
-        expanded=False,
+        expanded=True,
     ):
         st.caption(
             "This historical evaluation window withholds "
@@ -1143,7 +1151,7 @@ if not winner_backtest.empty:
 
 with st.expander(
     "Forecasting Methodology",
-    expanded=False,
+    expanded=True,
 ):
     st.markdown(
         """

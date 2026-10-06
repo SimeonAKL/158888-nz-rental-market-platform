@@ -970,6 +970,7 @@ with st.container(
                 title=None,
                 axis=alt.Axis(
                     format="%Y",
+                    tickCount=10,
                     labelColor="#71809c",
                     tickColor="#d7dfeb",
                     grid=False,

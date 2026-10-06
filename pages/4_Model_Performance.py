@@ -692,6 +692,8 @@ with st.container(
         "**Series-level winner distribution** counts which "
         "model performs best for each individual "
         "forecast-eligible geographic series. "
+        "These winners are retained as comparative research results "
+        "and do not determine the final production forecast model. "
         "A model can therefore rank best overall without "
         "being the winner for every location."
     )

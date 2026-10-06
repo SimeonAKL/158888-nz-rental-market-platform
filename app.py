@@ -44,7 +44,7 @@ st.markdown(
     """
 <div class="hero-card">
     <div class="hero-content">
-        <div class="hero-chip">Official New Zealand rental-market dashboard</div>
+        <div class="hero-chip">Built with official New Zealand rental-market data</div>
         <div class="hero-title">
             New Zealand Rental Market Analytics and Forecasting Platform
         </div>
@@ -261,8 +261,9 @@ with scope3:
 <div class="soft-panel">
     <div class="small-heading">🤖 Forecasting Approach</div>
     <div class="small-text">
-        Forecasting combines Seasonal Naive, ETS additive damped, and pooled
-        recursive XGBoost, evaluated using rolling-origin validation.
+        Seasonal Naive, ETS additive damped, and pooled recursive XGBoost
+        are evaluated using rolling-origin validation. Final production
+        forecasts use the fixed ETS policy selected after held-out validation.
     </div>
 </div>
         """,

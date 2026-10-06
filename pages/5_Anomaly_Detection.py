@@ -788,6 +788,7 @@ with st.container(
                 axis=alt.Axis(
                     labelColor=(LABEL_COLOR),
                     tickColor=(TICK_COLOR),
+                    labelLimit=180,
                 ),
             ),
             x=alt.X(
@@ -888,7 +889,7 @@ with st.container(
 
 with st.expander(
     "Anomaly Detection Methodology",
-    expanded=False,
+    expanded=True,
 ):
     st.markdown(
         """
@@ -908,8 +909,8 @@ not automatically become dashboard alerts.
 ### Forecast-residual detector
 
 For forecast-eligible series, the forecast detector uses
-the **one-step-ahead residual** from the selected winner
-model.
+the **one-step-ahead residual** from the research-layer
+selected winner model.
 
 The current residual is compared with the series' previous
 out-of-sample residual behaviour using an expanding robust
