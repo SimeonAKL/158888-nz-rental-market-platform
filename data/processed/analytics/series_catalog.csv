@@ -1,0 +1,165 @@
+series_id,geography_level,location_id,location_name,metric,start_period,end_period,n_observations,expected_observations,missing_months,null_values,completeness_rate,continuous_start,continuous_months,eligible_for_forecasting
+region_1_bonds_lodged,region,1,Northland Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_2_bonds_lodged,region,2,Auckland Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_3_bonds_lodged,region,3,Waikato Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_4_bonds_lodged,region,4,Bay of Plenty Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_5_bonds_lodged,region,5,Gisborne Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_6_bonds_lodged,region,6,Hawke's Bay Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_7_bonds_lodged,region,7,Taranaki Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_8_bonds_lodged,region,8,Manawatu-Wanganui Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_9_bonds_lodged,region,9,Wellington Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_12_bonds_lodged,region,12,West Coast Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_13_bonds_lodged,region,13,Canterbury Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_14_bonds_lodged,region,14,Otago Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_15_bonds_lodged,region,15,Southland Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_16_bonds_lodged,region,16,Tasman Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_17_bonds_lodged,region,17,Nelson Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_18_bonds_lodged,region,18,Marlborough Region,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_1_bonds_lodged,territorial_authority,1,Far North District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_2_bonds_lodged,territorial_authority,2,Whangarei District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_3_bonds_lodged,territorial_authority,3,Kaipara District,bonds_lodged,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1993-05-01,399,True
+territorial_authority_11_bonds_lodged,territorial_authority,11,Thames-Coromandel District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_12_bonds_lodged,territorial_authority,12,Hauraki District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_13_bonds_lodged,territorial_authority,13,Waikato District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_15_bonds_lodged,territorial_authority,15,Matamata-Piako District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_16_bonds_lodged,territorial_authority,16,Hamilton City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_17_bonds_lodged,territorial_authority,17,Waipa District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_18_bonds_lodged,territorial_authority,18,Otorohanga District,bonds_lodged,1993-06-01,2026-07-01,345,398,53,0,0.8668341708542714,2020-05-01,75,False
+territorial_authority_19_bonds_lodged,territorial_authority,19,South Waikato District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_20_bonds_lodged,territorial_authority,20,Waitomo District,bonds_lodged,1993-02-01,2026-07-01,389,402,13,0,0.9676616915422885,2023-02-01,42,False
+territorial_authority_21_bonds_lodged,territorial_authority,21,Taupo District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_22_bonds_lodged,territorial_authority,22,Western Bay of Plenty District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_23_bonds_lodged,territorial_authority,23,Tauranga City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_24_bonds_lodged,territorial_authority,24,Rotorua District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_25_bonds_lodged,territorial_authority,25,Whakatane District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_26_bonds_lodged,territorial_authority,26,Kawerau District,bonds_lodged,1993-02-01,2026-07-01,398,402,4,0,0.9900497512437811,2023-12-01,32,False
+territorial_authority_27_bonds_lodged,territorial_authority,27,Opotiki District,bonds_lodged,1993-03-01,2026-07-01,376,401,25,0,0.9376558603491272,2024-07-01,25,False
+territorial_authority_28_bonds_lodged,territorial_authority,28,Gisborne District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_29_bonds_lodged,territorial_authority,29,Wairoa District,bonds_lodged,1993-02-01,2026-07-01,386,402,16,0,0.9601990049751243,2024-08-01,24,False
+territorial_authority_30_bonds_lodged,territorial_authority,30,Hastings District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_31_bonds_lodged,territorial_authority,31,Napier City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_32_bonds_lodged,territorial_authority,32,Central Hawke's Bay District,bonds_lodged,1993-02-01,2026-07-01,399,402,3,0,0.9925373134328358,2022-04-01,52,False
+territorial_authority_33_bonds_lodged,territorial_authority,33,New Plymouth District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_34_bonds_lodged,territorial_authority,34,Stratford District,bonds_lodged,1993-02-01,2026-07-01,399,402,3,0,0.9925373134328358,2023-02-01,42,False
+territorial_authority_35_bonds_lodged,territorial_authority,35,South Taranaki District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_36_bonds_lodged,territorial_authority,36,Ruapehu District,bonds_lodged,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,2020-05-01,75,False
+territorial_authority_37_bonds_lodged,territorial_authority,37,Whanganui District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_38_bonds_lodged,territorial_authority,38,Rangitikei District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_39_bonds_lodged,territorial_authority,39,Manawatu District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_40_bonds_lodged,territorial_authority,40,Palmerston North City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_41_bonds_lodged,territorial_authority,41,Tararua District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_42_bonds_lodged,territorial_authority,42,Horowhenua District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_43_bonds_lodged,territorial_authority,43,Kapiti Coast District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_44_bonds_lodged,territorial_authority,44,Porirua City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_45_bonds_lodged,territorial_authority,45,Upper Hutt City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_46_bonds_lodged,territorial_authority,46,Lower Hutt City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_47_bonds_lodged,territorial_authority,47,Wellington City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_48_bonds_lodged,territorial_authority,48,Masterton District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_49_bonds_lodged,territorial_authority,49,Carterton District,bonds_lodged,1993-03-01,2026-07-01,389,401,12,0,0.970074812967581,2022-10-01,46,False
+territorial_authority_50_bonds_lodged,territorial_authority,50,South Wairarapa District,bonds_lodged,1993-02-01,2026-07-01,395,402,7,0,0.9825870646766169,2020-05-01,75,False
+territorial_authority_51_bonds_lodged,territorial_authority,51,Tasman District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_52_bonds_lodged,territorial_authority,52,Nelson City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_53_bonds_lodged,territorial_authority,53,Marlborough District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_54_bonds_lodged,territorial_authority,54,Kaikoura District,bonds_lodged,1994-01-01,2026-07-01,277,391,114,0,0.7084398976982097,2026-07-01,1,False
+territorial_authority_55_bonds_lodged,territorial_authority,55,Buller District,bonds_lodged,1993-03-01,2026-07-01,400,401,1,0,0.9975062344139651,1996-01-01,367,True
+territorial_authority_56_bonds_lodged,territorial_authority,56,Grey District,bonds_lodged,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,2020-05-01,75,False
+territorial_authority_57_bonds_lodged,territorial_authority,57,Westland District,bonds_lodged,1993-02-01,2026-07-01,374,402,28,0,0.9303482587064676,2026-01-01,7,False
+territorial_authority_58_bonds_lodged,territorial_authority,58,Hurunui District,bonds_lodged,1993-02-01,2026-07-01,383,402,19,0,0.9527363184079602,2024-06-01,26,False
+territorial_authority_59_bonds_lodged,territorial_authority,59,Waimakariri District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_60_bonds_lodged,territorial_authority,60,Christchurch City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_62_bonds_lodged,territorial_authority,62,Selwyn District,bonds_lodged,1993-02-01,2026-07-01,391,402,11,0,0.972636815920398,1995-10-01,370,True
+territorial_authority_63_bonds_lodged,territorial_authority,63,Ashburton District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_64_bonds_lodged,territorial_authority,64,Timaru District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_65_bonds_lodged,territorial_authority,65,Mackenzie District,bonds_lodged,1993-06-01,2026-07-01,319,398,79,0,0.8015075376884422,2021-10-01,58,False
+territorial_authority_66_bonds_lodged,territorial_authority,66,Waimate District,bonds_lodged,1993-04-01,2026-07-01,331,400,69,0,0.8275,2026-04-01,4,False
+territorial_authority_68_bonds_lodged,territorial_authority,68,Waitaki District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_69_bonds_lodged,territorial_authority,69,Central Otago District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_70_bonds_lodged,territorial_authority,70,Queenstown-Lakes District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_71_bonds_lodged,territorial_authority,71,Dunedin City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_72_bonds_lodged,territorial_authority,72,Clutha District,bonds_lodged,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1995-01-01,379,True
+territorial_authority_73_bonds_lodged,territorial_authority,73,Southland District,bonds_lodged,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1993-12-01,392,True
+territorial_authority_74_bonds_lodged,territorial_authority,74,Gore District,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_75_bonds_lodged,territorial_authority,75,Invercargill City,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_76_bonds_lodged,territorial_authority,76,Auckland,bonds_lodged,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_1_median_rent,region,1,Northland Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_2_median_rent,region,2,Auckland Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_3_median_rent,region,3,Waikato Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_4_median_rent,region,4,Bay of Plenty Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_5_median_rent,region,5,Gisborne Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_6_median_rent,region,6,Hawke's Bay Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_7_median_rent,region,7,Taranaki Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_8_median_rent,region,8,Manawatu-Wanganui Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_9_median_rent,region,9,Wellington Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_12_median_rent,region,12,West Coast Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_13_median_rent,region,13,Canterbury Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_14_median_rent,region,14,Otago Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_15_median_rent,region,15,Southland Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_16_median_rent,region,16,Tasman Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_17_median_rent,region,17,Nelson Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+region_18_median_rent,region,18,Marlborough Region,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_1_median_rent,territorial_authority,1,Far North District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_2_median_rent,territorial_authority,2,Whangarei District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_3_median_rent,territorial_authority,3,Kaipara District,median_rent,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1993-05-01,399,True
+territorial_authority_11_median_rent,territorial_authority,11,Thames-Coromandel District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_12_median_rent,territorial_authority,12,Hauraki District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_13_median_rent,territorial_authority,13,Waikato District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_15_median_rent,territorial_authority,15,Matamata-Piako District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_16_median_rent,territorial_authority,16,Hamilton City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_17_median_rent,territorial_authority,17,Waipa District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_18_median_rent,territorial_authority,18,Otorohanga District,median_rent,1993-06-01,2026-07-01,345,398,53,0,0.8668341708542714,2020-05-01,75,False
+territorial_authority_19_median_rent,territorial_authority,19,South Waikato District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_20_median_rent,territorial_authority,20,Waitomo District,median_rent,1993-02-01,2026-07-01,389,402,13,0,0.9676616915422885,2023-02-01,42,False
+territorial_authority_21_median_rent,territorial_authority,21,Taupo District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_22_median_rent,territorial_authority,22,Western Bay of Plenty District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_23_median_rent,territorial_authority,23,Tauranga City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_24_median_rent,territorial_authority,24,Rotorua District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_25_median_rent,territorial_authority,25,Whakatane District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_26_median_rent,territorial_authority,26,Kawerau District,median_rent,1993-02-01,2026-07-01,398,402,4,0,0.9900497512437811,2023-12-01,32,False
+territorial_authority_27_median_rent,territorial_authority,27,Opotiki District,median_rent,1993-03-01,2026-07-01,376,401,25,0,0.9376558603491272,2024-07-01,25,False
+territorial_authority_28_median_rent,territorial_authority,28,Gisborne District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_29_median_rent,territorial_authority,29,Wairoa District,median_rent,1993-02-01,2026-07-01,386,402,16,0,0.9601990049751243,2024-08-01,24,False
+territorial_authority_30_median_rent,territorial_authority,30,Hastings District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_31_median_rent,territorial_authority,31,Napier City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_32_median_rent,territorial_authority,32,Central Hawke's Bay District,median_rent,1993-02-01,2026-07-01,399,402,3,0,0.9925373134328358,2022-04-01,52,False
+territorial_authority_33_median_rent,territorial_authority,33,New Plymouth District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_34_median_rent,territorial_authority,34,Stratford District,median_rent,1993-02-01,2026-07-01,399,402,3,0,0.9925373134328358,2023-02-01,42,False
+territorial_authority_35_median_rent,territorial_authority,35,South Taranaki District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_36_median_rent,territorial_authority,36,Ruapehu District,median_rent,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,2020-05-01,75,False
+territorial_authority_37_median_rent,territorial_authority,37,Whanganui District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_38_median_rent,territorial_authority,38,Rangitikei District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_39_median_rent,territorial_authority,39,Manawatu District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_40_median_rent,territorial_authority,40,Palmerston North City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_41_median_rent,territorial_authority,41,Tararua District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_42_median_rent,territorial_authority,42,Horowhenua District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_43_median_rent,territorial_authority,43,Kapiti Coast District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_44_median_rent,territorial_authority,44,Porirua City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_45_median_rent,territorial_authority,45,Upper Hutt City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_46_median_rent,territorial_authority,46,Lower Hutt City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_47_median_rent,territorial_authority,47,Wellington City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_48_median_rent,territorial_authority,48,Masterton District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_49_median_rent,territorial_authority,49,Carterton District,median_rent,1993-03-01,2026-07-01,389,401,12,0,0.970074812967581,2022-10-01,46,False
+territorial_authority_50_median_rent,territorial_authority,50,South Wairarapa District,median_rent,1993-02-01,2026-07-01,395,402,7,0,0.9825870646766169,2020-05-01,75,False
+territorial_authority_51_median_rent,territorial_authority,51,Tasman District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_52_median_rent,territorial_authority,52,Nelson City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_53_median_rent,territorial_authority,53,Marlborough District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_54_median_rent,territorial_authority,54,Kaikoura District,median_rent,1994-01-01,2026-07-01,277,391,114,0,0.7084398976982097,2026-07-01,1,False
+territorial_authority_55_median_rent,territorial_authority,55,Buller District,median_rent,1993-03-01,2026-07-01,400,401,1,0,0.9975062344139651,1996-01-01,367,True
+territorial_authority_56_median_rent,territorial_authority,56,Grey District,median_rent,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,2020-05-01,75,False
+territorial_authority_57_median_rent,territorial_authority,57,Westland District,median_rent,1993-02-01,2026-07-01,374,402,28,0,0.9303482587064676,2026-01-01,7,False
+territorial_authority_58_median_rent,territorial_authority,58,Hurunui District,median_rent,1993-02-01,2026-07-01,383,402,19,0,0.9527363184079602,2024-06-01,26,False
+territorial_authority_59_median_rent,territorial_authority,59,Waimakariri District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_60_median_rent,territorial_authority,60,Christchurch City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_62_median_rent,territorial_authority,62,Selwyn District,median_rent,1993-02-01,2026-07-01,391,402,11,0,0.972636815920398,1995-10-01,370,True
+territorial_authority_63_median_rent,territorial_authority,63,Ashburton District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_64_median_rent,territorial_authority,64,Timaru District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_65_median_rent,territorial_authority,65,Mackenzie District,median_rent,1993-06-01,2026-07-01,319,398,79,0,0.8015075376884422,2021-10-01,58,False
+territorial_authority_66_median_rent,territorial_authority,66,Waimate District,median_rent,1993-04-01,2026-07-01,331,400,69,0,0.8275,2026-04-01,4,False
+territorial_authority_68_median_rent,territorial_authority,68,Waitaki District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_69_median_rent,territorial_authority,69,Central Otago District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_70_median_rent,territorial_authority,70,Queenstown-Lakes District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_71_median_rent,territorial_authority,71,Dunedin City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_72_median_rent,territorial_authority,72,Clutha District,median_rent,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1995-01-01,379,True
+territorial_authority_73_median_rent,territorial_authority,73,Southland District,median_rent,1993-02-01,2026-07-01,401,402,1,0,0.9975124378109452,1993-12-01,392,True
+territorial_authority_74_median_rent,territorial_authority,74,Gore District,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_75_median_rent,territorial_authority,75,Invercargill City,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True
+territorial_authority_76_median_rent,territorial_authority,76,Auckland,median_rent,1993-02-01,2026-07-01,402,402,0,0,1.0,1993-02-01,402,True

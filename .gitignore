@@ -49,8 +49,35 @@ data/raw/*
 data/staging/*
 !data/staging/.gitkeep
 
+# Processed data are generated artifacts by default.
 data/processed/*
 !data/processed/.gitkeep
+
+# Streamlit deployment runtime assets.
+# Only the frozen dashboard-ready outputs below are version controlled.
+!data/processed/analytics/
+data/processed/analytics/*
+!data/processed/analytics/monthly_panel.csv
+!data/processed/analytics/series_catalog.csv
+!data/processed/analytics/monthly_seasonality.csv
+
+!data/processed/forecasting/
+data/processed/forecasting/*
+!data/processed/forecasting/combined_predictions.csv
+!data/processed/forecasting/metrics_by_origin.csv
+!data/processed/forecasting/metrics_by_series.csv
+!data/processed/forecasting/metrics_by_horizon.csv
+!data/processed/forecasting/model_comparison.csv
+!data/processed/forecasting/series_model_winners.csv
+!data/processed/forecasting/final_forward_forecasts.csv
+
+!data/processed/anomaly/
+data/processed/anomaly/*
+!data/processed/anomaly/anomaly_summary.csv
+!data/processed/anomaly/historical_anomalies.csv
+!data/processed/anomaly/forecast_anomalies.csv
+!data/processed/anomaly/anomaly_validation_summary.csv
+!data/processed/anomaly/anomaly_metadata_summary.csv
 
 # data/reference/ is intentionally not ignored.
 # Small geographic reference/concordance files may be version controlled.

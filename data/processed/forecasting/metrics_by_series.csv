@@ -1,0 +1,391 @@
+model,series_id,metric,geography_level,location_id,location_name,n_origins,n_forecasts,mae,rmse,smape
+ets_additive_damped,region_12_bonds_lodged,bonds_lodged,region,12,West Coast Region,12,72,10.531992039237704,12.740350731430377,23.96428064134337
+seasonal_naive,region_12_bonds_lodged,bonds_lodged,region,12,West Coast Region,12,72,12.291666666666666,14.970804921579868,29.997760832728154
+xgboost_pooled_recursive,region_12_bonds_lodged,bonds_lodged,region,12,West Coast Region,12,72,13.77617883682251,17.07617719626048,28.80984097504883
+ets_additive_damped,region_13_bonds_lodged,bonds_lodged,region,13,Canterbury Region,12,72,139.13315453497114,186.91688706236135,7.6946078725255065
+seasonal_naive,region_13_bonds_lodged,bonds_lodged,region,13,Canterbury Region,12,72,280.375,317.7253137538777,17.34526238450048
+xgboost_pooled_recursive,region_13_bonds_lodged,bonds_lodged,region,13,Canterbury Region,12,72,225.6044921875,290.301296435463,11.561256410447648
+ets_additive_damped,region_14_bonds_lodged,bonds_lodged,region,14,Otago Region,12,72,60.00097951006324,73.47566318990128,9.743417035308417
+seasonal_naive,region_14_bonds_lodged,bonds_lodged,region,14,Otago Region,12,72,75.20833333333333,89.51326717308446,12.735720915875353
+xgboost_pooled_recursive,region_14_bonds_lodged,bonds_lodged,region,14,Otago Region,12,72,99.55725182427301,118.4251438128542,13.871640089824671
+ets_additive_damped,region_15_bonds_lodged,bonds_lodged,region,15,Southland Region,12,72,18.441888928500532,26.082895010133168,9.925499305327929
+seasonal_naive,region_15_bonds_lodged,bonds_lodged,region,15,Southland Region,12,72,27.666666666666668,30.785548557724287,15.635186350068409
+xgboost_pooled_recursive,region_15_bonds_lodged,bonds_lodged,region,15,Southland Region,12,72,33.34532038370768,38.315400525222145,16.79978467859572
+ets_additive_damped,region_16_bonds_lodged,bonds_lodged,region,16,Tasman Region,12,72,15.353959295729311,18.930151456879937,18.52241608987368
+seasonal_naive,region_16_bonds_lodged,bonds_lodged,region,16,Tasman Region,12,72,22.125,27.863506599134286,28.449961391529882
+xgboost_pooled_recursive,region_16_bonds_lodged,bonds_lodged,region,16,Tasman Region,12,72,20.00667995876736,24.84586751999199,22.7356969389801
+ets_additive_damped,region_17_bonds_lodged,bonds_lodged,region,17,Nelson Region,12,72,17.043716020089647,19.54962124105187,12.37884407916707
+seasonal_naive,region_17_bonds_lodged,bonds_lodged,region,17,Nelson Region,12,72,23.041666666666668,27.733102963786795,17.84707896314852
+xgboost_pooled_recursive,region_17_bonds_lodged,bonds_lodged,region,17,Nelson Region,12,72,19.041404724121094,22.75103774175408,13.341396906061217
+ets_additive_damped,region_18_bonds_lodged,bonds_lodged,region,18,Marlborough Region,12,72,13.330001180028155,15.90630036607018,14.38208536327977
+seasonal_naive,region_18_bonds_lodged,bonds_lodged,region,18,Marlborough Region,12,72,28.708333333333332,33.400973039718465,33.50139549784968
+xgboost_pooled_recursive,region_18_bonds_lodged,bonds_lodged,region,18,Marlborough Region,12,72,23.97690815395779,27.81163257140447,24.06644632836899
+ets_additive_damped,region_1_bonds_lodged,bonds_lodged,region,1,Northland Region,12,72,28.10808460895744,33.94429794909855,8.19185365705006
+seasonal_naive,region_1_bonds_lodged,bonds_lodged,region,1,Northland Region,12,72,55.583333333333336,63.78283468144074,17.20759958922327
+xgboost_pooled_recursive,region_1_bonds_lodged,bonds_lodged,region,1,Northland Region,12,72,36.907341427273224,50.25472728351604,10.414108722537708
+ets_additive_damped,region_2_bonds_lodged,bonds_lodged,region,2,Auckland Region,12,72,300.15315890129443,350.15762423650443,5.67211760587004
+seasonal_naive,region_2_bonds_lodged,bonds_lodged,region,2,Auckland Region,12,72,714.4583333333334,812.4729995513698,14.419397846641644
+xgboost_pooled_recursive,region_2_bonds_lodged,bonds_lodged,region,2,Auckland Region,12,72,440.78929307725696,519.0407095043847,8.227382529942103
+ets_additive_damped,region_3_bonds_lodged,bonds_lodged,region,3,Waikato Region,12,72,120.13847722543748,146.14495843433477,9.590319633288926
+seasonal_naive,region_3_bonds_lodged,bonds_lodged,region,3,Waikato Region,12,72,203.5,230.77532363751547,17.256106675965455
+xgboost_pooled_recursive,region_3_bonds_lodged,bonds_lodged,region,3,Waikato Region,12,72,235.62005615234375,296.2136892643549,17.170268792258142
+ets_additive_damped,region_4_bonds_lodged,bonds_lodged,region,4,Bay of Plenty Region,12,72,53.44299590191047,67.03995098164103,7.644897779076378
+seasonal_naive,region_4_bonds_lodged,bonds_lodged,region,4,Bay of Plenty Region,12,72,123.04166666666667,132.78507069697255,18.22914546676889
+xgboost_pooled_recursive,region_4_bonds_lodged,bonds_lodged,region,4,Bay of Plenty Region,12,72,117.28157552083333,153.44760349046743,15.811157890929195
+ets_additive_damped,region_5_bonds_lodged,bonds_lodged,region,5,Gisborne Region,12,72,10.618677809271007,12.909829235850662,11.87338656029978
+seasonal_naive,region_5_bonds_lodged,bonds_lodged,region,5,Gisborne Region,12,72,16.5,19.339079605813716,18.96290400161146
+xgboost_pooled_recursive,region_5_bonds_lodged,bonds_lodged,region,5,Gisborne Region,12,72,21.162531746758354,24.01807515161827,21.716608304917855
+ets_additive_damped,region_6_bonds_lodged,bonds_lodged,region,6,Hawke's Bay Region,12,72,26.464334305483405,31.239589349040887,8.79764563145601
+seasonal_naive,region_6_bonds_lodged,bonds_lodged,region,6,Hawke's Bay Region,12,72,47.291666666666664,56.323840423039336,16.672988339781508
+xgboost_pooled_recursive,region_6_bonds_lodged,bonds_lodged,region,6,Hawke's Bay Region,12,72,28.09405008951823,33.97036163486674,9.161042385362265
+ets_additive_damped,region_7_bonds_lodged,bonds_lodged,region,7,Taranaki Region,12,72,18.762121505435648,24.302626740408176,7.683127911466109
+seasonal_naive,region_7_bonds_lodged,bonds_lodged,region,7,Taranaki Region,12,72,32.541666666666664,41.657832396801446,14.573254024425234
+xgboost_pooled_recursive,region_7_bonds_lodged,bonds_lodged,region,7,Taranaki Region,12,72,27.517162534925674,32.5878350949875,10.878190105332699
+ets_additive_damped,region_8_bonds_lodged,bonds_lodged,region,8,Manawatu-Wanganui Region,12,72,74.85769045492358,83.99724764153125,12.384887612814527
+seasonal_naive,region_8_bonds_lodged,bonds_lodged,region,8,Manawatu-Wanganui Region,12,72,93.70833333333333,106.80648388557691,16.67045696319705
+xgboost_pooled_recursive,region_8_bonds_lodged,bonds_lodged,region,8,Manawatu-Wanganui Region,12,72,94.09613969590929,122.30717126099779,14.473432676347928
+ets_additive_damped,region_9_bonds_lodged,bonds_lodged,region,9,Wellington Region,12,72,136.72407845715995,162.1287461144956,9.13132369115323
+seasonal_naive,region_9_bonds_lodged,bonds_lodged,region,9,Wellington Region,12,72,199.04166666666666,232.52392350035728,13.93034271386966
+xgboost_pooled_recursive,region_9_bonds_lodged,bonds_lodged,region,9,Wellington Region,12,72,199.9140150282118,260.97931727411896,11.35221599141242
+ets_additive_damped,territorial_authority_11_bonds_lodged,bonds_lodged,territorial_authority,11,Thames-Coromandel District,12,72,5.320719581845116,6.036049733187381,13.81124230299657
+seasonal_naive,territorial_authority_11_bonds_lodged,bonds_lodged,territorial_authority,11,Thames-Coromandel District,12,72,5.375,6.991065727054782,13.696904207621966
+xgboost_pooled_recursive,territorial_authority_11_bonds_lodged,bonds_lodged,territorial_authority,11,Thames-Coromandel District,12,72,14.425364865197075,16.53842734572707,31.859415916155626
+ets_additive_damped,territorial_authority_12_bonds_lodged,bonds_lodged,territorial_authority,12,Hauraki District,12,72,5.176550921641705,6.008203619743033,17.793064611183272
+seasonal_naive,territorial_authority_12_bonds_lodged,bonds_lodged,territorial_authority,12,Hauraki District,12,72,6.458333333333333,7.786205751198718,22.97411249670414
+xgboost_pooled_recursive,territorial_authority_12_bonds_lodged,bonds_lodged,territorial_authority,12,Hauraki District,12,72,8.778136836157906,10.733116270952031,26.058686768551077
+ets_additive_damped,territorial_authority_13_bonds_lodged,bonds_lodged,territorial_authority,13,Waikato District,12,72,11.988929691607199,16.703407880911875,9.5112379438912
+seasonal_naive,territorial_authority_13_bonds_lodged,bonds_lodged,territorial_authority,13,Waikato District,12,72,29.5,35.52815784698103,26.171727847392102
+xgboost_pooled_recursive,territorial_authority_13_bonds_lodged,bonds_lodged,territorial_authority,13,Waikato District,12,72,23.069827397664387,26.81723324582195,17.69791004926685
+ets_additive_damped,territorial_authority_15_bonds_lodged,bonds_lodged,territorial_authority,15,Matamata-Piako District,12,72,7.846372693538503,10.705331850210124,14.506096635878333
+seasonal_naive,territorial_authority_15_bonds_lodged,bonds_lodged,territorial_authority,15,Matamata-Piako District,12,72,11.958333333333334,14.234640845486759,22.043813298592653
+xgboost_pooled_recursive,territorial_authority_15_bonds_lodged,bonds_lodged,territorial_authority,15,Matamata-Piako District,12,72,17.684876759847004,21.266120788294426,28.753873679805498
+ets_additive_damped,territorial_authority_16_bonds_lodged,bonds_lodged,territorial_authority,16,Hamilton City,12,72,73.1102838415599,89.73178897511416,10.317366431448612
+seasonal_naive,territorial_authority_16_bonds_lodged,bonds_lodged,territorial_authority,16,Hamilton City,12,72,101.0,113.77609590770814,14.873257836591128
+xgboost_pooled_recursive,territorial_authority_16_bonds_lodged,bonds_lodged,territorial_authority,16,Hamilton City,12,72,121.05269198947482,149.57326380640004,15.71904155312238
+ets_additive_damped,territorial_authority_17_bonds_lodged,bonds_lodged,territorial_authority,17,Waipa District,12,72,13.613902724255167,16.650759469030483,12.902487011863744
+seasonal_naive,territorial_authority_17_bonds_lodged,bonds_lodged,territorial_authority,17,Waipa District,12,72,27.833333333333332,31.024184114977142,28.764102369913168
+xgboost_pooled_recursive,territorial_authority_17_bonds_lodged,bonds_lodged,territorial_authority,17,Waipa District,12,72,16.77090401119656,19.864135716091585,15.009538408626618
+ets_additive_damped,territorial_authority_19_bonds_lodged,bonds_lodged,territorial_authority,19,South Waikato District,12,72,13.650198402112578,15.816337654390953,22.05284886627661
+seasonal_naive,territorial_authority_19_bonds_lodged,bonds_lodged,territorial_authority,19,South Waikato District,12,72,19.625,23.05699460033766,33.11973322376824
+xgboost_pooled_recursive,territorial_authority_19_bonds_lodged,bonds_lodged,territorial_authority,19,South Waikato District,12,72,21.546528074476456,25.721721932079287,31.721399699782065
+ets_additive_damped,territorial_authority_1_bonds_lodged,bonds_lodged,territorial_authority,1,Far North District,12,72,12.038707491451532,14.163527347887698,12.857476237335833
+seasonal_naive,territorial_authority_1_bonds_lodged,bonds_lodged,territorial_authority,1,Far North District,12,72,15.875,19.193097717669236,17.2773613457949
+xgboost_pooled_recursive,territorial_authority_1_bonds_lodged,bonds_lodged,territorial_authority,1,Far North District,12,72,19.411421563890244,23.089003321540144,19.353023072957757
+ets_additive_damped,territorial_authority_21_bonds_lodged,bonds_lodged,territorial_authority,21,Taupo District,12,72,11.765392048921347,14.499855553558978,13.447595584291733
+seasonal_naive,territorial_authority_21_bonds_lodged,bonds_lodged,territorial_authority,21,Taupo District,12,72,15.875,19.29702049540291,18.838909719273378
+xgboost_pooled_recursive,territorial_authority_21_bonds_lodged,bonds_lodged,territorial_authority,21,Taupo District,12,72,13.3578519821167,16.77488571563603,14.075622002527016
+ets_additive_damped,territorial_authority_22_bonds_lodged,bonds_lodged,territorial_authority,22,Western Bay of Plenty District,12,72,12.553572820119244,14.584418624456386,15.613868401562392
+seasonal_naive,territorial_authority_22_bonds_lodged,bonds_lodged,territorial_authority,22,Western Bay of Plenty District,12,72,26.708333333333332,31.282982594375493,36.31614787280876
+xgboost_pooled_recursive,territorial_authority_22_bonds_lodged,bonds_lodged,territorial_authority,22,Western Bay of Plenty District,12,72,18.316709730360245,23.11541747151812,20.97608621635919
+ets_additive_damped,territorial_authority_23_bonds_lodged,bonds_lodged,territorial_authority,23,Tauranga City,12,72,35.342678547310825,45.0728238091243,9.77807369663548
+seasonal_naive,territorial_authority_23_bonds_lodged,bonds_lodged,territorial_authority,23,Tauranga City,12,72,63.916666666666664,69.0778546279486,17.698835413394974
+xgboost_pooled_recursive,territorial_authority_23_bonds_lodged,bonds_lodged,territorial_authority,23,Tauranga City,12,72,67.57190026177301,84.40280833734575,17.699725295426248
+ets_additive_damped,territorial_authority_24_bonds_lodged,bonds_lodged,territorial_authority,24,Rotorua District,12,72,11.141004985650094,15.027936159099756,6.390302484984756
+seasonal_naive,territorial_authority_24_bonds_lodged,bonds_lodged,territorial_authority,24,Rotorua District,12,72,30.75,37.61980861195336,18.087436057266615
+xgboost_pooled_recursive,territorial_authority_24_bonds_lodged,bonds_lodged,territorial_authority,24,Rotorua District,12,72,31.625095155504013,37.475733674939946,16.9508332967019
+ets_additive_damped,territorial_authority_25_bonds_lodged,bonds_lodged,territorial_authority,25,Whakatane District,12,72,9.513513239062924,12.190828420532512,17.780326643549348
+seasonal_naive,territorial_authority_25_bonds_lodged,bonds_lodged,territorial_authority,25,Whakatane District,12,72,8.25,12.227019260637483,15.602188196595637
+xgboost_pooled_recursive,territorial_authority_25_bonds_lodged,bonds_lodged,territorial_authority,25,Whakatane District,12,72,13.89863067203098,16.68318520769008,24.321199730311406
+ets_additive_damped,territorial_authority_28_bonds_lodged,bonds_lodged,territorial_authority,28,Gisborne District,12,72,10.618677809271007,12.909829235850662,11.87338656029978
+seasonal_naive,territorial_authority_28_bonds_lodged,bonds_lodged,territorial_authority,28,Gisborne District,12,72,16.5,19.339079605813716,18.96290400161146
+xgboost_pooled_recursive,territorial_authority_28_bonds_lodged,bonds_lodged,territorial_authority,28,Gisborne District,12,72,21.162531746758354,24.01807515161827,21.716608304917855
+ets_additive_damped,territorial_authority_2_bonds_lodged,bonds_lodged,territorial_authority,2,Whangarei District,12,72,16.735347478492017,21.365202028021614,8.365168243558655
+seasonal_naive,territorial_authority_2_bonds_lodged,bonds_lodged,territorial_authority,2,Whangarei District,12,72,31.541666666666668,35.491196091425266,16.6351617107095
+xgboost_pooled_recursive,territorial_authority_2_bonds_lodged,bonds_lodged,territorial_authority,2,Whangarei District,12,72,27.594798194037544,33.47238842240368,13.04252923070613
+ets_additive_damped,territorial_authority_30_bonds_lodged,bonds_lodged,territorial_authority,30,Hastings District,12,72,12.223408417697076,16.087635014603606,8.617293670474847
+seasonal_naive,territorial_authority_30_bonds_lodged,bonds_lodged,territorial_authority,30,Hastings District,12,72,25.083333333333332,29.081781238431734,18.963185814899493
+xgboost_pooled_recursive,territorial_authority_30_bonds_lodged,bonds_lodged,territorial_authority,30,Hastings District,12,72,15.325184928046333,18.563066346299223,10.292737798680045
+ets_additive_damped,territorial_authority_31_bonds_lodged,bonds_lodged,territorial_authority,31,Napier City,12,72,17.220877521049154,19.37517377475243,13.81625308925406
+seasonal_naive,territorial_authority_31_bonds_lodged,bonds_lodged,territorial_authority,31,Napier City,12,72,17.833333333333332,22.360679774997898,14.61685884781485
+xgboost_pooled_recursive,territorial_authority_31_bonds_lodged,bonds_lodged,territorial_authority,31,Napier City,12,72,23.418273607889812,28.411996090208895,17.89950762715694
+ets_additive_damped,territorial_authority_33_bonds_lodged,bonds_lodged,territorial_authority,33,New Plymouth District,12,72,16.94657224262705,20.684273634568978,9.473632676833027
+seasonal_naive,territorial_authority_33_bonds_lodged,bonds_lodged,territorial_authority,33,New Plymouth District,12,72,27.375,32.36703569992161,16.613906300407432
+xgboost_pooled_recursive,territorial_authority_33_bonds_lodged,bonds_lodged,territorial_authority,33,New Plymouth District,12,72,22.636356565687393,27.87465690614017,12.039306878557737
+ets_additive_damped,territorial_authority_35_bonds_lodged,bonds_lodged,territorial_authority,35,South Taranaki District,12,72,5.624227362806573,7.305732910489476,12.157553024123963
+seasonal_naive,territorial_authority_35_bonds_lodged,bonds_lodged,territorial_authority,35,South Taranaki District,12,72,9.666666666666666,12.589678312014172,21.454950408324528
+xgboost_pooled_recursive,territorial_authority_35_bonds_lodged,bonds_lodged,territorial_authority,35,South Taranaki District,12,72,12.61725213792589,14.931663567335333,24.99390800304937
+ets_additive_damped,territorial_authority_37_bonds_lodged,bonds_lodged,territorial_authority,37,Whanganui District,12,72,11.07059652166138,13.541656829659948,10.516807251713232
+seasonal_naive,territorial_authority_37_bonds_lodged,bonds_lodged,territorial_authority,37,Whanganui District,12,72,21.25,25.446021299998947,21.36416255769188
+xgboost_pooled_recursive,territorial_authority_37_bonds_lodged,bonds_lodged,territorial_authority,37,Whanganui District,12,72,14.663427882724339,18.839611798183864,13.057627493420132
+ets_additive_damped,territorial_authority_38_bonds_lodged,bonds_lodged,territorial_authority,38,Rangitikei District,12,72,5.873192868717759,7.201346625234799,24.41725282196471
+seasonal_naive,territorial_authority_38_bonds_lodged,bonds_lodged,territorial_authority,38,Rangitikei District,12,72,7.458333333333333,9.06228448019593,33.032489206508814
+xgboost_pooled_recursive,territorial_authority_38_bonds_lodged,bonds_lodged,territorial_authority,38,Rangitikei District,12,72,11.024881627824572,12.665251714448539,40.11444879877518
+ets_additive_damped,territorial_authority_39_bonds_lodged,bonds_lodged,territorial_authority,39,Manawatu District,12,72,7.441769055610842,9.305434233692237,17.55976140232264
+seasonal_naive,territorial_authority_39_bonds_lodged,bonds_lodged,territorial_authority,39,Manawatu District,12,72,11.625,13.54160256395084,28.66896082687202
+xgboost_pooled_recursive,territorial_authority_39_bonds_lodged,bonds_lodged,territorial_authority,39,Manawatu District,12,72,15.095180776384142,17.860141735348652,30.737426218810832
+ets_additive_damped,territorial_authority_3_bonds_lodged,bonds_lodged,territorial_authority,3,Kaipara District,12,72,6.807683786456944,7.576479634480419,14.787954803286013
+seasonal_naive,territorial_authority_3_bonds_lodged,bonds_lodged,territorial_authority,3,Kaipara District,12,72,14.083333333333334,15.795568998931314,33.80763264998472
+xgboost_pooled_recursive,territorial_authority_3_bonds_lodged,bonds_lodged,territorial_authority,3,Kaipara District,12,72,11.567718346913656,13.969819951996318,22.28728458793826
+ets_additive_damped,territorial_authority_40_bonds_lodged,bonds_lodged,territorial_authority,40,Palmerston North City,12,72,35.58373948106989,38.17930076780305,13.18473205968351
+seasonal_naive,territorial_authority_40_bonds_lodged,bonds_lodged,territorial_authority,40,Palmerston North City,12,72,35.791666666666664,41.177967409769025,13.857260295903975
+xgboost_pooled_recursive,territorial_authority_40_bonds_lodged,bonds_lodged,territorial_authority,40,Palmerston North City,12,72,33.047840966118706,41.4166701111145,11.601970203568346
+ets_additive_damped,territorial_authority_41_bonds_lodged,bonds_lodged,territorial_authority,41,Tararua District,12,72,4.223681632244979,5.120241626103115,15.138072881040681
+seasonal_naive,territorial_authority_41_bonds_lodged,bonds_lodged,territorial_authority,41,Tararua District,12,72,8.208333333333334,8.979142498033985,30.444019225623975
+xgboost_pooled_recursive,territorial_authority_41_bonds_lodged,bonds_lodged,territorial_authority,41,Tararua District,12,72,9.94206757015652,11.712830127105985,30.13734190234952
+ets_additive_damped,territorial_authority_42_bonds_lodged,bonds_lodged,territorial_authority,42,Horowhenua District,12,72,15.221231279706785,19.00625664215721,17.218350372866038
+seasonal_naive,territorial_authority_42_bonds_lodged,bonds_lodged,territorial_authority,42,Horowhenua District,12,72,21.833333333333332,26.339134382131846,26.520011213868266
+xgboost_pooled_recursive,territorial_authority_42_bonds_lodged,bonds_lodged,territorial_authority,42,Horowhenua District,12,72,18.026893615722656,22.846914496460194,19.18873659304699
+ets_additive_damped,territorial_authority_43_bonds_lodged,bonds_lodged,territorial_authority,43,Kapiti Coast District,12,72,9.676633135070427,12.747902079700253,8.81187475832052
+seasonal_naive,territorial_authority_43_bonds_lodged,bonds_lodged,territorial_authority,43,Kapiti Coast District,12,72,26.458333333333332,30.350041186133502,25.448540451450352
+xgboost_pooled_recursive,territorial_authority_43_bonds_lodged,bonds_lodged,territorial_authority,43,Kapiti Coast District,12,72,22.43371804555257,25.888885811717646,18.753080971695038
+ets_additive_damped,territorial_authority_44_bonds_lodged,bonds_lodged,territorial_authority,44,Porirua City,12,72,7.501768406222317,9.079362041819236,8.55799901137148
+seasonal_naive,territorial_authority_44_bonds_lodged,bonds_lodged,territorial_authority,44,Porirua City,12,72,12.375,14.928998626833616,14.6588379871191
+xgboost_pooled_recursive,territorial_authority_44_bonds_lodged,bonds_lodged,territorial_authority,44,Porirua City,12,72,17.968446095784504,20.738333588783593,18.690547794922157
+ets_additive_damped,territorial_authority_45_bonds_lodged,bonds_lodged,territorial_authority,45,Upper Hutt City,12,72,9.883186009352407,12.51354916760692,11.394745147542753
+seasonal_naive,territorial_authority_45_bonds_lodged,bonds_lodged,territorial_authority,45,Upper Hutt City,12,72,18.583333333333332,22.781571499789035,23.20059887316984
+xgboost_pooled_recursive,territorial_authority_45_bonds_lodged,bonds_lodged,territorial_authority,45,Upper Hutt City,12,72,17.41931226518419,20.464156523755296,18.147471479770118
+ets_additive_damped,territorial_authority_46_bonds_lodged,bonds_lodged,territorial_authority,46,Lower Hutt City,12,72,23.53993111619244,26.62374414457307,8.989486874213988
+seasonal_naive,territorial_authority_46_bonds_lodged,bonds_lodged,territorial_authority,46,Lower Hutt City,12,72,34.0,42.127781807258735,13.522578301161008
+xgboost_pooled_recursive,territorial_authority_46_bonds_lodged,bonds_lodged,territorial_authority,46,Lower Hutt City,12,72,33.25284555223253,40.51048060997176,12.315820306547247
+ets_additive_damped,territorial_authority_47_bonds_lodged,bonds_lodged,territorial_authority,47,Wellington City,12,72,86.1739798153679,98.1033652011355,9.88376485597003
+seasonal_naive,territorial_authority_47_bonds_lodged,bonds_lodged,territorial_authority,47,Wellington City,12,72,94.25,114.00657875754364,11.519380689086045
+xgboost_pooled_recursive,territorial_authority_47_bonds_lodged,bonds_lodged,territorial_authority,47,Wellington City,12,72,124.25629170735677,156.5525012479966,12.121922818877822
+ets_additive_damped,territorial_authority_48_bonds_lodged,bonds_lodged,territorial_authority,48,Masterton District,12,72,15.813349129617434,17.826454252666505,25.793436184605035
+seasonal_naive,territorial_authority_48_bonds_lodged,bonds_lodged,territorial_authority,48,Masterton District,12,72,18.416666666666668,21.86892772862904,31.496214328294524
+xgboost_pooled_recursive,territorial_authority_48_bonds_lodged,bonds_lodged,territorial_authority,48,Masterton District,12,72,11.228845225440132,14.057105284669412,17.00398543218256
+ets_additive_damped,territorial_authority_51_bonds_lodged,bonds_lodged,territorial_authority,51,Tasman District,12,72,15.353959295729311,18.930151456879937,18.52241608987368
+seasonal_naive,territorial_authority_51_bonds_lodged,bonds_lodged,territorial_authority,51,Tasman District,12,72,22.125,27.863506599134286,28.449961391529882
+xgboost_pooled_recursive,territorial_authority_51_bonds_lodged,bonds_lodged,territorial_authority,51,Tasman District,12,72,20.00667995876736,24.84586751999199,22.7356969389801
+ets_additive_damped,territorial_authority_52_bonds_lodged,bonds_lodged,territorial_authority,52,Nelson City,12,72,17.043716020089647,19.54962124105187,12.37884407916707
+seasonal_naive,territorial_authority_52_bonds_lodged,bonds_lodged,territorial_authority,52,Nelson City,12,72,23.041666666666668,27.733102963786795,17.84707896314852
+xgboost_pooled_recursive,territorial_authority_52_bonds_lodged,bonds_lodged,territorial_authority,52,Nelson City,12,72,19.041404724121094,22.75103774175408,13.341396906061217
+ets_additive_damped,territorial_authority_53_bonds_lodged,bonds_lodged,territorial_authority,53,Marlborough District,12,72,13.330001180028155,15.90630036607018,14.38208536327977
+seasonal_naive,territorial_authority_53_bonds_lodged,bonds_lodged,territorial_authority,53,Marlborough District,12,72,28.708333333333332,33.400973039718465,33.50139549784968
+xgboost_pooled_recursive,territorial_authority_53_bonds_lodged,bonds_lodged,territorial_authority,53,Marlborough District,12,72,23.97690815395779,27.81163257140447,24.06644632836899
+ets_additive_damped,territorial_authority_55_bonds_lodged,bonds_lodged,territorial_authority,55,Buller District,12,72,4.025672719218735,4.783073571693686,24.740551978551935
+seasonal_naive,territorial_authority_55_bonds_lodged,bonds_lodged,territorial_authority,55,Buller District,12,72,5.958333333333333,6.7175144212722016,40.78218078218079
+xgboost_pooled_recursive,territorial_authority_55_bonds_lodged,bonds_lodged,territorial_authority,55,Buller District,12,72,12.095426162083944,13.400631322125111,54.296714342467844
+ets_additive_damped,territorial_authority_59_bonds_lodged,bonds_lodged,territorial_authority,59,Waimakariri District,12,72,15.674068936489265,18.00355843290097,19.937237384675406
+seasonal_naive,territorial_authority_59_bonds_lodged,bonds_lodged,territorial_authority,59,Waimakariri District,12,72,25.666666666666668,29.567718883945037,36.61507621162895
+xgboost_pooled_recursive,territorial_authority_59_bonds_lodged,bonds_lodged,territorial_authority,59,Waimakariri District,12,72,16.523091104295517,21.594429840221103,19.816407857558023
+ets_additive_damped,territorial_authority_60_bonds_lodged,bonds_lodged,territorial_authority,60,Christchurch City,12,72,94.77634778699304,127.00316949342533,6.789244573359911
+seasonal_naive,territorial_authority_60_bonds_lodged,bonds_lodged,territorial_authority,60,Christchurch City,12,72,168.33333333333334,191.33609173389112,13.302958460869807
+xgboost_pooled_recursive,territorial_authority_60_bonds_lodged,bonds_lodged,territorial_authority,60,Christchurch City,12,72,237.57305399576822,286.49171246447463,15.437340052412674
+ets_additive_damped,territorial_authority_62_bonds_lodged,bonds_lodged,territorial_authority,62,Selwyn District,12,72,15.410675310063827,18.61390137203058,9.961725376114112
+seasonal_naive,territorial_authority_62_bonds_lodged,bonds_lodged,territorial_authority,62,Selwyn District,12,72,62.541666666666664,73.84019907882156,53.29646084215488
+xgboost_pooled_recursive,territorial_authority_62_bonds_lodged,bonds_lodged,territorial_authority,62,Selwyn District,12,72,24.886974970499676,31.211055514456596,15.384101985968954
+ets_additive_damped,territorial_authority_63_bonds_lodged,bonds_lodged,territorial_authority,63,Ashburton District,12,72,9.84959196241995,11.359197119243134,17.465810908349795
+seasonal_naive,territorial_authority_63_bonds_lodged,bonds_lodged,territorial_authority,63,Ashburton District,12,72,14.875,16.72946502432161,28.28898900120152
+xgboost_pooled_recursive,territorial_authority_63_bonds_lodged,bonds_lodged,territorial_authority,63,Ashburton District,12,72,11.514668305714926,14.354241266610261,18.54943881367394
+ets_additive_damped,territorial_authority_64_bonds_lodged,bonds_lodged,territorial_authority,64,Timaru District,12,72,9.63627961285574,10.818712121220408,13.637421937550087
+seasonal_naive,territorial_authority_64_bonds_lodged,bonds_lodged,territorial_authority,64,Timaru District,12,72,10.041666666666666,13.100572506573902,15.034722652495617
+xgboost_pooled_recursive,territorial_authority_64_bonds_lodged,bonds_lodged,territorial_authority,64,Timaru District,12,72,16.085929976569282,18.844688123172663,20.43035241281706
+ets_additive_damped,territorial_authority_68_bonds_lodged,bonds_lodged,territorial_authority,68,Waitaki District,12,72,5.830649371051823,7.51307239531823,20.582999603214073
+seasonal_naive,territorial_authority_68_bonds_lodged,bonds_lodged,territorial_authority,68,Waitaki District,12,72,9.5,12.0,38.283288838825705
+xgboost_pooled_recursive,territorial_authority_68_bonds_lodged,bonds_lodged,territorial_authority,68,Waitaki District,12,72,10.608067194620768,12.524127302301727,31.620008512579023
+ets_additive_damped,territorial_authority_69_bonds_lodged,bonds_lodged,territorial_authority,69,Central Otago District,12,72,7.980273904710545,10.390444435088114,16.388611257127693
+seasonal_naive,territorial_authority_69_bonds_lodged,bonds_lodged,territorial_authority,69,Central Otago District,12,72,11.916666666666666,14.326548781894402,26.05353848390487
+xgboost_pooled_recursive,territorial_authority_69_bonds_lodged,bonds_lodged,territorial_authority,69,Central Otago District,12,72,13.352267848120796,15.360816499889177,25.169122371804285
+ets_additive_damped,territorial_authority_70_bonds_lodged,bonds_lodged,territorial_authority,70,Queenstown-Lakes District,12,72,30.669349043028635,35.95762675079651,13.255351949443817
+seasonal_naive,territorial_authority_70_bonds_lodged,bonds_lodged,territorial_authority,70,Queenstown-Lakes District,12,72,43.708333333333336,56.42140551244714,20.217028428659145
+xgboost_pooled_recursive,territorial_authority_70_bonds_lodged,bonds_lodged,territorial_authority,70,Queenstown-Lakes District,12,72,50.40638902452257,56.93641066030529,21.03282488207744
+ets_additive_damped,territorial_authority_71_bonds_lodged,bonds_lodged,territorial_authority,71,Dunedin City,12,72,18.639740858700648,23.454966265508368,6.076867347068695
+seasonal_naive,territorial_authority_71_bonds_lodged,bonds_lodged,territorial_authority,71,Dunedin City,12,72,18.083333333333332,24.939927826679853,6.238823251365831
+xgboost_pooled_recursive,territorial_authority_71_bonds_lodged,bonds_lodged,territorial_authority,71,Dunedin City,12,72,88.14001125759549,109.88213268635174,20.879749505608654
+ets_additive_damped,territorial_authority_72_bonds_lodged,bonds_lodged,territorial_authority,72,Clutha District,12,72,5.117558830862862,6.143980627267597,26.13063908957428
+seasonal_naive,territorial_authority_72_bonds_lodged,bonds_lodged,territorial_authority,72,Clutha District,12,72,7.041666666666667,8.314144574157945,36.69639184345066
+xgboost_pooled_recursive,territorial_authority_72_bonds_lodged,bonds_lodged,territorial_authority,72,Clutha District,12,72,11.203326225280762,12.875309209543863,44.92866686406691
+ets_additive_damped,territorial_authority_73_bonds_lodged,bonds_lodged,territorial_authority,73,Southland District,12,72,4.496243132134564,6.105987396854828,16.562321392701914
+seasonal_naive,territorial_authority_73_bonds_lodged,bonds_lodged,territorial_authority,73,Southland District,12,72,7.791666666666667,10.301698889018258,32.75701718684175
+xgboost_pooled_recursive,territorial_authority_73_bonds_lodged,bonds_lodged,territorial_authority,73,Southland District,12,72,10.254468176099989,12.232660047625219,33.182551262397276
+ets_additive_damped,territorial_authority_74_bonds_lodged,bonds_lodged,territorial_authority,74,Gore District,12,72,4.97845480392649,6.038766410389014,20.60643249479379
+seasonal_naive,territorial_authority_74_bonds_lodged,bonds_lodged,territorial_authority,74,Gore District,12,72,9.125,11.051018052650171,39.06681190994916
+xgboost_pooled_recursive,territorial_authority_74_bonds_lodged,bonds_lodged,territorial_authority,74,Gore District,12,72,12.530926863352457,14.575220572542788,41.62053896906585
+ets_additive_damped,territorial_authority_75_bonds_lodged,bonds_lodged,territorial_authority,75,Invercargill City,12,72,12.746257835455099,16.772407158142272,9.584137036625556
+seasonal_naive,territorial_authority_75_bonds_lodged,bonds_lodged,territorial_authority,75,Invercargill City,12,72,14.041666666666666,17.779904386694547,11.128477568070046
+xgboost_pooled_recursive,territorial_authority_75_bonds_lodged,bonds_lodged,territorial_authority,75,Invercargill City,12,72,22.623064676920574,25.614625368854067,15.794294319857968
+ets_additive_damped,region_12_median_rent,median_rent,region,12,West Coast Region,12,72,19.41571074226831,25.081405093827595,4.299641044363289
+seasonal_naive,region_12_median_rent,median_rent,region,12,West Coast Region,12,72,30.09722222222222,36.5488637914292,6.865364571367993
+xgboost_pooled_recursive,region_12_median_rent,median_rent,region,12,West Coast Region,12,72,17.79574881659613,23.931396544729118,3.9346881920146237
+ets_additive_damped,region_13_median_rent,median_rent,region,13,Canterbury Region,12,72,9.119089781046814,10.826195046644477,1.6415005243078766
+seasonal_naive,region_13_median_rent,median_rent,region,13,Canterbury Region,12,72,7.694444444444445,10.251016209787853,1.394446064196905
+xgboost_pooled_recursive,region_13_median_rent,median_rent,region,13,Canterbury Region,12,72,12.215051439073351,15.49876348980115,2.2041913995217093
+ets_additive_damped,region_14_median_rent,median_rent,region,14,Otago Region,12,72,18.78587596072885,23.222296557876135,3.1217727271667446
+seasonal_naive,region_14_median_rent,median_rent,region,14,Otago Region,12,72,17.02777777777778,24.356153682842088,2.7722228121214263
+xgboost_pooled_recursive,region_14_median_rent,median_rent,region,14,Otago Region,12,72,26.081908331976997,37.82710310150518,4.243614335831057
+ets_additive_damped,region_15_median_rent,median_rent,region,15,Southland Region,12,72,13.217518603651424,16.564464399253712,2.743261580936406
+seasonal_naive,region_15_median_rent,median_rent,region,15,Southland Region,12,72,24.166666666666668,28.003967972810962,5.10798092252776
+xgboost_pooled_recursive,region_15_median_rent,median_rent,region,15,Southland Region,12,72,13.660121070014103,16.73400006116875,2.8387926806330412
+ets_additive_damped,region_16_median_rent,median_rent,region,16,Tasman Region,12,72,8.37881198163733,11.881599435183869,1.434288152289172
+seasonal_naive,region_16_median_rent,median_rent,region,16,Tasman Region,12,72,21.819444444444443,25.66585496552007,3.8153052292089704
+xgboost_pooled_recursive,region_16_median_rent,median_rent,region,16,Tasman Region,12,72,9.689787970648872,12.35525155939161,1.6652530075702103
+ets_additive_damped,region_17_median_rent,median_rent,region,17,Nelson Region,12,72,25.835717664340166,31.163589217068658,4.750351859187606
+seasonal_naive,region_17_median_rent,median_rent,region,17,Nelson Region,12,72,19.34722222222222,24.911231291215703,3.5745822905215836
+xgboost_pooled_recursive,region_17_median_rent,median_rent,region,17,Nelson Region,12,72,17.081483629014755,21.720685890035206,3.1591676684120107
+ets_additive_damped,region_18_median_rent,median_rent,region,18,Marlborough Region,12,72,16.90425859806993,19.713276091978496,2.9953482830193714
+seasonal_naive,region_18_median_rent,median_rent,region,18,Marlborough Region,12,72,22.61111111111111,30.43526828459962,4.142011143759324
+xgboost_pooled_recursive,region_18_median_rent,median_rent,region,18,Marlborough Region,12,72,14.483632405598959,17.061123684453882,2.5901792303327675
+ets_additive_damped,region_1_median_rent,median_rent,region,1,Northland Region,12,72,10.057010747080579,11.455234863883547,1.7664243572869671
+seasonal_naive,region_1_median_rent,median_rent,region,1,Northland Region,12,72,12.208333333333334,15.180854170083228,2.1614990475402687
+xgboost_pooled_recursive,region_1_median_rent,median_rent,region,1,Northland Region,12,72,7.852939181857639,9.05508878002767,1.38033579168364
+ets_additive_damped,region_2_median_rent,median_rent,region,2,Auckland Region,12,72,7.186930392145434,11.227744403779148,1.1135718452451155
+seasonal_naive,region_2_median_rent,median_rent,region,2,Auckland Region,12,72,4.527777777777778,9.542303472199759,0.7062647389965876
+xgboost_pooled_recursive,region_2_median_rent,median_rent,region,2,Auckland Region,12,72,11.113527086046007,13.25596328106917,1.717033895119189
+ets_additive_damped,region_3_median_rent,median_rent,region,3,Waikato Region,12,72,5.153533021791962,6.231751877396289,0.90186350753985
+seasonal_naive,region_3_median_rent,median_rent,region,3,Waikato Region,12,72,6.625,8.497548666135035,1.1722999492709105
+xgboost_pooled_recursive,region_3_median_rent,median_rent,region,3,Waikato Region,12,72,6.486814710828993,7.479283791968849,1.1405342870970134
+ets_additive_damped,region_4_median_rent,median_rent,region,4,Bay of Plenty Region,12,72,12.348734129406926,14.29415308028499,1.9210002832149211
+seasonal_naive,region_4_median_rent,median_rent,region,4,Bay of Plenty Region,12,72,8.027777777777779,10.641898326896381,1.2575295931200685
+xgboost_pooled_recursive,region_4_median_rent,median_rent,region,4,Bay of Plenty Region,12,72,13.835550096299913,18.02054237495499,2.137959236911295
+ets_additive_damped,region_5_median_rent,median_rent,region,5,Gisborne Region,12,72,30.380251527175012,34.797925010483226,4.912298713307398
+seasonal_naive,region_5_median_rent,median_rent,region,5,Gisborne Region,12,72,15.875,20.425678283311264,2.5918601220257433
+xgboost_pooled_recursive,region_5_median_rent,median_rent,region,5,Gisborne Region,12,72,21.221145629882812,24.986939924202918,3.457473248208539
+ets_additive_damped,region_6_median_rent,median_rent,region,6,Hawke's Bay Region,12,72,12.352006256345003,15.203085623465142,2.037452490185937
+seasonal_naive,region_6_median_rent,median_rent,region,6,Hawke's Bay Region,12,72,16.25,19.008769905844336,2.677915519015466
+xgboost_pooled_recursive,region_6_median_rent,median_rent,region,6,Hawke's Bay Region,12,72,13.35350121392144,15.654721822189435,2.2074502022381997
+ets_additive_damped,region_7_median_rent,median_rent,region,7,Taranaki Region,12,72,7.799353477059567,9.352497706234336,1.3786334116469348
+seasonal_naive,region_7_median_rent,median_rent,region,7,Taranaki Region,12,72,12.305555555555555,15.021281199980542,2.1792023643158815
+xgboost_pooled_recursive,region_7_median_rent,median_rent,region,7,Taranaki Region,12,72,8.907474093967014,11.10987887639907,1.5724908149405668
+ets_additive_damped,region_8_median_rent,median_rent,region,8,Manawatu-Wanganui Region,12,72,9.27588675775726,11.426150791289922,1.8051564069248565
+seasonal_naive,region_8_median_rent,median_rent,region,8,Manawatu-Wanganui Region,12,72,6.847222222222222,10.414333071941444,1.3321034093353525
+xgboost_pooled_recursive,region_8_median_rent,median_rent,region,8,Manawatu-Wanganui Region,12,72,13.24070824517144,16.3456781858693,2.5536219411872105
+ets_additive_damped,region_9_median_rent,median_rent,region,9,Wellington Region,12,72,18.529096479772768,21.455838775790927,3.1209790069140584
+seasonal_naive,region_9_median_rent,median_rent,region,9,Wellington Region,12,72,29.73611111111111,34.86780590873032,4.916886402762185
+xgboost_pooled_recursive,region_9_median_rent,median_rent,region,9,Wellington Region,12,72,23.317251417371963,27.100202536852006,3.8928251571068064
+ets_additive_damped,territorial_authority_11_median_rent,median_rent,territorial_authority,11,Thames-Coromandel District,12,72,34.07774821513887,43.93474122564718,6.19792090708124
+seasonal_naive,territorial_authority_11_median_rent,median_rent,territorial_authority,11,Thames-Coromandel District,12,72,37.0,43.275281628199714,6.75170049875273
+xgboost_pooled_recursive,territorial_authority_11_median_rent,median_rent,territorial_authority,11,Thames-Coromandel District,12,72,29.110482957628037,36.25857256775298,5.318504754713857
+ets_additive_damped,territorial_authority_12_median_rent,median_rent,territorial_authority,12,Hauraki District,12,72,20.799895797701854,24.436922604555903,3.7113545146756453
+seasonal_naive,territorial_authority_12_median_rent,median_rent,territorial_authority,12,Hauraki District,12,72,28.02777777777778,39.151415470367525,5.1005893168253795
+xgboost_pooled_recursive,territorial_authority_12_median_rent,median_rent,territorial_authority,12,Hauraki District,12,72,16.750352647569443,21.35527969722893,3.022718707022724
+ets_additive_damped,territorial_authority_13_median_rent,median_rent,territorial_authority,13,Waikato District,12,72,15.675115906810788,20.94670836249631,2.615767105480656
+seasonal_naive,territorial_authority_13_median_rent,median_rent,territorial_authority,13,Waikato District,12,72,22.791666666666668,27.191961639017105,3.850746670147328
+xgboost_pooled_recursive,territorial_authority_13_median_rent,median_rent,territorial_authority,13,Waikato District,12,72,17.20093451605903,21.52348006657351,2.8853800827551277
+ets_additive_damped,territorial_authority_15_median_rent,median_rent,territorial_authority,15,Matamata-Piako District,12,72,19.87506035380071,24.096726256581466,3.3300164657642934
+seasonal_naive,territorial_authority_15_median_rent,median_rent,territorial_authority,15,Matamata-Piako District,12,72,29.13888888888889,35.97645835203287,5.1465595493078355
+xgboost_pooled_recursive,territorial_authority_15_median_rent,median_rent,territorial_authority,15,Matamata-Piako District,12,72,14.525135464138454,20.03452974799069,2.4432324318754293
+ets_additive_damped,territorial_authority_16_median_rent,median_rent,territorial_authority,16,Hamilton City,12,72,7.4223257264737175,8.704915330900763,1.3106604549727798
+seasonal_naive,territorial_authority_16_median_rent,median_rent,territorial_authority,16,Hamilton City,12,72,9.166666666666666,11.211353372561426,1.6193313983335726
+xgboost_pooled_recursive,territorial_authority_16_median_rent,median_rent,territorial_authority,16,Hamilton City,12,72,9.420341491699219,11.241840289466262,1.6606701203095597
+ets_additive_damped,territorial_authority_17_median_rent,median_rent,territorial_authority,17,Waipa District,12,72,12.692276258651562,15.874715303828829,2.043402305348587
+seasonal_naive,territorial_authority_17_median_rent,median_rent,territorial_authority,17,Waipa District,12,72,21.458333333333332,27.60711462246241,3.480311243872643
+xgboost_pooled_recursive,territorial_authority_17_median_rent,median_rent,territorial_authority,17,Waipa District,12,72,14.645128038194445,18.454046469576106,2.3618508230605677
+ets_additive_damped,territorial_authority_19_median_rent,median_rent,territorial_authority,19,South Waikato District,12,72,15.895526203930025,17.841868699602013,3.134166740237988
+seasonal_naive,territorial_authority_19_median_rent,median_rent,territorial_authority,19,South Waikato District,12,72,19.0,27.070894579480253,3.8702934485956617
+xgboost_pooled_recursive,territorial_authority_19_median_rent,median_rent,territorial_authority,19,South Waikato District,12,72,13.493914710150822,18.080205503875675,2.672995451468367
+ets_additive_damped,territorial_authority_1_median_rent,median_rent,territorial_authority,1,Far North District,12,72,13.400421547700669,15.991243963354094,2.4763196979030235
+seasonal_naive,territorial_authority_1_median_rent,median_rent,territorial_authority,1,Far North District,12,72,27.59722222222222,33.4338069092415,5.250644897227174
+xgboost_pooled_recursive,territorial_authority_1_median_rent,median_rent,territorial_authority,1,Far North District,12,72,13.655661688910591,17.049977966100695,2.5275465684046967
+ets_additive_damped,territorial_authority_21_median_rent,median_rent,territorial_authority,21,Taupo District,12,72,17.873845952150027,21.103146115010745,2.9330725518103047
+seasonal_naive,territorial_authority_21_median_rent,median_rent,territorial_authority,21,Taupo District,12,72,36.30555555555556,43.79878232706171,6.11264271340284
+xgboost_pooled_recursive,territorial_authority_21_median_rent,median_rent,territorial_authority,21,Taupo District,12,72,23.391790601942276,27.775065716450904,3.8565881766089425
+ets_additive_damped,territorial_authority_22_median_rent,median_rent,territorial_authority,22,Western Bay of Plenty District,12,72,19.147970286521744,24.08885078424026,3.0062397133325494
+seasonal_naive,territorial_authority_22_median_rent,median_rent,territorial_authority,22,Western Bay of Plenty District,12,72,26.694444444444443,30.701067661492743,4.280701914269641
+xgboost_pooled_recursive,territorial_authority_22_median_rent,median_rent,territorial_authority,22,Western Bay of Plenty District,12,72,16.89632246229384,18.789105130211087,2.6691835726861077
+ets_additive_damped,territorial_authority_23_median_rent,median_rent,territorial_authority,23,Tauranga City,12,72,17.507082919625883,20.860681827752643,2.513007340704642
+seasonal_naive,territorial_authority_23_median_rent,median_rent,territorial_authority,23,Tauranga City,12,72,8.819444444444445,10.881304047667163,1.2616960119318035
+xgboost_pooled_recursive,territorial_authority_23_median_rent,median_rent,territorial_authority,23,Tauranga City,12,72,12.110829671223959,15.720285722243263,1.7342116166500672
+ets_additive_damped,territorial_authority_24_median_rent,median_rent,territorial_authority,24,Rotorua District,12,72,15.666293246578354,18.24276343527008,2.721550572456249
+seasonal_naive,territorial_authority_24_median_rent,median_rent,territorial_authority,24,Rotorua District,12,72,14.069444444444445,16.084412744434697,2.448167043680392
+xgboost_pooled_recursive,territorial_authority_24_median_rent,median_rent,territorial_authority,24,Rotorua District,12,72,12.235162523057726,15.47312338028969,2.1298222784474885
+ets_additive_damped,territorial_authority_25_median_rent,median_rent,territorial_authority,25,Whakatane District,12,72,23.724428252797686,27.42656924780852,4.093267471997466
+seasonal_naive,territorial_authority_25_median_rent,median_rent,territorial_authority,25,Whakatane District,12,72,18.72222222222222,20.649858756579103,3.2431857264427126
+xgboost_pooled_recursive,territorial_authority_25_median_rent,median_rent,territorial_authority,25,Whakatane District,12,72,14.353641086154514,17.058683469884983,2.4943300925661913
+ets_additive_damped,territorial_authority_28_median_rent,median_rent,territorial_authority,28,Gisborne District,12,72,30.380251527175012,34.797925010483226,4.912298713307398
+seasonal_naive,territorial_authority_28_median_rent,median_rent,territorial_authority,28,Gisborne District,12,72,15.875,20.425678283311264,2.5918601220257433
+xgboost_pooled_recursive,territorial_authority_28_median_rent,median_rent,territorial_authority,28,Gisborne District,12,72,21.059864468044704,24.422740533993423,3.430907183289341
+ets_additive_damped,territorial_authority_2_median_rent,median_rent,territorial_authority,2,Whangarei District,12,72,12.06540726169056,14.118725148705622,2.0642142078455836
+seasonal_naive,territorial_authority_2_median_rent,median_rent,territorial_authority,2,Whangarei District,12,72,8.805555555555555,10.502645169458766,1.5084473576055195
+xgboost_pooled_recursive,territorial_authority_2_median_rent,median_rent,territorial_authority,2,Whangarei District,12,72,6.077058580186632,7.882889121047324,1.0418741717456081
+ets_additive_damped,territorial_authority_30_median_rent,median_rent,territorial_authority,30,Hastings District,12,72,12.959738645801728,14.926174907831141,2.1464783201773625
+seasonal_naive,territorial_authority_30_median_rent,median_rent,territorial_authority,30,Hastings District,12,72,8.88888888888889,11.814539065631521,1.4752999694088356
+xgboost_pooled_recursive,territorial_authority_30_median_rent,median_rent,territorial_authority,30,Hastings District,12,72,12.210445827907986,15.506173428870602,2.022551426555524
+ets_additive_damped,territorial_authority_31_median_rent,median_rent,territorial_authority,31,Napier City,12,72,20.149153854091384,25.12983165534597,3.148350301166679
+seasonal_naive,territorial_authority_31_median_rent,median_rent,territorial_authority,31,Napier City,12,72,18.291666666666668,23.442897526637882,2.8740230522856995
+xgboost_pooled_recursive,territorial_authority_31_median_rent,median_rent,territorial_authority,31,Napier City,12,72,19.415095859103733,24.71705136742628,3.03472727906237
+ets_additive_damped,territorial_authority_33_median_rent,median_rent,territorial_authority,33,New Plymouth District,12,72,13.052914683259594,15.751430096218463,2.223853620420589
+seasonal_naive,territorial_authority_33_median_rent,median_rent,territorial_authority,33,New Plymouth District,12,72,15.625,20.91816063721771,2.6628725630520846
+xgboost_pooled_recursive,territorial_authority_33_median_rent,median_rent,territorial_authority,33,New Plymouth District,12,72,13.198432922363281,15.613713532293271,2.245156771544742
+ets_additive_damped,territorial_authority_35_median_rent,median_rent,territorial_authority,35,South Taranaki District,12,72,21.722862299500004,25.761527312128862,4.178447566756874
+seasonal_naive,territorial_authority_35_median_rent,median_rent,territorial_authority,35,South Taranaki District,12,72,19.625,28.766058317244493,3.8131167877675316
+xgboost_pooled_recursive,territorial_authority_35_median_rent,median_rent,territorial_authority,35,South Taranaki District,12,72,18.168454064263237,21.169431057628312,3.5037463364927413
+ets_additive_damped,territorial_authority_37_median_rent,median_rent,territorial_authority,37,Whanganui District,12,72,12.122523456373138,17.872233365091915,2.3855842940551577
+seasonal_naive,territorial_authority_37_median_rent,median_rent,territorial_authority,37,Whanganui District,12,72,14.166666666666666,19.06494747494003,2.793484991807331
+xgboost_pooled_recursive,territorial_authority_37_median_rent,median_rent,territorial_authority,37,Whanganui District,12,72,15.03818808661567,19.647217312226818,2.9544681624464566
+ets_additive_damped,territorial_authority_38_median_rent,median_rent,territorial_authority,38,Rangitikei District,12,72,28.081599544290526,32.11259765881909,5.871538871357748
+seasonal_naive,territorial_authority_38_median_rent,median_rent,territorial_authority,38,Rangitikei District,12,72,34.90277777777778,41.69915400154353,7.275273602197381
+xgboost_pooled_recursive,territorial_authority_38_median_rent,median_rent,territorial_authority,38,Rangitikei District,12,72,31.444708082411026,36.28255426851142,6.553503230357127
+ets_additive_damped,territorial_authority_39_median_rent,median_rent,territorial_authority,39,Manawatu District,12,72,24.95675180472749,29.909429351400824,4.447505619969891
+seasonal_naive,territorial_authority_39_median_rent,median_rent,territorial_authority,39,Manawatu District,12,72,20.069444444444443,26.634094690828146,3.5954606927743797
+xgboost_pooled_recursive,territorial_authority_39_median_rent,median_rent,territorial_authority,39,Manawatu District,12,72,22.936900668674046,28.8147427529617,4.090560261852253
+ets_additive_damped,territorial_authority_3_median_rent,median_rent,territorial_authority,3,Kaipara District,12,72,29.28102644335813,35.33371277952578,5.22337197681704
+seasonal_naive,territorial_authority_3_median_rent,median_rent,territorial_authority,3,Kaipara District,12,72,57.69444444444444,84.21813607795202,11.303743097414637
+xgboost_pooled_recursive,territorial_authority_3_median_rent,median_rent,territorial_authority,3,Kaipara District,12,72,39.95447031656901,46.76014169633206,7.208882397758861
+ets_additive_damped,territorial_authority_40_median_rent,median_rent,territorial_authority,40,Palmerston North City,12,72,15.689612592612654,19.41352545892788,2.9137214215957234
+seasonal_naive,territorial_authority_40_median_rent,median_rent,territorial_authority,40,Palmerston North City,12,72,14.0,18.934096228761486,2.6112179496795953
+xgboost_pooled_recursive,territorial_authority_40_median_rent,median_rent,territorial_authority,40,Palmerston North City,12,72,10.899767557779947,15.617701339444015,2.0317215328369853
+ets_additive_damped,territorial_authority_41_median_rent,median_rent,territorial_authority,41,Tararua District,12,72,19.986202292916474,25.579977777482043,4.290245442993958
+seasonal_naive,territorial_authority_41_median_rent,median_rent,territorial_authority,41,Tararua District,12,72,31.38888888888889,36.342888651778296,6.729844482093639
+xgboost_pooled_recursive,territorial_authority_41_median_rent,median_rent,territorial_authority,41,Tararua District,12,72,21.184570736355248,26.28638830798597,4.538958967910704
+ets_additive_damped,territorial_authority_42_median_rent,median_rent,territorial_authority,42,Horowhenua District,12,72,15.592000733959996,19.033377429165636,3.0216128730228276
+seasonal_naive,territorial_authority_42_median_rent,median_rent,territorial_authority,42,Horowhenua District,12,72,18.291666666666668,20.317275079760737,3.5536665020683436
+xgboost_pooled_recursive,territorial_authority_42_median_rent,median_rent,territorial_authority,42,Horowhenua District,12,72,19.36408445570204,22.4199635600942,3.7371355323478177
+ets_additive_damped,territorial_authority_43_median_rent,median_rent,territorial_authority,43,Kapiti Coast District,12,72,8.82569234850719,11.348559255959247,1.4694960643397128
+seasonal_naive,territorial_authority_43_median_rent,median_rent,territorial_authority,43,Kapiti Coast District,12,72,17.680555555555557,22.256397332502452,2.933045005345636
+xgboost_pooled_recursive,territorial_authority_43_median_rent,median_rent,territorial_authority,43,Kapiti Coast District,12,72,13.623923407660591,16.489253605023805,2.2596272876265995
+ets_additive_damped,territorial_authority_44_median_rent,median_rent,territorial_authority,44,Porirua City,12,72,21.64345784961317,25.726628796301267,3.3915634146335694
+seasonal_naive,territorial_authority_44_median_rent,median_rent,territorial_authority,44,Porirua City,12,72,24.291666666666668,28.310039444220727,3.7528864239466304
+xgboost_pooled_recursive,territorial_authority_44_median_rent,median_rent,territorial_authority,44,Porirua City,12,72,20.10886552598741,23.839497683108355,3.1409782913828703
+ets_additive_damped,territorial_authority_45_median_rent,median_rent,territorial_authority,45,Upper Hutt City,12,72,38.25908518263934,42.06985304312161,6.169893255640132
+seasonal_naive,territorial_authority_45_median_rent,median_rent,territorial_authority,45,Upper Hutt City,12,72,43.69444444444444,50.8300545390662,6.9695973388416625
+xgboost_pooled_recursive,territorial_authority_45_median_rent,median_rent,territorial_authority,45,Upper Hutt City,12,72,28.699520534939236,34.531408362603244,4.629805166617537
+ets_additive_damped,territorial_authority_46_median_rent,median_rent,territorial_authority,46,Lower Hutt City,12,72,13.120913175028893,15.246279611858101,2.202333781711046
+seasonal_naive,territorial_authority_46_median_rent,median_rent,territorial_authority,46,Lower Hutt City,12,72,25.97222222222222,30.516389039334257,4.274127313702534
+xgboost_pooled_recursive,territorial_authority_46_median_rent,median_rent,territorial_authority,46,Lower Hutt City,12,72,17.659072875976562,21.685526551724298,2.9327953996972926
+ets_additive_damped,territorial_authority_47_median_rent,median_rent,territorial_authority,47,Wellington City,12,72,30.005440770732662,35.42198255146312,5.0828456425426065
+seasonal_naive,territorial_authority_47_median_rent,median_rent,territorial_authority,47,Wellington City,12,72,37.43055555555556,44.28051364752772,6.223246445864228
+xgboost_pooled_recursive,territorial_authority_47_median_rent,median_rent,territorial_authority,47,Wellington City,12,72,30.543109469943577,37.89432180378137,5.136911681273455
+ets_additive_damped,territorial_authority_48_median_rent,median_rent,territorial_authority,48,Masterton District,12,72,18.0787103137633,21.81809809794573,3.4160069732612195
+seasonal_naive,territorial_authority_48_median_rent,median_rent,territorial_authority,48,Masterton District,12,72,16.73611111111111,21.351879958864927,3.1744594002634754
+xgboost_pooled_recursive,territorial_authority_48_median_rent,median_rent,territorial_authority,48,Masterton District,12,72,19.179451836480034,24.829077049884265,3.614208970002925
+ets_additive_damped,territorial_authority_51_median_rent,median_rent,territorial_authority,51,Tasman District,12,72,8.37881198163733,11.881599435183869,1.434288152289172
+seasonal_naive,territorial_authority_51_median_rent,median_rent,territorial_authority,51,Tasman District,12,72,21.819444444444443,25.66585496552007,3.8153052292089704
+xgboost_pooled_recursive,territorial_authority_51_median_rent,median_rent,territorial_authority,51,Tasman District,12,72,9.728168063693577,12.352328702267197,1.6718425918751414
+ets_additive_damped,territorial_authority_52_median_rent,median_rent,territorial_authority,52,Nelson City,12,72,25.835717664340166,31.163589217068658,4.750351859187606
+seasonal_naive,territorial_authority_52_median_rent,median_rent,territorial_authority,52,Nelson City,12,72,19.34722222222222,24.911231291215703,3.5745822905215836
+xgboost_pooled_recursive,territorial_authority_52_median_rent,median_rent,territorial_authority,52,Nelson City,12,72,16.988238864474827,21.70988137349985,3.141882769886068
+ets_additive_damped,territorial_authority_53_median_rent,median_rent,territorial_authority,53,Marlborough District,12,72,16.90425859806993,19.713276091978496,2.9953482830193714
+seasonal_naive,territorial_authority_53_median_rent,median_rent,territorial_authority,53,Marlborough District,12,72,22.61111111111111,30.43526828459962,4.142011143759324
+xgboost_pooled_recursive,territorial_authority_53_median_rent,median_rent,territorial_authority,53,Marlborough District,12,72,14.476632859971788,17.035905360888705,2.588460876655561
+ets_additive_damped,territorial_authority_55_median_rent,median_rent,territorial_authority,55,Buller District,12,72,26.232887534013685,32.47150643662308,5.944023565673695
+seasonal_naive,territorial_authority_55_median_rent,median_rent,territorial_authority,55,Buller District,12,72,30.069444444444443,38.119876704942264,6.814939192626075
+xgboost_pooled_recursive,territorial_authority_55_median_rent,median_rent,territorial_authority,55,Buller District,12,72,25.5621337890625,31.61751120600034,5.784609859060417
+ets_additive_damped,territorial_authority_59_median_rent,median_rent,territorial_authority,59,Waimakariri District,12,72,11.97365639984578,16.63148297999232,2.0154435496993948
+seasonal_naive,territorial_authority_59_median_rent,median_rent,territorial_authority,59,Waimakariri District,12,72,22.52777777777778,27.35771270491092,3.8751778479110452
+xgboost_pooled_recursive,territorial_authority_59_median_rent,median_rent,territorial_authority,59,Waimakariri District,12,72,12.926495869954428,16.056207485593973,2.1849202129066714
+ets_additive_damped,territorial_authority_60_median_rent,median_rent,territorial_authority,60,Christchurch City,12,72,10.909908598994992,13.466303845376506,1.9641917513600764
+seasonal_naive,territorial_authority_60_median_rent,median_rent,territorial_authority,60,Christchurch City,12,72,9.180555555555555,12.686935537525732,1.6632391021394979
+xgboost_pooled_recursive,territorial_authority_60_median_rent,median_rent,territorial_authority,60,Christchurch City,12,72,13.546456231011284,16.375193781117897,2.4468078755476217
+ets_additive_damped,territorial_authority_62_median_rent,median_rent,territorial_authority,62,Selwyn District,12,72,6.787793219193826,8.08195665391798,1.0809057852003774
+seasonal_naive,territorial_authority_62_median_rent,median_rent,territorial_authority,62,Selwyn District,12,72,19.34722222222222,23.60996729255582,3.1287847082068194
+xgboost_pooled_recursive,territorial_authority_62_median_rent,median_rent,territorial_authority,62,Selwyn District,12,72,12.09104749891493,13.835974316456308,1.9345898199937053
+ets_additive_damped,territorial_authority_63_median_rent,median_rent,territorial_authority,63,Ashburton District,12,72,18.401002177508317,23.19197336491549,3.748091765615961
+seasonal_naive,territorial_authority_63_median_rent,median_rent,territorial_authority,63,Ashburton District,12,72,18.958333333333332,24.407705978053553,3.8747869823669885
+xgboost_pooled_recursive,territorial_authority_63_median_rent,median_rent,territorial_authority,63,Ashburton District,12,72,13.036835564507381,17.651845855601003,2.668378119307332
+ets_additive_damped,territorial_authority_64_median_rent,median_rent,territorial_authority,64,Timaru District,12,72,18.379340715608937,23.127097789276025,3.8193442603208365
+seasonal_naive,territorial_authority_64_median_rent,median_rent,territorial_authority,64,Timaru District,12,72,19.333333333333332,22.612680808195506,4.081743594779154
+xgboost_pooled_recursive,territorial_authority_64_median_rent,median_rent,territorial_authority,64,Timaru District,12,72,14.643389383951826,18.31583842916571,3.070162866425104
+ets_additive_damped,territorial_authority_68_median_rent,median_rent,territorial_authority,68,Waitaki District,12,72,12.946046316946315,16.232496160062805,2.748673469512096
+seasonal_naive,territorial_authority_68_median_rent,median_rent,territorial_authority,68,Waitaki District,12,72,36.81944444444444,41.99322035228491,8.217003061552914
+xgboost_pooled_recursive,territorial_authority_68_median_rent,median_rent,territorial_authority,68,Waitaki District,12,72,13.23546685112847,16.322298311530623,2.8260600954632897
+ets_additive_damped,territorial_authority_69_median_rent,median_rent,territorial_authority,69,Central Otago District,12,72,28.54981578271325,31.587091195052796,4.558363807941448
+seasonal_naive,territorial_authority_69_median_rent,median_rent,territorial_authority,69,Central Otago District,12,72,41.25,52.33598719385692,6.871936828832002
+xgboost_pooled_recursive,territorial_authority_69_median_rent,median_rent,territorial_authority,69,Central Otago District,12,72,29.425377739800346,35.64798355164313,4.700530323023907
+ets_additive_damped,territorial_authority_70_median_rent,median_rent,territorial_authority,70,Queenstown-Lakes District,12,72,24.962700555001206,29.02195068847357,3.20489412780475
+seasonal_naive,territorial_authority_70_median_rent,median_rent,territorial_authority,70,Queenstown-Lakes District,12,72,20.59722222222222,29.877295355801163,2.6303008149395586
+xgboost_pooled_recursive,territorial_authority_70_median_rent,median_rent,territorial_authority,70,Queenstown-Lakes District,12,72,21.54931894938151,28.444496709587618,2.772095214420818
+ets_additive_damped,territorial_authority_71_median_rent,median_rent,territorial_authority,71,Dunedin City,12,72,21.07478551640981,27.407480204106385,3.8327970885390923
+seasonal_naive,territorial_authority_71_median_rent,median_rent,territorial_authority,71,Dunedin City,12,72,20.13888888888889,26.574841903992997,3.695732820472238
+xgboost_pooled_recursive,territorial_authority_71_median_rent,median_rent,territorial_authority,71,Dunedin City,12,72,28.420572492811417,41.37348186946441,4.951647727493457
+ets_additive_damped,territorial_authority_72_median_rent,median_rent,territorial_authority,72,Clutha District,12,72,27.456315810406746,34.997574293267654,6.206323684501437
+seasonal_naive,territorial_authority_72_median_rent,median_rent,territorial_authority,72,Clutha District,12,72,37.05555555555556,46.20545903293727,8.509235971613712
+xgboost_pooled_recursive,territorial_authority_72_median_rent,median_rent,territorial_authority,72,Clutha District,12,72,28.94376669989692,36.11327339224927,6.545243770140649
+ets_additive_damped,territorial_authority_73_median_rent,median_rent,territorial_authority,73,Southland District,12,72,28.296949079924016,34.67021874602301,6.069588043268862
+seasonal_naive,territorial_authority_73_median_rent,median_rent,territorial_authority,73,Southland District,12,72,26.13888888888889,31.9078534394138,5.711271405659774
+xgboost_pooled_recursive,territorial_authority_73_median_rent,median_rent,territorial_authority,73,Southland District,12,72,22.564373016357425,27.84856299999047,4.87921451675384
+ets_additive_damped,territorial_authority_74_median_rent,median_rent,territorial_authority,74,Gore District,12,72,26.760715463291216,31.443753384383598,5.680756529327101
+seasonal_naive,territorial_authority_74_median_rent,median_rent,territorial_authority,74,Gore District,12,72,31.319444444444443,41.745758267557356,6.826705412797277
+xgboost_pooled_recursive,territorial_authority_74_median_rent,median_rent,territorial_authority,74,Gore District,12,72,21.502500322129993,26.744653283196115,4.6020669583114175
+ets_additive_damped,territorial_authority_75_median_rent,median_rent,territorial_authority,75,Invercargill City,12,72,10.937826138412474,13.136660743615272,2.236589515573523
+seasonal_naive,territorial_authority_75_median_rent,median_rent,territorial_authority,75,Invercargill City,12,72,20.5,23.25821240861912,4.300396148959159
+xgboost_pooled_recursive,territorial_authority_75_median_rent,median_rent,territorial_authority,75,Invercargill City,12,72,11.362797631157767,14.66284189794059,2.3258937693629633

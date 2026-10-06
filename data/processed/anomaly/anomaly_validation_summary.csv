@@ -1,0 +1,17 @@
+check_name,passed,observed,expected,details
+unique_series_period,True,0,0,Each series-period must appear exactly once.
+valid_overall_status,True,0,0,Overall status must use the approved status vocabulary.
+valid_overall_severity,True,0,0,"Overall severity must be normal, moderate, high, or unavailable."
+valid_overall_direction,True,0,0,Overall direction must use the approved direction vocabulary.
+valid_detector_coverage,True,0,0,Detector coverage must use the approved coverage vocabulary.
+overall_alert_union,True,0,0,Overall dashboard alert must equal historical OR forecast alert.
+confirmed_anomaly_logic,True,0,0,Confirmed anomaly requires both dashboard alert types.
+historical_alert_logic,True,0,0,Historical alert status requires historical alert only.
+forecast_alert_logic,True,0,0,Forecast alert status requires forecast alert only.
+unavailable_status_logic,True,0,0,Overall status is unavailable only when neither detector is available.
+normal_status_logic,True,0,0,Normal requires detector coverage and no active dashboard alert.
+detector_coverage_logic,True,0,0,Detector coverage must match historical and forecast availability.
+alert_severity_consistency,True,0,0,Every dashboard alert must have moderate or high severity.
+normal_severity_consistency,True,0,0,Normal observations must have normal overall severity.
+unavailable_severity_consistency,True,0,0,Unavailable observations must have unavailable overall severity.
+forecast_availability_requires_record,True,0,0,Forecast detector availability requires a matched forecast record.

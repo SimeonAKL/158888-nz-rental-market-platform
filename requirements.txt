@@ -1,0 +1,14 @@
+# Streamlit Community Cloud deployment environment
+
+-e .
+
+pandas==3.0.5
+SQLAlchemy==2.0.53
+psycopg2-binary==2.9.13
+python-dotenv==1.2.3
+requests==2.34.2
+streamlit==1.65.0
+numpy==2.5.3
+statsmodels==0.15.0
+xgboost==3.4.1
+scikit-learn==1.9.1
