@@ -2,378 +2,545 @@
 
 ## Purpose
 
-This document describes the implemented architecture of the New Zealand
-Regional Rental Market Analytics and Forecasting Platform.
+This document describes the implemented architecture of the **New Zealand Rental Market Analytics and Forecasting Platform**.
 
-The system is designed as a reproducible analytical pipeline built around
-official New Zealand rental-market data. It separates source acquisition,
-transformation, analytical preparation, forecasting, anomaly detection, and
-presentation so that each stage can be tested and reproduced independently.
+The system separates source acquisition, transformation, database persistence, analytical preparation, forecasting, anomaly detection, and dashboard presentation. Research model evaluation is also kept separate from the production forecasting policy.
 
-## 1. Architectural Overview
+## 1. Architecture overview
 
-The platform follows a layered data-processing architecture:
+```mermaid
+flowchart TD
+    A[Official Tenancy Services / MBIE Data]
+    A --> B[Acquisition and Snapshots]
+    B --> C[data/raw]
+    C --> D[Transformation and Validation]
+    D --> E[data/staging]
+    E --> F[(Supabase PostgreSQL)]
 
-    Official data sources
-            |
-            v
-    Acquisition and snapshots
-            |
-            v
-    Raw data
-            |
-            v
-    Transformation and validation
-            |
-            v
-    Staging / cleaned data
-            |
-            v
-    Analytics-ready monthly panel
-            |
-            +-------------------+
-            |                   |
-            v                   v
-       Forecasting        Anomaly detection
-            |                   |
-            v                   v
-    Forecast outputs      Alert outputs
-            |                   |
-            +---------+---------+
-                      |
-                      v
-              Streamlit dashboard
+    F --> G[Clean Rental Bond Data]
+    F --> H[Clean Market Rent Data]
+    G --> I[Cross-Source Validation]
+    H --> I
 
-The architecture deliberately separates research evaluation outputs from
-production forecast outputs.
+    G --> J[Analytics Dataset Builder]
+    J --> K[Monthly Analytical Panel]
+    J --> L[Series Catalogue]
+    J --> M[Seasonality / Quality Outputs]
 
-## 2. Source Layer
+    K --> N[Forecasting Research Layer]
+    L --> N
+    N --> O[Seasonal Naive]
+    N --> P[ETS Additive Damped]
+    N --> Q[Pooled Recursive XGBoost]
 
-The project uses official Tenancy Services / MBIE rental-market data.
+    O --> R[Rolling-Origin Evaluation]
+    P --> R
+    Q --> R
+    R --> S[Model Comparison / Series Winners]
+    R --> T[Production Policy Validation]
+    T --> U[Fixed ETS Production Forecast]
 
-The core analytical sources are:
+    K --> V[Historical Anomaly Detector]
+    S --> W[Forecast-Residual Detector]
+    R --> W
+    V --> X[Consolidated Anomaly Outputs]
+    W --> X
+
+    K --> Y[Streamlit Dashboard]
+    M --> Y
+    R --> Y
+    S --> Y
+    U --> Y
+    X --> Y
+```
+
+The deployed assessment version uses the same validated outputs but does not rerun the upstream pipeline at runtime.
+
+## 2. Source layer
+
+The project uses official Tenancy Services / MBIE sources:
 
 - Rental Bond data;
 - Market Rent statistics.
 
-Source files and API responses are acquired through project scripts and stored
-as dated snapshots where applicable.
+Rental Bond data is the primary source used to build the final monthly analytical panel.
 
-Recent observations affected by the 2025-2026 Bond Hub migration are retained
-with explicit provisional-source provenance rather than silently treated as
-final observations.
+Market Rent is acquired and stored independently and is used as supporting evidence, including cross-source validation against Rental Bond regional aggregates.
 
-## 3. Acquisition Layer
+No private listing scraping is used.
 
-Acquisition code is located primarily under:
+Recent observations affected by the 2025–2026 Bond Hub migration retain explicit provisional-source metadata.
 
-- `src/rmp/acquisition/`
-- `scripts/acquire_market_rent.py`
-- `scripts/acquire_rental_bond.py`
+## 3. Acquisition and raw snapshots
 
-Responsibilities include:
+Acquisition code is under:
 
-- obtaining official source data;
-- retaining source metadata;
-- recording snapshot provenance;
-- preserving source-level provisional status;
-- avoiding private or unofficial scraping.
+```text
+src/rmp/acquisition/
+```
 
-Raw source material is stored under:
+Main entry points:
 
-    data/raw/
+```text
+scripts/acquire_market_rent.py
+scripts/acquire_rental_bond.py
+```
 
-Raw files are treated as source evidence and are not modified in place by later
-analytical stages.
+Market Rent is obtained through the official API. Rental Bond data is downloaded from official Tenancy Services files.
 
-## 4. Transformation and Validation Layer
+Raw snapshots are stored under:
 
-Transformation logic is located under:
+```text
+data/raw/
+```
 
-- `src/rmp/transform/`
-- `src/rmp/validation/`
+Snapshot metadata includes retrieval details, source information, checksums, and provisional status where applicable. Raw files are not modified by later stages.
 
-Associated scripts include:
+## 4. Transformation and validation
 
-- `scripts/transform_market_rent.py`
-- `scripts/transform_rental_bond.py`
-- `scripts/validate_cross_source.py`
+Transformation and validation code is under:
 
-This layer standardises:
+```text
+src/rmp/transform/
+src/rmp/validation/
+```
+
+Main scripts:
+
+```text
+scripts/transform_market_rent.py
+scripts/transform_rental_bond.py
+scripts/validate_cross_source.py
+```
+
+The staging layer standardises:
 
 - dates;
-- geographic identifiers;
-- geographic names;
-- metric names;
+- geography identifiers and names;
+- metrics;
 - numeric values;
-- source provenance.
+- source metadata;
+- provisional status.
 
-It also performs source-specific and cross-source validation before analytical
-datasets are built.
+Intermediate files are stored under:
 
-## 5. Storage Layer
+```text
+data/staging/
+```
 
-The repository contains database schema and migration support under:
+Validation includes required fields, data types, lineage, checksum integrity, geographic consistency, and cross-source comparison.
 
-    db/migrations/
+## 5. Persistence layer
 
-Database loading utilities are available under:
+Structured source data is stored in PostgreSQL hosted through Supabase.
 
-    src/rmp/db/
+Relevant implementation:
 
-The architecture supports PostgreSQL-compatible storage, including Supabase,
-but the analytical workflow does not depend exclusively on a live database.
+```text
+src/rmp/db/
+src/rmp/config.py
+db/migrations/
+```
 
-Processed CSV-based outputs are retained as the principal reproducible
-interface between later analytical stages.
+Logical schemas:
 
-This design keeps the project operationally simple while retaining a database
-implementation for structured persistence and demonstration.
+```text
+raw
+clean
+```
 
-## 6. Analytics Layer
+Key tables include:
 
-Analytics preparation is implemented under:
+```text
+raw.snapshots
+clean.geo_areas
+clean.rental_metrics
+clean.market_rent
+clean.rental_bond
+```
 
-    src/rmp/analytics/
+Clean records retain `source_snapshot_id`, linking them back to the source snapshot.
 
-The main processed analytical dataset is the monthly panel.
+The lineage is:
 
-Its core dimensions are:
+```text
+official source
+→ raw snapshot
+→ staging transformation
+→ database load
+→ analytical output
+```
 
-- `series_id`;
-- `period_date`;
-- `geography_level`;
-- `location_id`;
-- `location_name`;
-- `metric`.
+Supabase is part of the ETL and persistence architecture, but it is not queried by the deployed Streamlit app at runtime.
 
-The two principal metrics are:
+## 6. Analytical dataset layer
 
-- `median_rent`;
-- `bonds_lodged`.
+Analytics code is under:
 
-The consolidated panel currently contains Region and Territorial Authority
-series.
+```text
+src/rmp/analytics/
+```
 
-A separate series catalog records completeness and forecasting eligibility.
+The main build script is:
 
-The analytical panel retains source provenance using
-`source_snapshot_provisional` and related snapshot metadata.
+```text
+scripts/build_analytics_dataset.py
+```
 
-## 7. Forecasting Architecture
+It loads validated Rental Bond observations from PostgreSQL and builds the processed analytical datasets.
 
-Forecasting code is located under:
+Primary output:
 
-    src/rmp/forecasting/
+```text
+data/processed/analytics/monthly_panel.csv
+```
 
-The research comparison layer evaluates three candidate approaches:
+Current scope:
 
-- Seasonal Naive;
-- ETS additive damped;
-- pooled recursive XGBoost.
+- 64,956 monthly observations;
+- 164 analytical series;
+- February 1993 to July 2026;
+- Region and Territorial Authority geographies;
+- `median_rent` and `bonds_lodged` metrics.
 
-Rolling-origin evaluation is used with:
+Core fields include:
 
-- MAE;
-- RMSE;
-- sMAPE.
+```text
+series_id
+period_date
+geography_level
+location_id
+location_name
+metric
+value
+source_snapshot_provisional
+source_snapshot_id
+```
 
-The research layer retains model-comparison and per-series winner evidence.
+The series catalogue:
 
-The production layer is intentionally separate.
+```text
+data/processed/analytics/series_catalog.csv
+```
 
-Following temporally separated policy validation, the production forecasting
-policy is:
+stores completeness and modelling-readiness information.
 
-    fixed_ets_v1
+There are 164 analytical series, of which 132 are initially forecast-eligible. Two duplicate Auckland Territorial Authority series are then removed from the modelling scope, leaving 130 forecast series.
 
-with:
+## 7. Forecasting research layer
 
-    ets_additive_damped
+Forecasting code is under:
 
-used for all production forecast series.
+```text
+src/rmp/forecasting/
+```
 
-This separation prevents descriptive research winners from being mistaken for
-the production deployment policy.
+Candidate models:
 
-The detailed policy decision is documented in:
+1. Seasonal Naive
+2. ETS additive damped
+3. pooled recursive XGBoost
 
-    docs/forecast_policy_decision.md
+Main runners:
 
-## 8. Forecasting Scope
+```text
+scripts/run_seasonal_naive.py
+scripts/run_ets.py
+scripts/run_xgboost.py
+scripts/build_model_comparison.py
+```
 
-The analytical series catalog contains more series than the final production
-forecast output.
+Seasonal Naive provides the baseline. ETS uses additive trend, additive seasonality, and a damped trend. XGBoost uses pooled lagged, rolling, calendar, and geography-aware features.
 
-Forecast eligibility is determined through modelling-readiness checks.
+## 8. Time-series evaluation
 
-Two duplicate Auckland Territorial Authority series are explicitly excluded
-from forecast selection so that the production/research forecasting scope does
-not duplicate equivalent Auckland coverage.
+Candidate models are evaluated with expanding-window rolling-origin validation.
 
-The final production forecasting scope contains 130 series:
+Configuration:
 
-- 65 `median_rent` series;
-- 65 `bonds_lodged` series.
+```text
+12 rolling origins
+6-month forecast horizon
+12-month seasonal period
+```
 
-Each production series has a six-month forecast horizon.
+Metrics:
 
-## 9. Anomaly Detection Architecture
+```text
+MAE
+RMSE
+sMAPE
+```
 
-Anomaly-detection code is located under:
+Training always precedes the forecast origin. Held-out target observations are not used during fitting.
 
-    src/rmp/anomaly/
+Research outputs include:
 
-Two complementary research detectors are retained.
+```text
+combined_predictions.csv
+metrics_by_origin.csv
+metrics_by_series.csv
+metrics_by_horizon.csv
+model_comparison.csv
+series_model_winners.csv
+```
+
+Series-level winners are research results only; they do not determine the production model.
+
+## 9. Production forecast policy
+
+Production selection is validated separately from the full-window research comparison.
+
+Final policy:
+
+```text
+forecast_policy = fixed_ets_v1
+model = ets_additive_damped
+```
+
+Implementation:
+
+```text
+src/rmp/forecasting/policy.py
+src/rmp/forecasting/final_forecast.py
+scripts/build_final_forecasts.py
+```
+
+Final output:
+
+```text
+data/processed/forecasting/final_forward_forecasts.csv
+```
+
+Current production scope:
+
+```text
+130 series
+65 median_rent
+65 bonds_lodged
+6 forecast months per series
+780 rows
+```
+
+The ETS model is refitted using all available history through the final forecast origin before producing the six-month forward forecast.
+
+See `docs/forecast_policy_decision.md`.
+
+## 10. Anomaly detection
+
+Anomaly code is under:
+
+```text
+src/rmp/anomaly/
+```
+
+Main scripts:
+
+```text
+scripts/build_historical_anomalies.py
+scripts/build_forecast_anomalies.py
+scripts/build_anomaly_summary.py
+scripts/build_anomaly_validation.py
+scripts/build_anomaly_evaluation.py
+```
 
 ### Historical detector
 
-The historical detector evaluates unusual year-on-year movements using a
-rolling robust baseline.
+The historical detector uses:
 
-It uses:
-
-- a 12-month seasonal reference;
+- 12-month seasonal change;
 - rolling median expected change;
-- MAD as the primary robust scale estimate;
-- IQR as a fallback where MAD is zero.
+- MAD as the main scale estimator;
+- IQR fallback;
+- metric-specific practical-significance thresholds.
 
 ### Forecast-residual detector
 
-The forecast detector evaluates one-step-ahead out-of-sample residuals from
-the research-layer selected winner model.
-
-The current residual is excluded from its own historical baseline to prevent
-future-data leakage.
-
-### Practical significance
-
-Statistical anomaly status is supplemented by metric-specific practical
-significance thresholds before dashboard alerts are produced.
+The forecast detector uses one-step-ahead rolling-origin residuals from the research-layer winner for each series. The current residual is excluded from its own baseline.
 
 ### Consolidation
 
-Historical and forecast-residual signals are consolidated into a
-dashboard-ready anomaly summary.
+Both detector paths are merged into:
 
-Anomaly outputs are analytical alerts only and are not interpreted as causal
-events.
+```text
+data/processed/anomaly/anomaly_summary.csv
+```
 
-Detector-performance evaluation is documented in:
+Dashboard statuses include normal, historical alert, forecast alert, both-detectors flagged, and unavailable.
 
-    docs/anomaly_evaluation.md
+A flag from both detectors is not treated as proof of a real-world event or cause.
 
-## 10. Dashboard Layer
+See `docs/anomaly_evaluation.md`.
 
-The interactive interface is implemented with Streamlit.
+## 11. Dashboard layer
 
-The main entry point is:
+The Streamlit entry point is:
 
-    app.py
+```text
+app.py
+```
 
-Additional pages are located under:
+Pages:
 
-    pages/
+```text
+pages/1_Overview.py
+pages/2_Historical_Analytics.py
+pages/3_Forecasting.py
+pages/4_Model_Performance.py
+pages/5_Anomaly_Detection.py
+```
 
-Shared dashboard utilities are located under:
+Shared utilities:
 
-    src/rmp/dashboard/
+```text
+src/rmp/dashboard/
+```
 
 The dashboard presents:
 
-- project overview and provenance;
-- historical trends;
-- historical analytics;
+- source and coverage information;
+- historical trends and seasonality;
 - production forecasts;
-- research model-performance evidence;
+- research model performance;
 - anomaly alerts and detector context.
 
-The interface distinguishes production forecasts from research-layer model
-comparison results.
+It keeps observed history, research evaluation, production forecasts, and anomaly signals distinct.
 
-It also communicates provisional-source status and data-quality limitations.
+## 12. Dashboard data interface
 
-## 11. Testing and Quality Controls
+The deployed app does not query Supabase.
 
-Automated tests are located under:
+`src/rmp/dashboard/data.py` reads validated files from:
 
-    tests/
+```text
+data/processed/analytics/
+data/processed/forecasting/
+data/processed/anomaly/
+```
 
-The repository uses pytest for functional and regression testing.
+The loader checks required files and columns and validates the production model and policy.
 
-Quality controls include:
+The final forecast loader expects:
 
-- source-validation tests;
-- transformation tests;
-- forecasting split and leakage checks;
-- model output tests;
-- production forecast policy tests;
-- anomaly detector tests;
-- anomaly evaluation tests;
-- dashboard data-loader tests.
+```text
+model = ets_additive_damped
+forecast_policy = fixed_ets_v1
+```
 
-Static quality checks use Ruff and Python compilation checks.
+Streamlit caching reduces repeated file reads.
 
-`git diff --check` is used to identify whitespace errors before commits.
+## 13. Deployment architecture
 
-## 12. Data Flow Boundaries
+The development pipeline is:
 
-The principal architectural boundaries are:
+```text
+Official Sources
+→ Acquisition
+→ Raw Snapshots
+→ Transformation
+→ Staging Data
+→ Supabase PostgreSQL
+→ Analytics
+→ Forecasting / Anomaly Detection
+→ Validated Processed Outputs
+```
 
-### Source boundary
+The assessment runtime is simpler:
 
-Official source data enters the system through acquisition modules.
+```mermaid
+flowchart LR
+    A[GitHub Repository]
+    B[Frozen Analytics CSVs]
+    C[Forecast Evaluation Outputs]
+    D[Production Forecasts]
+    E[Anomaly Outputs]
+    F[Streamlit Community Cloud]
+    G[Interactive Dashboard]
 
-### Analytics boundary
+    A --> B
+    A --> C
+    A --> D
+    A --> E
+    B --> F
+    C --> F
+    D --> F
+    E --> F
+    F --> G
+```
 
-Source-specific fields are transformed into consistent analytical semantics.
+The deployed application does not call Supabase or the government APIs during page rendering.
 
-For example, source-level provisional information is exposed analytically as:
+## 14. Frozen submission snapshot
 
-    source_snapshot_provisional
+The submission uses a frozen set of validated runtime outputs so that:
 
-### Research / production boundary
+- report values;
+- model results;
+- anomaly results;
+- screenshots;
+- GitHub artefacts;
+- the live dashboard
 
-Rolling-origin model comparisons and per-series winner outputs are retained as
-research evidence.
+remain aligned during assessment.
 
-They do not directly determine final production forecasts.
+Government data can change after submission, so automatic refresh is not enabled for the assessment version.
 
-### Presentation boundary
+## 15. Module boundaries
 
-The dashboard reads validated processed outputs rather than embedding modelling
-logic directly in interface code.
+| Path | Responsibility |
+|---|---|
+| `src/rmp/acquisition/` | Official-source acquisition and snapshots |
+| `src/rmp/transform/` | Source transformation |
+| `src/rmp/validation/` | Source and cross-source validation |
+| `src/rmp/db/` | PostgreSQL loading and persistence |
+| `src/rmp/analytics/` | Monthly panel, quality, readiness, summaries |
+| `src/rmp/forecasting/` | Forecast models, evaluation, production policy |
+| `src/rmp/anomaly/` | Historical and forecast-residual anomaly detection |
+| `src/rmp/dashboard/` | Dashboard loaders, formatting, layout |
+| `scripts/` | Pipeline entry points |
+| `db/migrations/` | Database schema |
+| `pages/` | Streamlit pages |
+| `tests/` | Automated tests |
+| `docs/` | Technical documentation |
 
-This reduces coupling between modelling and presentation.
+## 16. Testing and configuration
 
-## 13. Repository-Level Design Principles
+Primary checks:
 
-The implemented architecture follows these principles:
+```text
+ruff check .
+pytest
+git diff --check
+```
 
-- reproducible processing rather than manual spreadsheet transformation;
-- official-source provenance;
-- explicit handling of provisional observations;
-- temporal separation to reduce future-data leakage;
-- separation of research evaluation from production policy;
-- modular Python components with script-based orchestration;
-- interpretable anomaly methods;
-- non-causal anomaly communication;
-- automated regression testing;
-- minimal infrastructure complexity appropriate to the project scale.
+Validated dependency versions are recorded in `requirements-tested.txt`. Streamlit deployment dependencies are in `requirements.txt`.
 
-## 14. Current Limitations
+Credentials are supplied through environment variables and are not committed. `.env`, `.env.*`, and `.streamlit/secrets.toml` are excluded from Git.
 
-The architecture does not attempt to provide:
+The frozen Streamlit deployment requires no database or API credentials.
 
-- real-time streaming ingestion;
-- individual property valuation;
-- causal inference from anomaly alerts;
-- complete ground-truth anomaly labels;
-- full national SA2-level forecasting;
-- a fully database-dependent runtime.
+## 17. Future refresh
 
-Generated processed datasets are currently treated as reproducible build
-artifacts. Deployment and clean-clone data availability are documented
-separately in:
+The existing pipeline can support scheduled refresh:
 
-    docs/deployment_and_reproducibility.md
+```text
+new official data
+→ acquisition
+→ validation
+→ database update
+→ analytics regeneration
+→ fixed ETS refit
+→ new forecasts
+→ anomaly regeneration
+→ publication
+```
+
+A future scheduler such as GitHub Actions could automate this process. Model-policy changes should still require a separate validation decision.
+
+## 18. Related documentation
+
+- `docs/data_dictionary.md`
+- `docs/forecast_policy_decision.md`
+- `docs/anomaly_evaluation.md`
+- `docs/deployment_and_reproducibility.md`
+- `docs/decision_log.md`

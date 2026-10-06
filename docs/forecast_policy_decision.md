@@ -2,40 +2,25 @@
 
 ## Context
 
-The forecasting research layer evaluates three candidate models:
+The forecasting study compares three candidate models:
 
 - Seasonal Naive
 - ETS additive damped
 - pooled recursive XGBoost
 
-Rolling-origin backtesting is retained for comparative model evaluation and
-for descriptive per-series winner analysis.
-
-The production forecasting policy is treated separately from the descriptive
-winner analysis.
+Rolling-origin backtesting is used for model comparison and for descriptive per-series winner analysis. The production policy is evaluated separately so that the final forecasting rule is not chosen from the same results used to describe model performance.
 
 ## Held-out policy validation
 
-A strict temporally separated validation was used to test whether selecting a
-different model for each series was suitable for production forecasting.
+A temporally separated validation was used to compare production-selection strategies.
 
-The audited cutoff is:
+- Audited cutoff: `2025-08-01`
+- Selection-period targets: `2025-03-01` to `2025-08-01`
+- Evaluation-period targets: `2025-09-01` to `2026-07-01`
 
-`2025-08-01`
+The selection and evaluation periods do not overlap.
 
-Selection-period forecast targets:
-
-`2025-03-01` to `2025-08-01`
-
-Evaluation-period forecast targets:
-
-`2025-09-01` to `2026-07-01`
-
-The two periods contain no overlapping forecast target months.
-
-## Selection-period winners
-
-The models selected from the selection period were:
+### Selection-period winners
 
 | Model | Series |
 |---|---:|
@@ -43,9 +28,7 @@ The models selected from the selection period were:
 | ETS additive damped | 44 |
 | Seasonal Naive | 19 |
 
-This distribution differs substantially from the full-window descriptive
-winner distribution, indicating instability in per-series winner selection
-across time.
+This distribution differs from the full-window descriptive winner distribution, indicating that per-series winner selection is not stable across time.
 
 ## Held-out results
 
@@ -76,44 +59,39 @@ across time.
 | Per-series model selection | 3.0737 |
 | Fixed Seasonal Naive | 3.7577 |
 
-## Production policy decision
+## Production policy
 
-The production forecasting policy is:
+The production policy is:
 
-`fixed_ets_v1`
+```text
+forecast_policy = fixed_ets_v1
+model = ets_additive_damped
+```
 
-The production model is:
+Fixed ETS is used for all production forecast series.
 
-`ets_additive_damped`
-
-Fixed ETS is used for every forecast-eligible series.
-
-The per-series winner results remain part of the research and model-comparison
-layer and are not used to choose the production model for each series.
+Per-series winner results remain part of the research comparison layer. They are not used to select the production model for each series.
 
 ## Interpretation
 
-Winner/backtest metrics are descriptive results from the model-comparison
-experiment and are not independent post-selection estimates.
+The held-out evaluation showed that per-series model selection was less stable and produced higher overall sMAPE than fixed ETS. Fixed ETS was therefore adopted as the production policy.
 
-Strict temporally separated validation showed that the per-series selection
-policy was unstable and produced poorer held-out sMAPE than fixed ETS.
-
-Therefore ETS was adopted for production forecasts, while candidate-model
-comparisons and series-level winner results are retained for comparative
-analysis.
+This does not imply that ETS is the best model for every individual series. The research comparison still retains model-specific and series-level results for analysis.
 
 ## Reproduction
 
 Run:
 
-    python scripts/validate_selection_policy.py
+```bash
+python scripts/validate_selection_policy.py
+```
 
 The default audited cutoff is `2025-08-01`.
 
-A future data release may be evaluated with an explicit cutoff:
+A future validation can use:
 
-    python scripts/validate_selection_policy.py --cutoff YYYY-MM-DD
+```bash
+python scripts/validate_selection_policy.py --cutoff YYYY-MM-DD
+```
 
-Such a run represents a new validation experiment and does not replace the
-audited Pass 2 result automatically.
+A new validation run is a separate experiment and does not automatically replace the audited production policy.

@@ -2,375 +2,370 @@
 
 ## Purpose
 
-This document records the current runtime, configuration, analytical
-reproduction, and deployment requirements of the New Zealand Regional Rental
-Market Analytics and Forecasting Platform.
+This document records the final runtime, packaging, and deployment approach for the New Zealand Rental Market Analytics and Forecasting Platform.
 
-It distinguishes between:
+The assessment deployment uses a frozen, validated snapshot so that the repository, dashboard, screenshots, model results, and final report remain consistent.
 
-- source-code reproducibility;
-- analytical-output reproducibility;
-- local dashboard execution;
-- final deployment packaging.
+## 1. Environment
 
-The final clean-clone and deployment-packaging validation is intentionally
-deferred until the deployment stage.
+The project requires:
 
----
+```text
+Python >= 3.12
+```
 
-## 1. Python Environment
+The later development and analytical validation environment used Python 3.14.2.
 
-The project package currently requires:
+Key dependency files:
 
-    Python >= 3.12
+```text
+pyproject.toml
+requirements-tested.txt
+requirements.txt
+```
 
-The main development and validation environment used during the later project
-stages is:
-
-    Python 3.14.2
-
-Project dependencies and package metadata are defined in:
-
-    pyproject.toml
-
-The validated development environment is also recorded in:
-
-    requirements-tested.txt
-
-A final Python 3.12 compatibility run remains part of the deployment/final
-packaging validation.
-
----
+- `pyproject.toml` defines the package and project dependencies.
+- `requirements-tested.txt` records the validated development versions.
+- `requirements.txt` defines the Streamlit deployment environment.
 
 ## 2. Installation
 
-After cloning the repository, the project can be installed in editable mode:
+Deployment-style installation:
 
-    pip install -e .
+```bash
+pip install -r requirements.txt
+```
 
-Development dependencies should be installed according to the configuration in
-`pyproject.toml`.
+Editable development installation:
 
-The authoritative setup instructions are maintained in the repository README.
+```bash
+pip install -e .
+```
 
----
+The project uses a `src/` package layout.
 
-## 3. Environment Variables and Secrets
+## 3. Environment variables and secrets
 
-Environment-specific configuration is supplied through environment variables.
+Development and ETL tasks may use:
 
-A local `.env` file may be used during development.
+```text
+SUPABASE_DB_HOST
+SUPABASE_DB_PORT
+SUPABASE_DB_NAME
+SUPABASE_DB_USER
+SUPABASE_DB_PASSWORD
+MARKET_RENT_API_ENV
+MARKET_RENT_API_SANDBOX_KEY
+MARKET_RENT_API_PROD_KEY
+```
 
-The `.env` file is intentionally excluded from Git and must not be committed,
-because it can contain credentials or environment-specific configuration.
+A local `.env` file may be used during development and is excluded from Git. `.env.example` contains placeholders only.
 
-Examples include:
+The frozen assessment deployment does not need Supabase credentials or Market Rent API keys because the Streamlit app does not acquire data, rebuild outputs, or refit models at runtime.
 
-- database connection settings;
-- API credentials;
-- deployment-specific secrets.
+## 4. Data packaging
 
-For deployment, equivalent values must be configured using the deployment
-platform's environment-variable or secret-management mechanism.
+The project uses:
 
-No production credential should be embedded directly in source code or
-committed configuration.
+```text
+data/raw/
+data/staging/
+data/processed/
+```
 
----
+Raw and staging data remain generated artefacts and are not committed. Most processed outputs are also ignored by default.
 
-## 4. Generated Data Policy
+The exception is the set of validated processed CSV files required by the deployed dashboard. These are version controlled as the frozen submission snapshot.
 
-The project treats raw, staging, and processed datasets as generated build
-artifacts.
+This keeps the runtime reproducible without committing every intermediate file.
 
-The principal directories are:
+## 5. Reproducibility model
 
-    data/raw/
-    data/staging/
-    data/processed/
+### Source-code reproducibility
 
-These generated files are normally excluded from Git tracking, apart from
-placeholder files where required.
+The repository contains source modules, scripts, migrations, tests, dependency specifications, configuration examples, and documentation.
 
-This avoids committing large analytical datasets and source snapshots into the
-main Git history.
+### ETL reproducibility
 
-The consequence is important:
+Acquisition and transformation stages preserve snapshot metadata, checksums, retrieval timestamps, lineage, and provisional-source status.
 
-> A fresh clone currently contains the source code required to rebuild the
-> system, but it does not automatically contain all processed datasets required
-> for immediate dashboard execution.
+### Analytical reproducibility
 
-This limitation will be resolved as part of the final deployment and packaging
-stage.
+The implemented pipeline rebuilds:
 
----
+```text
+validated source data
+→ monthly analytical panel
+→ model evaluation
+→ production forecasts
+→ anomaly outputs
+```
 
-## 5. Reproducibility Model
+subject to the same source snapshot, software versions, and configuration.
 
-The project distinguishes three forms of reproducibility.
+### Submission-runtime reproducibility
 
-### 5.1 Source-code reproducibility
+The required dashboard CSV files are already included in the repository. A fresh deployment therefore does not need to regenerate analytical outputs before the app can start.
 
-The repository contains the Python source code, tests, scripts, configuration,
-database migrations, and technical documentation required to understand and
-rebuild the system.
+## 6. Processing pipeline
 
-### 5.2 Analytical reproducibility
+```text
+Official Tenancy Services / MBIE sources
+        ↓
+Acquisition and snapshots
+        ↓
+Transformation and validation
+        ↓
+Supabase PostgreSQL
+        ↓
+Validated clean observations
+        ↓
+Monthly analytical panel
+        ↓
+Forecasting and model comparison
+        ↓
+Production forecasts
+        ↓
+Anomaly detection
+        ↓
+Validated dashboard outputs
+```
 
-Generated analytical outputs can be rebuilt by running the documented pipeline
-in the correct dependency order.
+The deployed application starts at the final validated-output boundary.
 
-### 5.3 Immediate runtime reproducibility
+See `docs/architecture.md` for the full system design.
 
-Immediate dashboard execution requires the expected processed datasets to
-already exist.
+## 7. Analytics reproduction
 
-Because those datasets are currently excluded from normal Git tracking, this is
-not yet guaranteed from a clean clone.
+Build the analytical datasets with:
 
-Final runtime packaging is therefore a deployment-stage task rather than a
-completed repository property.
+```bash
+python scripts/build_analytics_dataset.py
+```
 
----
+Current analytical scope:
 
-## 6. Core Data Pipeline
+```text
+64,956 monthly observations
+164 analytical series
+February 1993 to July 2026
+```
 
-The high-level processing sequence is:
+Primary runtime analytics files:
 
-    official source acquisition
-              |
-              v
-    source transformation
-              |
-              v
-    validation
-              |
-              v
-    analytics-ready monthly panel
-              |
-              v
-    forecasting and model comparison
-              |
-              v
-    production forecasts
-              |
-              v
-    anomaly detection and evaluation
-              |
-              v
-    dashboard-ready outputs
+```text
+data/processed/analytics/monthly_panel.csv
+data/processed/analytics/series_catalog.csv
+data/processed/analytics/monthly_seasonality.csv
+```
 
-The complete command sequence is maintained in `README.md`.
+The monthly panel is built from validated Rental Bond observations stored in PostgreSQL. Market Rent is processed independently and used for supporting cross-source validation.
 
-Later stages depend on outputs produced by earlier stages, so the documented
-execution order should be preserved.
+## 8. Forecasting reproduction
 
----
+Run the candidate models:
 
-## 7. Forecasting Reproduction
+```bash
+python scripts/run_seasonal_naive.py
+python scripts/run_ets.py
+python scripts/run_xgboost.py
+```
 
-The three candidate forecasting models are generated with:
+Build the research comparison:
 
-    python scripts/run_seasonal_naive.py
-    python scripts/run_ets.py
-    python scripts/run_xgboost.py
+```bash
+python scripts/build_model_comparison.py
+```
 
-Their unified research comparison is built with:
+Validate the production policy:
 
-    python scripts/build_model_comparison.py
+```bash
+python scripts/validate_selection_policy.py
+```
 
-The temporally separated production-policy validation is then run with:
+Generate final forward forecasts:
 
-    python scripts/validate_selection_policy.py
+```bash
+python scripts/build_final_forecasts.py
+```
 
-Final forward forecasts are generated with:
+Production policy:
 
-    python scripts/build_final_forecasts.py
+```text
+fixed_ets_v1
+ets_additive_damped
+```
 
-The current production policy is:
+Final production scope:
 
-    fixed_ets_v1
+```text
+130 series
+65 median_rent
+65 bonds_lodged
+6 forecast months per series
+780 forecast rows
+```
 
-using:
+See `docs/forecast_policy_decision.md`.
 
-    ets_additive_damped
+## 9. Anomaly reproduction
 
-for all production forecast series.
+Run:
 
-The production-policy rationale and held-out evaluation evidence are documented
-in:
+```bash
+python scripts/build_historical_anomalies.py
+python scripts/build_forecast_anomalies.py
+python scripts/build_anomaly_summary.py
+python scripts/build_anomaly_validation.py
+python scripts/build_anomaly_evaluation.py
+```
 
-    docs/forecast_policy_decision.md
+Evaluation details are in `docs/anomaly_evaluation.md`.
 
----
+## 10. Dashboard runtime
 
-## 8. Anomaly Reproduction
+Start locally with:
 
-The main anomaly outputs are generated with:
+```bash
+streamlit run app.py
+```
 
-    python scripts/build_historical_anomalies.py
-    python scripts/build_forecast_anomalies.py
-    python scripts/build_anomaly_summary.py
-    python scripts/build_anomaly_validation.py
+The dashboard reads processed CSV files through:
 
-Detector-performance evidence is generated separately with:
+```text
+src/rmp/dashboard/data.py
+```
 
-    python scripts/build_anomaly_evaluation.py
+It does not run acquisition, database loading, forecasting, or anomaly generation during page rendering.
 
-The resulting evaluation output is:
+## 11. Deployment runtime assets
 
-    data/processed/anomaly/anomaly_evaluation_summary.csv
+The deployed dashboard uses 15 processed CSV files.
 
-The detector evaluation methodology is documented in:
+### Analytics
 
-    docs/anomaly_evaluation.md
+```text
+data/processed/analytics/monthly_panel.csv
+data/processed/analytics/series_catalog.csv
+data/processed/analytics/monthly_seasonality.csv
+```
 
----
+### Forecasting
 
-## 9. Dashboard Execution
+```text
+data/processed/forecasting/combined_predictions.csv
+data/processed/forecasting/metrics_by_origin.csv
+data/processed/forecasting/metrics_by_series.csv
+data/processed/forecasting/metrics_by_horizon.csv
+data/processed/forecasting/model_comparison.csv
+data/processed/forecasting/series_model_winners.csv
+data/processed/forecasting/final_forward_forecasts.csv
+```
 
-The Streamlit application entry point is:
+### Anomaly detection
 
-    app.py
+```text
+data/processed/anomaly/anomaly_summary.csv
+data/processed/anomaly/historical_anomalies.csv
+data/processed/anomaly/forecast_anomalies.csv
+data/processed/anomaly/anomaly_validation_summary.csv
+data/processed/anomaly/anomaly_metadata_summary.csv
+```
 
-Once the required processed outputs are available, the application can be
-started with:
+## 12. Frozen submission snapshot
 
-    streamlit run app.py
+The frozen snapshot keeps the following aligned during assessment:
 
-The dashboard does not perform the core forecasting or anomaly-detection
-pipeline during page rendering.
+- repository outputs;
+- dashboard values;
+- forecast and anomaly results;
+- screenshots;
+- report tables and figures.
 
-Instead, it consumes validated processed outputs produced by earlier pipeline
-stages.
+Upstream government data may change after submission, so automatic refresh could otherwise make the live dashboard differ from the submitted report.
 
-This separation improves testability and keeps modelling logic outside the user
-interface.
+The pipeline can still be rerun in future; automated refresh is outside the assessment deployment.
 
----
+## 13. Streamlit Community Cloud deployment
 
-## 10. Required Dashboard Outputs
+Deployment source:
 
-The dashboard depends on processed analytical outputs including, but not
-limited to:
+```text
+Repository: SimeonAKL/158888-nz-rental-market-platform
+Branch: main
+Entry point: app.py
+```
 
-    data/processed/analytics/monthly_panel.csv
-    data/processed/analytics/series_catalog.csv
+Deployment dependencies are installed from `requirements.txt`.
 
-    data/processed/forecasting/combined_predictions.csv
-    data/processed/forecasting/model_comparison.csv
-    data/processed/forecasting/series_model_winners.csv
-    data/processed/forecasting/final_forward_forecasts.csv
+No Streamlit secrets are required for the frozen assessment runtime.
 
-    data/processed/anomaly/historical_anomalies.csv
-    data/processed/anomaly/forecast_anomalies.csv
-    data/processed/anomaly/anomaly_summary.csv
-    data/processed/anomaly/anomaly_validation_summary.csv
-    data/processed/anomaly/anomaly_metadata_summary.csv
+Runtime path:
 
-Additional evaluation outputs may be used as reproducibility and reporting
-evidence.
+```text
+GitHub repository
+→ frozen validated CSV assets
+→ Streamlit Community Cloud
+→ dashboard
+```
 
-The schemas of the principal processed datasets are documented in:
+The app does not query live Supabase or government APIs at runtime.
 
-    docs/data_dictionary.md
+## 14. Deployment validation
 
----
+The final deployment checks included:
 
-## 11. Testing and Code Quality
+- 15 required runtime files present, 0 missing;
+- total runtime asset size approximately 53 MB;
+- clean dependency and import validation;
+- successful loading of primary dashboard datasets;
+- successful local Streamlit startup;
+- successful Streamlit Community Cloud deployment;
+- manual checks of Home, Overview, Historical Analytics, Forecasting, Model Performance, and Anomaly Detection.
 
-The primary automated test command is:
+## 15. Testing and security
 
-    pytest
+Primary checks:
 
-Static code checks use:
+```bash
+pytest
+ruff check .
+git diff --check
+```
 
-    ruff check .
+Sensitive local files remain excluded from Git:
 
-Python syntax can be checked with:
+```text
+.env
+.env.*
+.streamlit/secrets.toml
+```
 
-    python -m py_compile <file>
+The assessment deployment needs no database or API credentials.
 
-Repository whitespace validation uses:
+## 16. Future refresh
 
-    git diff --check
+A future production workflow could automate:
 
-These checks are used throughout development before commits and major project
-milestones.
+```text
+scheduled trigger
+→ source acquisition
+→ ETL and validation
+→ Supabase update
+→ analytics regeneration
+→ fixed ETS refit
+→ forecast regeneration
+→ anomaly regeneration
+→ publication
+```
 
----
+Routine refresh should refit the approved production model using new validated history. Changing the production model should require a separate policy review.
 
-## 12. Current Reproducibility Limitation
+## 17. Related documentation
 
-The current repository has not yet completed a final clean-clone deployment
-test.
-
-Specifically, final evidence is still required for:
-
-- rebuilding or restoring dashboard data from a fresh clone;
-- Python 3.12 compatibility;
-- deployment secret configuration;
-- deployment data packaging;
-- successful dashboard startup in the final deployment environment.
-
-These are packaging and deployment concerns rather than unresolved analytical
-model defects.
-
----
-
-## 13. Deferred Deployment Validation
-
-The following work is deliberately deferred until the deployment stage:
-
-1. Select the final mechanism for supplying required processed dashboard data.
-2. Configure deployment secrets and environment variables.
-3. Test the project in a clean Python 3.12 environment.
-4. Perform a clean-clone reproduction test.
-5. Verify dashboard startup with the selected deployment data strategy.
-6. Update README deployment instructions to match the final implementation.
-7. Record final deployment evidence.
-
-Possible data-delivery approaches may include a deployment asset, release
-artifact, reproducible bootstrap process, or another repository-appropriate
-mechanism.
-
-No approach is documented as final until it has been implemented and tested.
-
----
-
-## 14. Documentation Responsibilities
-
-The following documents provide complementary reproducibility information:
-
-- `README.md` — installation, pipeline execution, dashboard startup, and project
-  overview;
-- `docs/architecture.md` — system structure and data-flow boundaries;
-- `docs/data_dictionary.md` — processed dataset semantics;
-- `docs/forecast_policy_decision.md` — production forecasting policy;
-- `docs/anomaly_evaluation.md` — anomaly detector evaluation evidence;
-- `docs/decision_log.md` — major design decisions and rationale;
-- `docs/deployment_and_reproducibility.md` — runtime and deployment status.
-
----
-
-## 15. Final Deployment Gate
-
-Deployment should not be considered fully validated until all of the following
-have been demonstrated:
-
-    clean clone
-        +
-    supported Python environment
-        +
-    dependency installation
-        +
-    required data availability
-        +
-    secure environment configuration
-        +
-    automated tests
-        +
-    successful Streamlit startup
-
-The final deployment/final-packaging audit will address this gate as M6.
+- `README.md` — setup, pipeline commands, and project overview
+- `docs/architecture.md` — system architecture and data flow
+- `docs/data_dictionary.md` — dataset schemas and semantics
+- `docs/forecast_policy_decision.md` — production forecast policy
+- `docs/anomaly_evaluation.md` — anomaly evaluation
+- `docs/decision_log.md` — technical decisions

@@ -2,76 +2,46 @@
 
 ## Purpose
 
-This document records major technical and methodological decisions made during
-the development of the New Zealand Regional Rental Market Analytics and
-Forecasting Platform.
-
-The purpose is to preserve design rationale, distinguish deliberate choices
-from implementation accidents, and provide traceable context for the final
-report and repository review.
+This log records the main technical and methodological decisions made during the project.
 
 ---
 
-## D01 — Use Official Public Rental-Market Sources Only
+## D01 — Use official public rental-market sources only
 
-**Decision**
+**Decision:** Use official Tenancy Services / MBIE rental-market data.
 
-Use official Tenancy Services / MBIE rental-market data as the analytical
-source base.
-
-**Rationale**
-
-The project requires reproducible and defensible public-sector data provenance.
-Private scraping or unofficial sources would make long-term reproducibility,
-licensing, and source interpretation less reliable.
+**Rationale:** Official sources provide defensible provenance and avoid the licensing and reproducibility problems associated with private scraping.
 
 **Consequences**
 
-- Acquisition code is designed around official source files and APIs.
-- Source snapshot identifiers and provisional-status metadata are retained.
-- The platform does not attempt to scrape individual rental listings.
+- Acquisition uses official files and APIs.
+- Snapshot and provisional-status metadata are retained.
+- Individual rental listings are not scraped.
 
 ---
 
-## D02 — Keep the Core Pipeline Simple and File-Oriented
+## D02 — Use a layered database-and-file pipeline
 
-**Decision**
+**Decision:** Use PostgreSQL/Supabase for structured persistence and ETL support, then use validated CSV outputs between later analytical stages.
 
-Use CSV-based processed outputs as the main interface between analytical stages,
-while retaining PostgreSQL-compatible database support as an optional storage
-layer.
-
-**Rationale**
-
-The datasets are moderate in size and do not require distributed processing.
-A file-oriented pipeline reduces infrastructure complexity and makes each stage
-easy to inspect, test, and reproduce.
+**Rationale:** The database provides lineage, constraints, and structured querying, while file-based analytical interfaces keep modelling and deployment simple.
 
 **Consequences**
 
-- `data/raw`, `data/staging`, and `data/processed` form the primary pipeline
-  structure.
-- Database migrations and loaders remain available for structured persistence.
-- Later modelling and dashboard stages do not require an active database
-  connection.
+- Supabase stores structured source data and lineage.
+- The analytical dataset builder reads validated clean database observations.
+- Forecasting, anomaly detection, and dashboard runtime do not require a live database connection.
+- The deployed dashboard reads frozen CSV artefacts.
 
 ---
 
-## D03 — Use a Unified Monthly Analytical Panel
+## D03 — Use a unified monthly analytical panel
 
-**Decision**
+**Decision:** Store Region and Territorial Authority observations in one long-format monthly panel.
 
-Represent historical Region and Territorial Authority observations in a single
-monthly analytical panel with consistent identifiers and metric names.
+**Rationale:** A common schema simplifies forecasting, anomaly detection, filtering, and dashboard logic.
 
-**Rationale**
-
-A unified long-format structure simplifies downstream forecasting,
-anomaly detection, filtering, and dashboard presentation.
-
-**Consequences**
-
-The main analytical schema uses:
+**Core fields**
 
 - `period_date`
 - `series_id`
@@ -81,237 +51,146 @@ The main analytical schema uses:
 - `metric`
 - `value`
 
-Source provenance is retained alongside analytical observations.
+Source provenance remains attached to each observation.
 
 ---
 
-## D04 — Separate Historical Availability from Forecast Eligibility
+## D04 — Separate historical availability from forecast eligibility
 
-**Decision**
+**Decision:** Keep historically useful series even when they fail forecasting-readiness criteria.
 
-Allow historical series to remain available for descriptive analysis even when
-they do not pass forecasting-readiness criteria.
-
-**Rationale**
-
-Historical usefulness and forecast suitability are different concepts.
-Removing non-forecastable series from the analytical dataset would unnecessarily
-reduce descriptive coverage.
+**Rationale:** Historical usefulness and forecasting suitability are not the same.
 
 **Consequences**
 
-- The monthly panel currently contains 164 series.
-- The series catalog separately records `eligible_for_forecasting`.
-- Historical-only series remain visible to the analytical system.
+- The panel contains 164 analytical series.
+- Forecast eligibility is stored separately in `series_catalog.csv`.
+- Historical-only series remain available to the dashboard.
 
 ---
 
-## D05 — Exclude Duplicate Auckland TA Forecast Series
+## D05 — Exclude duplicate Auckland TA forecast series
 
-**Decision**
+**Decision:** Exclude:
 
-Explicitly exclude the two duplicate Auckland Territorial Authority forecast
-series from the final modelling scope:
+```text
+territorial_authority_76_bonds_lodged
+territorial_authority_76_median_rent
+```
 
-    territorial_authority_76_bonds_lodged
-    territorial_authority_76_median_rent
+from the modelling scope.
 
-**Rationale**
-
-Equivalent Auckland coverage was already represented elsewhere in the
-forecasting set. Keeping duplicate analytical series in model evaluation would
-double-count the same effective geographic coverage.
+**Rationale:** Equivalent Auckland coverage already exists elsewhere in the forecasting set, so retaining these series would double-count the same effective geography.
 
 **Consequences**
 
-- 132 series are initially marked forecast-eligible.
-- 130 unique series form the final research and production forecasting scope.
-- The final scope contains 65 series for each metric.
+- 132 series are initially forecast-eligible.
+- 130 unique series enter research and production forecasting.
+- The final scope contains 65 series per metric.
 
 ---
 
-## D06 — Compare Three Forecasting Approaches
+## D06 — Compare three forecasting approaches
 
-**Decision**
+**Decision:** Evaluate Seasonal Naive, ETS additive damped, and pooled recursive XGBoost.
 
-Evaluate:
+**Rationale:** The set provides a transparent baseline, a classical statistical model, and a pooled machine-learning model.
 
-- Seasonal Naive;
-- ETS additive damped;
-- pooled recursive XGBoost.
+**Consequence:** All candidates are assessed with the same rolling-origin evaluation framework.
 
-**Rationale**
+---
 
-The combination provides:
+## D07 — Use rolling-origin forecast validation
 
-- a transparent seasonal baseline;
-- a classical statistical time-series model;
-- a machine-learning model capable of learning across geographic series.
+**Decision:** Use time-ordered rolling-origin validation rather than random train/test splits.
 
-This satisfies the project objective of comparing established statistical and
-machine-learning forecasting approaches.
+**Rationale:** Random splitting would violate temporal order and risk future-data leakage.
 
 **Consequences**
 
-All three candidate approaches are evaluated using rolling-origin validation
-and common error metrics.
+- Evaluation uses successive forecast origins.
+- MAE, RMSE, and sMAPE are reported.
+- Lagged and rolling features use only information available before each origin.
 
 ---
 
-## D07 — Use Rolling-Origin Forecast Validation
+## D08 — Select research winners primarily by sMAPE
 
-**Decision**
+**Decision:** Rank per-series research winners by lowest sMAPE, with MAE and RMSE as tie-breakers.
 
-Use rolling-origin time-series evaluation instead of random train/test splits.
+**Rationale:** sMAPE is scale-normalised and supports comparison across series of different magnitudes.
 
-**Rationale**
-
-Random splitting would violate temporal ordering and could introduce
-future-data leakage.
-
-Rolling-origin evaluation more closely represents repeated real-world
-forecasting from successive historical origins.
-
-**Consequences**
-
-Model comparison uses temporally ordered forecast origins and evaluates:
-
-- MAE;
-- RMSE;
-- sMAPE.
-
-Lagged and rolling features are constructed using only information available
-before the relevant forecast origin.
+**Consequence:** `series_model_winners.csv` is a research output, not a production-selection rule.
 
 ---
 
-## D08 — Select Research Winners Primarily by sMAPE
+## D09 — Separate research winners from production policy
 
-**Decision**
+**Decision:** Do not use full-window research winners directly as the production forecasting rule.
 
-For the research-layer per-series winner output, rank candidate models primarily
-by lowest sMAPE, using MAE and RMSE as tie-breakers.
+**Rationale:** Selecting a production policy from the same window used for model comparison would introduce post-selection bias.
 
-**Rationale**
-
-sMAPE provides a scale-normalised comparison across series with substantially
-different magnitudes.
-
-MAE and RMSE remain available as complementary absolute-error measures.
-
-**Consequences**
-
-`series_model_winners.csv` represents research comparison winners rather than
-the production deployment policy.
+**Consequence:** A separate temporally held-out policy validation is used.
 
 ---
 
-## D09 — Separate Research Model Winners from Production Policy
+## D10 — Adopt fixed ETS for production forecasts
 
 **Decision**
 
-Do not use full-window research winners directly as the production forecasting
-policy.
+```text
+forecast_policy = fixed_ets_v1
+model = ets_additive_damped
+```
 
-**Rationale**
+for all 130 production series.
 
-Using the same evaluation window for model comparison and final policy
-selection would make production claims vulnerable to post-selection bias.
-
-A separate temporally held-out policy-validation period was therefore used.
-
-**Consequences**
-
-The repository distinguishes:
-
-- research model-comparison outputs;
-- temporally separated policy validation;
-- production forward forecasts.
-
----
-
-## D10 — Adopt Fixed ETS as the Production Forecast Policy
-
-**Decision**
-
-Use:
-
-    forecast_policy = fixed_ets_v1
-    model = ets_additive_damped
-
-for all 130 production forecast series.
-
-**Rationale**
-
-Temporally separated held-out policy validation showed ETS to provide the most
-stable overall production choice across the two target metrics, while avoiding
-additional per-series post-selection complexity.
-
-The decision is based on held-out comparative evidence and operational
-simplicity. It is not a claim that ETS is universally superior for every
-individual series.
+**Rationale:** Held-out policy validation showed that fixed ETS gave the strongest overall production performance and avoided unstable per-series switching.
 
 **Consequences**
 
 - Production forecasts use fixed ETS.
-- Research winners remain available for descriptive model comparison.
-- The dashboard explicitly distinguishes research and production semantics.
+- Research winners remain available for comparison.
+- The dashboard labels research and production results separately.
 
-Detailed evidence is documented in:
-
-    docs/forecast_policy_decision.md
+See `docs/forecast_policy_decision.md`.
 
 ---
 
-## D11 — Preserve Source Provisionality as Provenance
+## D11 — Preserve provisional-source status
 
-**Decision**
+**Decision:** Carry source provisionality through the pipeline as:
 
-Retain source-level provisional status through the acquisition and processing
-pipeline, exposing it at the analytical boundary as:
+```text
+source_snapshot_provisional
+```
 
-    source_snapshot_provisional
-
-**Rationale**
-
-Recent source observations are affected by the 2025-2026 Bond Hub migration and
-may be revised or have limited comparability with earlier periods.
-
-This is a provenance issue rather than a statistical anomaly classification.
+**Rationale:** Recent observations affected by the 2025–2026 Bond Hub migration may be revised or have limited comparability.
 
 **Consequences**
 
 - Provisional status is retained in analytical outputs.
-- Dashboard pages communicate source-status warnings.
-- The field is not used as an anomaly label.
+- Dashboard warnings expose this status.
+- Provisionality is not treated as an anomaly label.
 
 ---
 
-## D12 — Use Interpretable Robust Anomaly Detection
+## D12 — Use interpretable robust anomaly detection
 
-**Decision**
+**Decision:** Use robust statistical detectors based on seasonal change and forecast residuals.
 
-Use robust statistical anomaly methods based on seasonal changes and
-forecast-residual behaviour rather than opaque black-box anomaly classifiers.
+**Rationale:** The dashboard requires explainable alerts rather than an opaque anomaly classifier.
 
-**Rationale**
+**Implementation**
 
-The project requires explainable analytical alerts that can be communicated in
-a decision-support dashboard.
+Historical detector:
 
-Median/MAD-based methods are transparent, robust to extreme observations, and
-straightforward to explain.
-
-**Consequences**
-
-The historical detector uses:
-
-- year-on-year changes;
+- year-on-year change;
 - rolling median;
 - MAD;
 - IQR fallback.
 
-The forecast detector uses:
+Forecast detector:
 
 - one-step-ahead residuals;
 - earlier out-of-sample residual history;
@@ -319,227 +198,54 @@ The forecast detector uses:
 
 ---
 
-## D13 — Add Practical-Significance Filtering
+## D13 — Add practical-significance filtering
 
-**Decision**
+**Decision:** Require dashboard alerts to meet both statistical and metric-specific practical-significance criteria.
 
-Require dashboard anomaly alerts to satisfy both statistical anomaly criteria
-and metric-specific practical-significance thresholds.
+**Rationale:** A statistically unusual movement may still be too small to be operationally useful.
 
-**Rationale**
-
-A statistically unusual change may still be too small to be operationally
-meaningful.
-
-Combining statistical and practical criteria reduces low-value alerting.
-
-**Consequences**
-
-The repository retains both:
-
-- raw statistical anomaly status;
-- dashboard alert status.
-
-They are deliberately not treated as equivalent concepts.
+**Consequence:** Statistical anomaly flags and dashboard alerts are stored separately.
 
 ---
 
-## D14 — Keep Anomaly Interpretation Non-Causal
+## D14 — Keep anomaly interpretation non-causal
 
-**Decision**
+**Decision:** Present anomalies as analytical signals rather than explanations of cause.
 
-Present anomaly outputs as analytical alerts rather than explanations of
-causes.
-
-**Rationale**
-
-The available observational data does not establish causal relationships
-between unusual rental-market observations and external events or system
-changes.
+**Rationale:** The available observational data does not support causal attribution.
 
 **Consequences**
 
-The dashboard and documentation avoid claims such as:
-
-- the Bond Hub migration caused an anomaly;
-- a policy change caused a detected movement;
-- an alert represents a confirmed market event.
-
-The internal status `confirmed_anomaly` means only that both implemented
-detectors flagged the same observation.
-
-Externally it should be described as:
-
-    flagged by both detectors
+- Dashboard wording avoids causal claims.
+- Alerts require contextual interpretation.
+- Provisional-source status remains separate from anomaly status.
 
 ---
 
-## D15 — Evaluate Anomaly Detection Separately from Structural Validation
+## D15 — Freeze validated outputs for assessment deployment
 
-**Decision**
+**Decision:** Deploy the assessment version with a fixed set of validated analytics, forecast, and anomaly CSV outputs.
 
-Keep detector-performance evaluation separate from structural anomaly-output
-validation.
-
-**Rationale**
-
-Structural validation answers whether outputs are internally consistent.
-Detector evaluation answers whether the method behaves sensibly under
-controlled or historically relevant conditions.
-
-Combining the two would blur distinct validation objectives.
+**Rationale:** Government data may change after submission. A frozen snapshot keeps the live dashboard aligned with the report, screenshots, and evaluated results.
 
 **Consequences**
 
-Structural validation is stored in:
-
-    anomaly_validation_summary.csv
-
-Detector evaluation is stored in:
-
-    anomaly_evaluation_summary.csv
-
-Detector evaluation includes:
-
-- synthetic anomaly injection;
-- threshold sensitivity;
-- synthetic background alert behaviour;
-- Bond Hub transition-period comparison.
-
-Detailed evidence is documented in:
-
-    docs/anomaly_evaluation.md
+- Only dashboard-required processed outputs are version controlled.
+- Assessment results do not change when upstream data changes.
+- Automated refresh remains a future production extension.
 
 ---
 
-## D16 — Use Equal-Length Adjacent Windows for Transition Evaluation
+## D16 — Deploy on Streamlit Community Cloud
 
-**Decision**
+**Decision:** Deploy the dashboard from GitHub using Streamlit Community Cloud.
 
-Compare the available Bond Hub transition period with the immediately preceding
-equal-length period.
-
-Current windows are:
-
-    pre-transition: 2023-06 to 2024-12
-    transition:     2025-01 to 2026-07
-
-**Rationale**
-
-Using equal adjacent windows provides a more interpretable descriptive
-comparison than comparing the transition period with the entire historical
-dataset.
+**Rationale:** The application is built in Streamlit and the frozen-runtime design requires no live database or government API connection.
 
 **Consequences**
 
-The comparison is treated as descriptive evidence of detector behaviour.
-
-It is explicitly not interpreted as evidence that the system transition caused
-the observed increase in alerts.
-
----
-
-## D17 — Keep Modelling Logic Outside the Dashboard
-
-**Decision**
-
-The Streamlit dashboard consumes validated processed outputs rather than
-performing core forecasting or anomaly modelling inside page code.
-
-**Rationale**
-
-Separating presentation from analytical computation improves reproducibility,
-testability, and maintainability.
-
-**Consequences**
-
-Dashboard pages primarily:
-
-- load processed datasets;
-- filter and summarise results;
-- render charts and explanatory text.
-
-Core analytical logic remains under `src/rmp/`.
-
----
-
-## D18 — Use Automated Tests as the Primary Regression Guard
-
-**Decision**
-
-Maintain pytest-based automated tests across acquisition, transformation,
-analytics, forecasting, anomaly detection, and dashboard data interfaces.
-
-**Rationale**
-
-The project contains multiple connected stages where apparently small changes
-can alter later outputs.
-
-Automated regression checks provide stronger evidence than manual inspection
-alone.
-
-**Consequences**
-
-Repository quality checks include:
-
-    pytest
-    ruff check .
-    python -m py_compile ...
-    git diff --check
-
-Additional clean-environment reproducibility checks are documented separately.
-
----
-
-## D19 — Treat Generated Analytical Data as Build Artifacts
-
-**Decision**
-
-Keep large raw, staging, and processed datasets out of normal Git tracking.
-
-**Rationale**
-
-Generated analytical outputs can be large and can be reproduced from the
-pipeline.
-
-Keeping them outside the main Git history avoids repository bloat.
-
-**Consequences**
-
-A fresh clone does not automatically contain all dashboard datasets.
-
-This creates a deployment/reproducibility packaging requirement that must be
-handled explicitly rather than hidden.
-
-The chosen deployment and clean-clone strategy is documented in:
-
-    docs/deployment_and_reproducibility.md
-
----
-
-## D20 — Prefer Explicit Semantics over Implicit Behaviour
-
-**Decision**
-
-Record important operational distinctions directly in outputs and
-documentation.
-
-Examples include:
-
-- `eligible_for_forecasting`;
-- `source_snapshot_provisional`;
-- `forecast_policy`;
-- research winner versus production model;
-- statistical anomaly versus dashboard alert.
-
-**Rationale**
-
-The project combines data engineering, modelling, and decision-support
-presentation. Ambiguous field meanings could lead to incorrect interpretation
-even when the underlying calculations are correct.
-
-**Consequences**
-
-The repository includes dedicated architecture, data dictionary, forecast
-policy, anomaly evaluation, and deployment documentation so that key semantic
-boundaries are auditable.
+- `app.py` is the cloud entry point.
+- `requirements.txt` defines deployment dependencies.
+- Required frozen CSV files are included in the repository.
+- No Streamlit secrets are required for the assessment deployment.
+- A future live-refresh design would require orchestration and secure secret management.
