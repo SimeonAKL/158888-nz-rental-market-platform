@@ -31,6 +31,7 @@ from rmp.dashboard.layout import (
     inject_home_styles,
     render_card_header,
     render_filter_header,
+    render_footer,
     render_legend,
     render_page_hero,
     render_series_header,
@@ -59,7 +60,7 @@ render_top_navigation(
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "historical_hero.jpg"
+HERO_IMAGE_PATH = PROJECT_ROOT / "assets" / "auckland_skyline.jpg"
 
 
 # ---------------------------------------------------------------------
@@ -941,3 +942,6 @@ with st.container(
         hide_index=True,
         height=430,
     )
+
+
+render_footer()

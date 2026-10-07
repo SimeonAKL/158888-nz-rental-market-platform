@@ -11,6 +11,7 @@ from rmp.dashboard.data import (
 )
 from rmp.dashboard.layout import (
     inject_home_styles,
+    render_footer,
     render_top_navigation,
 )
 
@@ -313,3 +314,6 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+
+
+render_footer()

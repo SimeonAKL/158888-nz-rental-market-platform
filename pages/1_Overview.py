@@ -29,8 +29,9 @@ from rmp.dashboard.formatters import (
     format_value,
 )
 from rmp.dashboard.layout import (
-    HOME_HERO_IMAGE,
+    HOME_HERO_IMAGE_PATH,
     inject_home_styles,
+    render_footer,
     render_top_navigation,
 )
 
@@ -54,17 +55,26 @@ render_top_navigation(active_page="Overview")
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
-OVERVIEW_HERO_PATH = PROJECT_ROOT / "assets" / "overview_hero.jpg"
+OVERVIEW_HERO_PATH = PROJECT_ROOT / "assets" / "auckland_skyline.jpg"
 
 
 def hero_image_source() -> str:
-    """Return local hero image or shared fallback image."""
-    if not OVERVIEW_HERO_PATH.exists():
-        return HOME_HERO_IMAGE
+    """Return the selected local hero image as a data URI."""
 
-    encoded = base64.b64encode(OVERVIEW_HERO_PATH.read_bytes()).decode("ascii")
+    image_path = (
+        OVERVIEW_HERO_PATH
+        if OVERVIEW_HERO_PATH.exists()
+        else HOME_HERO_IMAGE_PATH
+    )
 
-    return f"data:image/jpeg;base64,{encoded}"
+    encoded = base64.b64encode(
+        image_path.read_bytes()
+    ).decode("ascii")
+
+    return (
+        "data:image/jpeg;base64,"
+        f"{encoded}"
+    )
 
 
 OVERVIEW_HERO_IMAGE = hero_image_source()
@@ -102,7 +112,7 @@ st.markdown(
         url('{OVERVIEW_HERO_IMAGE}');
 
     background-size: cover;
-    background-position: center;
+    background-position: center 60%;
 
     border:
         1px solid rgba(23, 105, 255, 0.08);
@@ -1417,3 +1427,6 @@ with st.container(
         width="stretch",
         hide_index=True,
     )
+
+
+render_footer()

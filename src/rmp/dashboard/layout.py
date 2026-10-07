@@ -9,8 +9,10 @@ from pathlib import Path
 
 import streamlit as st
 
-HOME_HERO_IMAGE = (
-    "https://images.unsplash.com/photo-1507699622108-4be3abd695ad?auto=format&fit=crop&w=1600&q=80"
+HOME_HERO_IMAGE_PATH = (
+    Path(__file__).resolve().parents[3]
+    / "assets"
+    / "auckland_skyline.jpg"
 )
 
 PAGE_MAX_WIDTH = "1280px"
@@ -171,7 +173,7 @@ div[data-testid="stHorizontalBlock"] {
 
 .brand-subtitle {
     color: var(--muted-text);
-    font-size: 0.84rem;
+    font-size: 0.88rem;
     margin-top: 0.12rem;
 }
 
@@ -189,7 +191,7 @@ div[data-testid="stHorizontalBlock"] {
 }
 
 .st-key-top_nav_shell div.stButton > button p {
-    font-size: 0.88rem;
+    font-size: 0.98rem;
     font-weight: 600;
     white-space: nowrap;
 }
@@ -251,14 +253,14 @@ div.stButton > button {
     position: relative;
     overflow: hidden;
     border-radius: 24px;
-    min-height: 255px;
+    min-height: 270px;
     padding: 2.15rem;
     margin-bottom: 1.65rem;
     background:
-        linear-gradient(90deg, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.88) 38%, rgba(255,255,255,0.20) 100%),
+        linear-gradient(90deg, rgba(255,255,255,0.88) 0%, rgba(255,255,255,0.74) 38%, rgba(255,255,255,0.10) 100%),
         url('__HERO_IMAGE__');
     background-size: cover;
-    background-position: center;
+    background-position: center 64%;
     border: 1px solid rgba(23, 105, 255, 0.08);
     box-shadow:
         0 14px 34px rgba(24, 48, 94, 0.08),
@@ -762,13 +764,22 @@ div[data-testid="stPageLink"] a:hover {
 
 def inject_home_styles() -> None:
     """Inject shared CSS for all dashboard pages."""
+
+    home_hero_image = (
+        _image_data_uri(str(HOME_HERO_IMAGE_PATH))
+        or ""
+    )
+
     css = (
-        _BASE_CSS.replace("__HERO_IMAGE__", HOME_HERO_IMAGE)
+        _BASE_CSS.replace("__HERO_IMAGE__", home_hero_image)
         .replace("__PAGE_MAX_WIDTH_XL__", PAGE_MAX_WIDTH_XL)
         .replace("__PAGE_MAX_WIDTH__", PAGE_MAX_WIDTH)
     )
-    st.markdown(css, unsafe_allow_html=True)
 
+    st.markdown(
+        css,
+        unsafe_allow_html=True,
+    )
 
 NAV_ITEMS = [
     ("Home", "app.py"),
@@ -868,12 +879,16 @@ def render_page_hero(
     Uses the local image when it exists, otherwise the Home hero image.
     """
     source = _image_data_uri(str(image_path)) if image_path else None
-    source = source or HOME_HERO_IMAGE
+    source = (
+        source
+        or _image_data_uri(str(HOME_HERO_IMAGE_PATH))
+        or ""
+    )
 
     render_html(
         f"""
         <div class="page-hero" style="background-image:
-        linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(255,255,255,0.90) 42%, rgba(255,255,255,0.25) 100%),
+        linear-gradient(90deg, rgba(255,255,255,0.90) 0%, rgba(255,255,255,0.78) 42%, rgba(255,255,255,0.12) 100%),
         url('{source}');">
             <div class="page-hero-title">{html.escape(title)}</div>
             <div class="page-hero-caption">{html.escape(caption)}</div>
@@ -962,3 +977,143 @@ def render_legend(items: list[tuple[str, str, int]]) -> None:
         for label, color, height in items
     )
     render_html(f'<div class="chart-legend">{spans}</div>')
+
+def render_footer() -> None:
+    """Render the shared dashboard footer."""
+
+    st.html(
+        """
+        <style>
+        .rmp-footer {
+            position: relative;
+            overflow: hidden;
+            margin-top: 1.8rem;
+            margin-bottom: 0.6rem;
+            padding: 1.35rem 1.4rem 1.2rem;
+            border-radius: 18px;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #2f80ed 0%,
+                    #2563eb 55%,
+                    #315fd6 100%
+                );
+
+            border:
+                1px solid rgba(255, 255, 255, 0.16);
+
+            box-shadow:
+                0 10px 24px rgba(37, 99, 235, 0.14),
+                inset 0 1px 0 rgba(255, 255, 255, 0.18);
+
+            text-align: center;
+        }
+
+        .rmp-footer::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+
+            background:
+                radial-gradient(
+                    circle at 20% 0%,
+                    rgba(255, 255, 255, 0.18),
+                    transparent 28%
+                ),
+                radial-gradient(
+                    circle at 85% 100%,
+                    rgba(255, 255, 255, 0.08),
+                    transparent 24%
+                );
+
+            pointer-events: none;
+        }
+
+        .rmp-footer-title,
+        .rmp-footer-project,
+        .rmp-footer-author,
+        .rmp-footer-meta {
+            position: relative;
+            z-index: 1;
+        }
+
+        .rmp-footer-title {
+            color: #ffffff;
+            font-size: 1.28rem;
+            font-weight: 800;
+            letter-spacing: -0.015em;
+            line-height: 1.2;
+            margin-bottom: 0.45rem;
+        }
+
+        .rmp-footer-project {
+            color: rgba(255, 255, 255, 0.92);
+            font-size: 0.96rem;
+            font-weight: 600;
+            line-height: 1.45;
+            margin-bottom: 0.18rem;
+        }
+
+        .rmp-footer-author {
+            color: #BFDBFE;
+            font-size: 0.84rem;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 0.30rem;
+        }
+
+        .rmp-footer-meta {
+            color: rgba(255, 255, 255, 0.78);
+            font-size: 0.78rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        @media (max-width: 700px) {
+            .rmp-footer {
+                margin-top: 1.4rem;
+                padding: 1rem 0.9rem;
+                border-radius: 14px;
+            }
+
+            .rmp-footer-title {
+                font-size: 1.02rem;
+            }
+
+            .rmp-footer-project {
+                font-size: 0.82rem;
+            }
+
+            .rmp-footer-author {
+                font-size: 0.76rem;
+            }
+
+            .rmp-footer-meta {
+                font-size: 0.72rem;
+            }
+        }
+        </style>
+
+        <div class="rmp-footer">
+            <div class="rmp-footer-title">
+                NZ Rental Market Analytics &amp; Forecasting Platform
+            </div>
+
+            <div class="rmp-footer-project">
+                Massey University ·
+                158888 Information Technology Professional Project
+            </div>
+
+            <div class="rmp-footer-author">
+                Developed by Simeon Zhang
+            </div>
+
+            <div class="rmp-footer-meta">
+                Data source: Tenancy Services / MBIE
+                &nbsp;·&nbsp;
+                Analytical and educational use
+            </div>
+        </div>
+        """
+    )
