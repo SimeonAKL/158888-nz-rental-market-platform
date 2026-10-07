@@ -744,6 +744,132 @@ div[data-testid="stPageLink"] a:hover {
     }
 }
 
+
+
+/* Dashboard table polish V2 */
+
+/* ------------------------------------------------------------
+   1. Global dataframe frame
+   ------------------------------------------------------------ */
+
+[data-testid="stDataFrame"] {
+    border: 1px solid rgba(23, 105, 255, 0.14) !important;
+    border-radius: 14px !important;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(24, 48, 94, 0.025);
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+[data-testid="stDataFrame"]:hover {
+    border-color: rgba(23, 105, 255, 0.25) !important;
+    box-shadow: 0 4px 14px rgba(24, 48, 94, 0.045);
+}
+
+/* ------------------------------------------------------------
+   2. Header enhancement (DOM-rendered headers only)
+   ------------------------------------------------------------ */
+
+[data-testid="stDataFrame"] [role="columnheader"] {
+    background-color: #eef5ff !important;
+    color: #274472 !important;
+    font-weight: 700 !important;
+}
+
+[data-testid="stDataFrame"] [role="columnheader"] * {
+    color: #274472 !important;
+    font-weight: 700 !important;
+}
+
+/* ------------------------------------------------------------
+   3. DOM-rendered row interaction
+   ------------------------------------------------------------ */
+
+[data-testid="stDataFrame"] [role="row"]:hover [role="gridcell"] {
+    background-color: rgba(23, 105, 255, 0.035) !important;
+}
+
+/* ------------------------------------------------------------
+   4. Dataframe toolbar
+   ------------------------------------------------------------ */
+
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] {
+    border-radius: 10px !important;
+}
+
+/* ------------------------------------------------------------
+   5. Download buttons
+   ------------------------------------------------------------ */
+
+[data-testid="stDownloadButton"] button {
+    background: #ffffff !important;
+    border: 1px solid rgba(23, 105, 255, 0.18) !important;
+    border-radius: 10px !important;
+    color: #15394b !important;
+    font-weight: 500 !important;
+    transition:
+        background-color 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+[data-testid="stDownloadButton"] button:hover {
+    background: #eef5ff !important;
+    border-color: rgba(23, 105, 255, 0.38) !important;
+    box-shadow: 0 2px 8px rgba(23, 105, 255, 0.06);
+}
+
+/* ------------------------------------------------------------
+   6. Mobile presentation
+   ------------------------------------------------------------ */
+
+@media (max-width: 700px) {
+    [data-testid="stDataFrame"] {
+        border-radius: 12px !important;
+    }
+}
+
+
+/* Dashboard table polish */
+
+/* Shared dataframe frame */
+[data-testid="stDataFrame"] {
+    border-radius: 16px !important;
+    overflow: hidden;
+    border: 1px solid rgba(38, 91, 170, 0.10);
+    background: #ffffff;
+    box-shadow: 0 2px 8px rgba(24, 48, 94, 0.025);
+    transition:
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
+}
+
+/* Subtle interactive emphasis */
+[data-testid="stDataFrame"]:hover {
+    border-color: rgba(23, 105, 255, 0.19);
+    box-shadow: 0 4px 12px rgba(24, 48, 94, 0.045);
+}
+
+/* Prevent inherited card borders from stacking */
+[class*="st-key-card_"] [data-testid="stDataFrame"] {
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+/* Dataframe toolbar presentation */
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] {
+    border-radius: 10px;
+}
+
+/* Smaller screens */
+@media (max-width: 700px) {
+    [data-testid="stDataFrame"] {
+        border-radius: 12px !important;
+    }
+}
+
 /* ============================================================
    Reduced motion
    ============================================================ */

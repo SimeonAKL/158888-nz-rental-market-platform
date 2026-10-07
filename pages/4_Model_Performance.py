@@ -380,10 +380,96 @@ with st.container(
 
         display_columns.append("MAE Improvement vs Baseline")
 
+    # Presentation-only styling for model comparison.
+    # Smaller MAE, RMSE and sMAPE values indicate better accuracy.
+    comparison_table = comparison_display[display_columns].copy()
+
+    def improvement_style(value: object) -> str:
+        """Style MAE improvement relative to the baseline."""
+        try:
+            numeric_value = float(
+                str(value)
+                .replace("%", "")
+                .replace(",", "")
+                .replace("−", "-")
+            )
+        except (TypeError, ValueError):
+            return "color: #7b88a4"
+
+        if numeric_value > 0:
+            return "color: #13864a"
+
+        if numeric_value < 0:
+            return "color: #cc4545"
+
+        return "color: #7b88a4"
+
+    styled_comparison = comparison_table.style
+
+    # Highlight the lowest error in each metric using raw values.
+    metric_pairs = [
+        ("MAE", "mae"),
+        ("RMSE", "rmse"),
+        ("sMAPE", "smape"),
+    ]
+
+    metric_styles = pd.DataFrame(
+        "",
+        index=comparison_table.index,
+        columns=comparison_table.columns,
+    )
+
+    for display_column, numeric_column in metric_pairs:
+        if (
+            display_column in comparison_table.columns
+            and numeric_column in comparison_display.columns
+        ):
+            numeric_values = pd.to_numeric(
+                comparison_display[numeric_column],
+                errors="coerce",
+            )
+
+            best_value = numeric_values.min()
+
+            if pd.notna(best_value):
+                best_rows = numeric_values.index[
+                    numeric_values == best_value
+                ]
+
+                metric_styles.loc[
+                    best_rows,
+                    display_column,
+                ] = "color: #13864a; font-weight: 600"
+
+    styled_comparison = styled_comparison.apply(
+        lambda _: metric_styles,
+        axis=None,
+    )
+
+    styled_comparison = styled_comparison.map(
+        lambda value: (
+            "color: #1769ff; font-weight: 600"
+            if value == 1 else ""
+        ),
+        subset=["MAE Rank"],
+    )
+
+    if "MAE Improvement vs Baseline" in comparison_table.columns:
+        styled_comparison = styled_comparison.map(
+            improvement_style,
+            subset=["MAE Improvement vs Baseline"],
+        )
+
+    comparison_table_height = min(
+        430,
+        (len(comparison_table) + 1) * 35 + 3,
+    )
+
     st.dataframe(
-        comparison_display[display_columns],
+        styled_comparison,
         width="stretch",
         hide_index=True,
+        height=comparison_table_height,
     )
 
 

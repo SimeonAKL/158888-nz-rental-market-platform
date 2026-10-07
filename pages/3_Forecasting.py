@@ -835,10 +835,51 @@ with st.container(
         }
     )
 
+    # Presentation-only styling for future forecast values.
+    def forecast_change_color(value: object) -> str:
+        """Colour projected changes relative to the latest observation."""
+        value_text = str(value).strip()
+
+        try:
+            numeric_value = float(
+                value_text
+                .replace("%", "")
+                .replace(",", "")
+                .replace("−", "-")
+            )
+        except ValueError:
+            return "color: #7b88a4"
+
+        if numeric_value > 0:
+            return "color: #13864a"
+
+        if numeric_value < 0:
+            return "color: #cc4545"
+
+        return "color: #7b88a4"
+
+    styled_forecast = (
+        display_forecast.style
+        .map(
+            lambda _: "color: #1769ff; font-weight: 600",
+            subset=["Predicted Value"],
+        )
+        .map(
+            forecast_change_color,
+            subset=["Change vs Latest"],
+        )
+    )
+
+    forecast_table_height = min(
+        430,
+        (len(display_forecast) + 1) * 35 + 3,
+    )
+
     st.dataframe(
-        display_forecast,
+        styled_forecast,
         width="stretch",
         hide_index=True,
+        height=forecast_table_height,
     )
 
 
@@ -1139,10 +1180,29 @@ if not winner_backtest.empty:
             }
         )
 
+        # Distinguish observed values, predictions and error magnitudes.
+        styled_backtest = (
+            backtest_table.style
+            .map(
+                lambda _: "color: #1769ff; font-weight: 600",
+                subset=["Predicted"],
+            )
+            .map(
+                lambda _: "color: #a56817; font-weight: 600",
+                subset=["Absolute Error"],
+            )
+        )
+
+        backtest_table_height = min(
+            430,
+            (len(backtest_table) + 1) * 35 + 3,
+        )
+
         st.dataframe(
-            backtest_table,
+            styled_backtest,
             width="stretch",
             hide_index=True,
+            height=backtest_table_height,
         )
 
 

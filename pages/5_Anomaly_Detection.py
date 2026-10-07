@@ -730,11 +730,106 @@ with st.container(
                 for value in recent_alerts["forecast_residual_pct"]
             ]
 
+        # Presentation-only styling for analytical anomaly alerts.
+        # A detector flag does not confirm a real-world market event.
+        def alert_status_style(value: object) -> str:
+            label = str(value).strip().lower()
+
+            if "both detectors" in label:
+                return "color: #7754bf; font-weight: 600"
+
+            if "alert" in label or "flagged" in label:
+                return "color: #a56817; font-weight: 600"
+
+            if label == "normal":
+                return "color: #13864a"
+
+            return "color: #7b88a4"
+
+        def deviation_style(value: object) -> str:
+            """Colour signed deviations without implying severity."""
+            value_text = (
+                str(value)
+                .strip()
+                .replace("%", "")
+                .replace(",", "")
+                .replace("−", "-")
+            )
+
+            try:
+                numeric_value = float(value_text)
+            except (TypeError, ValueError):
+                return "color: #7b88a4"
+
+            if numeric_value > 0:
+                return "color: #1769ff"
+
+            if numeric_value < 0:
+                return "color: #cc4545"
+
+            return "color: #7b88a4"
+
+        styled_alerts = display.style
+
+        # Style the actual dashboard alert labels.
+        if "Alert Type" in display.columns:
+            styled_alerts = styled_alerts.map(
+                alert_status_style,
+                subset=["Alert Type"],
+            )
+
+        if "Severity" in display.columns:
+            def severity_style(value: object) -> str:
+                label = str(value).strip().lower()
+
+                if label == "high":
+                    return "color: #cc4545; font-weight: 600"
+
+                if label == "moderate":
+                    return "color: #a56817; font-weight: 600"
+
+                return "color: #7b88a4"
+
+            styled_alerts = styled_alerts.map(
+                severity_style,
+                subset=["Severity"],
+            )
+
+        deviation_columns = [
+            column
+            for column in [
+                "Historical Deviation",
+                "Forecast Residual",
+            ]
+            if column in display.columns
+        ]
+
+        if deviation_columns:
+            styled_alerts = styled_alerts.map(
+                deviation_style,
+                subset=deviation_columns,
+            )
+
+        if "Predicted" in display.columns:
+            styled_alerts = styled_alerts.map(
+                lambda value: (
+                    "color: #7b88a4"
+                    if str(value).strip().upper() in {"N/A", "—", "", "NAN"}
+                    else "color: #1769ff; font-weight: 600"
+                ),
+                subset=["Predicted"],
+            )
+
+        alert_table_height = min(
+            430,
+            (len(display) + 1) * 35 + 3,
+        )
+
         st.dataframe(
-            display,
+            styled_alerts,
             width="stretch",
             hide_index=True,
-            height=430,
+            height=alert_table_height,
         )
 
 

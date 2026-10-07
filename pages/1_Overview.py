@@ -1422,11 +1422,68 @@ with st.container(
             width="stretch",
         )
 
+    # Apply directional colours to monthly changes.
+    # The displayed values are already formatted percentages.
+    styled_display = display.copy()
+
+    def mom_text_color(value: object) -> str:
+        """Colour the direction of monthly percentage changes."""
+        if value is None:
+            return "color: #7b88a4"
+
+        text = str(value).strip()
+
+        if text in {"", "N/A", "—", "nan"}:
+            return "color: #7b88a4"
+
+        try:
+            number = float(
+                text.replace("%", "").replace(",", "")
+            )
+        except ValueError:
+            return "color: #7b88a4"
+
+        if number > 0:
+            return "color: #13864a"
+
+        if number < 0:
+            return "color: #cc4545"
+
+        return "color: #7b88a4"
+
+    if "Month-on-Month" in styled_display.columns:
+        table_view = styled_display.style.map(
+            mom_text_color,
+            subset=["Month-on-Month"],
+        )
+    else:
+        table_view = styled_display
+
     st.dataframe(
-        display,
+        table_view,
         width="stretch",
         hide_index=True,
+        height=475,
     )
 
+
+# Reduce the gap between the final Overview card and the footer.
+st.html(
+    '''
+    <style>
+    .st-key-overview_recent_card {
+        margin-bottom: 0 !important;
+    }
+
+    .st-key-overview_recent_card + div {
+        margin-top: 0 !important;
+    }
+
+    .st-key-overview_recent_card ~ [data-testid="stHtml"] .rmp-footer {
+        margin-top: 0.9rem !important;
+    }
+    </style>
+    '''
+)
 
 render_footer()

@@ -936,11 +936,45 @@ with st.container(
         }
     )
 
+    # Colour directional changes without altering the source data.
+    def change_text_color(value: object) -> str:
+        """Style positive, negative and unchanged percentages."""
+        if value is None:
+            return "color: #7b88a4"
+
+        value_text = str(value).strip()
+
+        if value_text in {"", "N/A", "—", "nan"}:
+            return "color: #7b88a4"
+
+        try:
+            numeric_value = float(
+                value_text.replace("%", "").replace(",", "")
+            )
+        except ValueError:
+            return "color: #7b88a4"
+
+        if numeric_value > 0:
+            return "color: #13864a"
+
+        if numeric_value < 0:
+            return "color: #cc4545"
+
+        return "color: #7b88a4"
+
+    styled_table = table.style.map(
+        change_text_color,
+        subset=[
+            "Month-on-Month",
+            "Year-on-Year",
+        ],
+    )
+
     st.dataframe(
-        table,
+        styled_table,
         width="stretch",
         hide_index=True,
-        height=430,
+        height=480,
     )
 
 
