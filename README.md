@@ -638,3 +638,11 @@ Source rental-market data remains subject to the terms of the relevant New Zeala
 Users reproducing or redistributing source data should consult the applicable Tenancy Services, MBIE, and New Zealand Government data-use requirements.
 
 Project software and documentation were developed for academic purposes.
+
+## Image Attribution
+
+The Auckland skyline photograph used as the background image across the Streamlit dashboard was photographed by the project author, **Simeon Zhang**.
+
+**Image file:** `assets/auckland_skyline.jpg`
+
+**Copyright:** © Simeon Zhang. All rights reserved.
