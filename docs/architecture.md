@@ -225,7 +225,7 @@ data/processed/analytics/series_catalog.csv
 
 stores completeness and modelling-readiness information.
 
-There are 164 analytical series, of which 132 are initially forecast-eligible. Two duplicate Auckland Territorial Authority series are then removed from the modelling scope, leaving 130 forecast series.
+There are 164 analytical series, of which 132 are initially forecast-eligible. Ten reviewed Territorial Authority series that duplicate their corresponding Region series are then removed from the modelling scope, leaving 122 modelled forecast series.
 
 ## 7. Forecasting research layer
 
@@ -315,11 +315,11 @@ data/processed/forecasting/final_forward_forecasts.csv
 Current production scope:
 
 ```text
-130 series
-65 median_rent
-65 bonds_lodged
+122 series
+61 median_rent
+61 bonds_lodged
 6 forecast months per series
-780 rows
+732 rows
 ```
 
 The ETS model is refitted using all available history through the final forecast origin before producing the six-month forward forecast.

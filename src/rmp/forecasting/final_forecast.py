@@ -88,7 +88,7 @@ def build_future_periods(
     end_dates = data.groupby("series_id")["period_date"].max()
 
     if end_dates.nunique() != 1:
-        raise ValueError("All forecast-eligible series must end at the same forecast origin.")
+        raise ValueError("All modelled series must end at the same forecast origin.")
 
     origin = pd.Timestamp(end_dates.iloc[0])
 
@@ -481,7 +481,7 @@ def build_production_forward_forecasts(
     observed_series = set(forecasts["series_id"].unique())
 
     if observed_series != expected_series:
-        raise ValueError("Production forecasts do not cover exactly the forecast-eligible series.")
+        raise ValueError("Production forecasts do not cover exactly the modelled series.")
 
     ets_metrics = metrics_by_series.loc[
         metrics_by_series["model"] == PRODUCTION_MODEL,
@@ -505,7 +505,7 @@ def build_production_forward_forecasts(
 
         raise ValueError(
             "ETS backtest metrics do not align with "
-            "forecast-eligible series. "
+            "modelled series. "
             f"Missing: {missing_series}; "
             f"extra: {extra_series}"
         )

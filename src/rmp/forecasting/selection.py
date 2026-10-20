@@ -5,6 +5,16 @@ from __future__ import annotations
 import pandas as pd
 
 EXCLUDED_FORECAST_SERIES = {
+    # Unitary-authority Territorial Authority series that duplicate
+    # their corresponding Region series in the current source data.
+    "territorial_authority_28_bonds_lodged",
+    "territorial_authority_28_median_rent",
+    "territorial_authority_51_bonds_lodged",
+    "territorial_authority_51_median_rent",
+    "territorial_authority_52_bonds_lodged",
+    "territorial_authority_52_median_rent",
+    "territorial_authority_53_bonds_lodged",
+    "territorial_authority_53_median_rent",
     "territorial_authority_76_bonds_lodged",
     "territorial_authority_76_median_rent",
 }
@@ -21,8 +31,9 @@ def select_forecasting_series(
     - only series marked ``eligible_for_forecasting`` are retained;
     - each retained series is truncated to its latest continuous
       monthly history beginning at ``continuous_start``;
-    - Auckland Territorial Authority series are excluded because they
-      duplicate Auckland Region in the current source geography.
+    - reviewed unitary-authority Territorial Authority series are
+      excluded when they duplicate their corresponding Region series
+      in the current source geography.
 
     Historical analytics can still retain all valid series regardless
     of forecasting eligibility.
@@ -62,7 +73,7 @@ def select_forecasting_series(
     eligible = eligible.loc[~eligible["series_id"].isin(EXCLUDED_FORECAST_SERIES)].copy()
 
     if eligible.empty:
-        raise ValueError("No forecast-eligible series remain after selection.")
+        raise ValueError("No modelled series remain after forecasting selection.")
 
     selected = data.merge(
         eligible[

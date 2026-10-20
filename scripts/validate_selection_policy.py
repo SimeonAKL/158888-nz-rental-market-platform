@@ -14,18 +14,13 @@ from rmp.forecasting.policy_validation import (
     split_by_target_cutoff,
 )
 
-PREDICTIONS_PATH = Path(
-    "data/processed/forecasting/combined_predictions.csv"
-)
+PREDICTIONS_PATH = Path("data/processed/forecasting/combined_predictions.csv")
 
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Validate per-series selection against fixed-model "
-            "forecast policies."
-        )
+        description=("Validate per-series selection against fixed-model forecast policies.")
     )
 
     parser.add_argument(
@@ -46,9 +41,7 @@ def main() -> None:
     args = parse_args()
 
     if not PREDICTIONS_PATH.exists():
-        raise FileNotFoundError(
-            f"Input file not found: {PREDICTIONS_PATH}"
-        )
+        raise FileNotFoundError(f"Input file not found: {PREDICTIONS_PATH}")
 
     predictions = pd.read_csv(
         PREDICTIONS_PATH,
@@ -58,31 +51,21 @@ def main() -> None:
         ],
     )
 
-    cutoff = (
-        pd.Timestamp(args.cutoff)
-        if args.cutoff is not None
-        else AUDITED_CUTOFF
-    )
+    cutoff = pd.Timestamp(args.cutoff) if args.cutoff is not None else AUDITED_CUTOFF
 
     selection, evaluation = split_by_target_cutoff(
         predictions,
         cutoff,
     )
 
-    winners = select_series_winners(
-        selection
-    )
+    winners = select_series_winners(selection)
 
     results = evaluate_policies(
         evaluation,
         winners,
     )
 
-    overlap = set(
-        selection["forecast_period"]
-    ).intersection(
-        evaluation["forecast_period"]
-    )
+    overlap = set(selection["forecast_period"]).intersection(evaluation["forecast_period"])
 
     print("===== VALIDATION WINDOW =====")
     print("Cutoff:", cutoff.date())
@@ -109,20 +92,12 @@ def main() -> None:
     print()
     print("===== SELECTION WINNER COUNTS =====")
 
-    print(
-        winners["model"]
-        .value_counts()
-        .to_string()
-    )
+    print(winners["model"].value_counts().to_string())
 
     print()
     print("===== POLICY RESULTS =====")
 
-    print(
-        results.to_string(
-            index=False
-        )
-    )
+    print(results.to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import pandas as pd
 
+from rmp.forecasting.selection import EXCLUDED_FORECAST_SERIES
+
 BOND_HUB_TRANSITION_START = pd.Timestamp("2025-01-01")
 BOND_HUB_TRANSITION_END = pd.Timestamp("2026-12-31")
 
@@ -52,12 +54,7 @@ def build_synthetic_historical_panel(
         )
         irregular_component = irregular_pattern[index % len(irregular_pattern)]
 
-        values.append(
-            500.0
-            + seasonal_component
-            + trend_component
-            + irregular_component
-        )
+        values.append(500.0 + seasonal_component + trend_component + irregular_component)
 
     values[-1] += shock
 
@@ -97,9 +94,7 @@ def evaluate_synthetic_historical_injection() -> pd.DataFrame:
         historical_scale = float(final_row["historical_scale"])
 
         if historical_scale <= 1e-6:
-            raise ValueError(
-                "Synthetic evaluation produced a degenerate historical scale."
-            )
+            raise ValueError("Synthetic evaluation produced a degenerate historical scale.")
 
         expected_direction = "high" if shock > 0 else "low"
 
@@ -117,10 +112,7 @@ def evaluate_synthetic_historical_injection() -> pd.DataFrame:
                 "observed_direction": observed_direction,
                 "severity": str(final_row["historical_severity"]),
                 "score": float(final_row["historical_score"]),
-                "passed": (
-                    detected
-                    and observed_direction == expected_direction
-                ),
+                "passed": (detected and observed_direction == expected_direction),
             }
         )
 
@@ -139,9 +131,7 @@ def evaluate_historical_threshold_sensitivity() -> pd.DataFrame:
         4.0,
     )
 
-    clean_result = detect_historical_anomalies(
-        build_synthetic_historical_panel(shock=0.0)
-    )
+    clean_result = detect_historical_anomalies(build_synthetic_historical_panel(shock=0.0))
 
     clean_scores = (
         clean_result.loc[
@@ -155,35 +145,22 @@ def evaluate_historical_threshold_sensitivity() -> pd.DataFrame:
     injected_scores: list[float] = []
 
     for shock in (150.0, -150.0):
-        injected_result = detect_historical_anomalies(
-            build_synthetic_historical_panel(shock=shock)
-        )
+        injected_result = detect_historical_anomalies(build_synthetic_historical_panel(shock=shock))
 
-        injected_score = float(
-            injected_result.iloc[-1]["historical_score"]
-        )
+        injected_score = float(injected_result.iloc[-1]["historical_score"])
 
         injected_scores.append(abs(injected_score))
 
     records: list[dict[str, object]] = []
 
     for threshold in thresholds:
-        recovered = sum(
-            score >= threshold
-            for score in injected_scores
-        )
+        recovered = sum(score >= threshold for score in injected_scores)
 
-        background_alerts = int(
-            clean_scores.ge(threshold).sum()
-        )
+        background_alerts = int(clean_scores.ge(threshold).sum())
 
         background_count = len(clean_scores)
 
-        background_alert_rate = (
-            background_alerts / background_count
-            if background_count
-            else 0.0
-        )
+        background_alert_rate = background_alerts / background_count if background_count else 0.0
 
         records.append(
             {
@@ -191,9 +168,7 @@ def evaluate_historical_threshold_sensitivity() -> pd.DataFrame:
                 "threshold": threshold,
                 "injected_cases": len(injected_scores),
                 "injected_recovered": recovered,
-                "injection_recovery_rate": (
-                    recovered / len(injected_scores)
-                ),
+                "injection_recovery_rate": (recovered / len(injected_scores)),
                 "background_scored_observations": background_count,
                 "background_alerts": background_alerts,
                 "background_alert_rate": background_alert_rate,
@@ -201,6 +176,16 @@ def evaluate_historical_threshold_sensitivity() -> pd.DataFrame:
         )
 
     return pd.DataFrame(records)
+
+
+def build_transition_evaluation_scope(
+    historical: pd.DataFrame,
+) -> pd.DataFrame:
+    """Return the de-duplicated analytical scope for aggregate evaluation."""
+    if "series_id" not in historical.columns:
+        raise ValueError("Historical anomaly data must contain a series_id column.")
+
+    return historical.loc[~historical["series_id"].isin(EXCLUDED_FORECAST_SERIES)].copy()
 
 
 def evaluate_transition_period(
@@ -218,8 +203,7 @@ def evaluate_transition_period(
 
     if missing:
         raise ValueError(
-            "Missing required transition-evaluation columns: "
-            + ", ".join(sorted(missing))
+            "Missing required transition-evaluation columns: " + ", ".join(sorted(missing))
         )
 
     df = historical_anomalies.copy()
@@ -239,10 +223,7 @@ def evaluate_transition_period(
     )
 
     comparison_end = BOND_HUB_TRANSITION_START - pd.offsets.MonthBegin(1)
-    comparison_start = (
-        comparison_end
-        - pd.offsets.MonthBegin(transition_months - 1)
-    )
+    comparison_start = comparison_end - pd.offsets.MonthBegin(transition_months - 1)
 
     periods = (
         (
@@ -268,25 +249,13 @@ def evaluate_transition_period(
             )
         ]
 
-        scored = subset[
-            subset["historical_score_available"]
-            .fillna(False)
-            .astype(bool)
-        ]
+        scored = subset[subset["historical_score_available"].fillna(False).astype(bool)]
 
         scored_count = len(scored)
 
-        statistical_alerts = int(
-            scored["historical_is_anomaly"]
-            .fillna(False)
-            .sum()
-        )
+        statistical_alerts = int(scored["historical_is_anomaly"].fillna(False).sum())
 
-        dashboard_alerts = int(
-            subset["dashboard_alert"]
-            .fillna(False)
-            .sum()
-        )
+        dashboard_alerts = int(subset["dashboard_alert"].fillna(False).sum())
 
         records.append(
             {
@@ -299,16 +268,10 @@ def evaluate_transition_period(
                 "scored_observations": scored_count,
                 "statistical_anomalies": statistical_alerts,
                 "statistical_anomaly_rate": (
-                    statistical_alerts / scored_count
-                    if scored_count
-                    else 0.0
+                    statistical_alerts / scored_count if scored_count else 0.0
                 ),
                 "dashboard_alerts": dashboard_alerts,
-                "dashboard_alert_rate": (
-                    dashboard_alerts / scored_count
-                    if scored_count
-                    else 0.0
-                ),
+                "dashboard_alert_rate": (dashboard_alerts / scored_count if scored_count else 0.0),
             }
         )
 
@@ -328,8 +291,7 @@ def validate_anomaly_evaluation_summary(
 
     if missing:
         raise ValueError(
-            "Missing required anomaly-evaluation columns: "
-            + ", ".join(sorted(missing))
+            "Missing required anomaly-evaluation columns: " + ", ".join(sorted(missing))
         )
 
     expected_groups = {
@@ -338,75 +300,52 @@ def validate_anomaly_evaluation_summary(
         "transition_period",
     }
 
-    observed_groups = set(
-        summary["evaluation_group"]
-        .dropna()
-        .astype(str)
-    )
+    observed_groups = set(summary["evaluation_group"].dropna().astype(str))
 
     if observed_groups != expected_groups:
-        raise ValueError(
-            "Unexpected anomaly-evaluation groups: "
-            f"{sorted(observed_groups)}"
-        )
+        raise ValueError(f"Unexpected anomaly-evaluation groups: {sorted(observed_groups)}")
 
-    synthetic = summary.loc[
-        summary["evaluation_group"].eq(
-            "synthetic_injection"
-        )
-    ]
+    synthetic = summary.loc[summary["evaluation_group"].eq("synthetic_injection")]
 
     if len(synthetic) != 2:
-        raise ValueError(
-            "Synthetic-injection evaluation must contain exactly 2 rows."
-        )
+        raise ValueError("Synthetic-injection evaluation must contain exactly 2 rows.")
 
     if not synthetic["passed"].fillna(False).astype(bool).all():
-        raise ValueError(
-            "Synthetic-injection evaluation contains a failed scenario."
-        )
+        raise ValueError("Synthetic-injection evaluation contains a failed scenario.")
 
-    sensitivity = summary.loc[
-        summary["evaluation_group"].eq(
-            "threshold_sensitivity"
-        )
-    ].sort_values("threshold")
+    sensitivity = summary.loc[summary["evaluation_group"].eq("threshold_sensitivity")].sort_values(
+        "threshold"
+    )
 
     if len(sensitivity) != 5:
-        raise ValueError(
-            "Threshold-sensitivity evaluation must contain exactly 5 rows."
-        )
+        raise ValueError("Threshold-sensitivity evaluation must contain exactly 5 rows.")
 
-    if not sensitivity["injection_recovery_rate"].between(
-        0.0,
-        1.0,
-    ).all():
-        raise ValueError(
-            "Invalid injection recovery rate."
+    if (
+        not sensitivity["injection_recovery_rate"]
+        .between(
+            0.0,
+            1.0,
         )
+        .all()
+    ):
+        raise ValueError("Invalid injection recovery rate.")
 
-    if not sensitivity["background_alert_rate"].between(
-        0.0,
-        1.0,
-    ).all():
-        raise ValueError(
-            "Invalid background alert rate."
+    if (
+        not sensitivity["background_alert_rate"]
+        .between(
+            0.0,
+            1.0,
         )
+        .all()
+    ):
+        raise ValueError("Invalid background alert rate.")
 
-    transition = summary.loc[
-        summary["evaluation_group"].eq(
-            "transition_period"
-        )
-    ]
+    transition = summary.loc[summary["evaluation_group"].eq("transition_period")]
 
     if len(transition) != 2:
-        raise ValueError(
-            "Transition-period evaluation must contain exactly 2 rows."
-        )
+        raise ValueError("Transition-period evaluation must contain exactly 2 rows.")
 
     if transition["months"].nunique() != 1:
-        raise ValueError(
-            "Transition and comparison windows must have equal length."
-        )
+        raise ValueError("Transition and comparison windows must have equal length.")
 
     return summary

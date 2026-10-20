@@ -50,7 +50,7 @@ This document describes the main processed datasets used by the analytics, forec
 | `continuous_months` | Consecutive usable months. |
 | `eligible_for_forecasting` | Whether the series passes forecasting-readiness checks. |
 
-The catalogue contains 164 historical series. Of these, 132 are initially forecast-eligible before duplicate Auckland series are removed from the modelling scope.
+The catalogue contains 164 historical series. Of these, 132 are initially forecast-eligible before 10 reviewed Region-equivalent Territorial Authority series are removed from the modelling scope.
 
 ## 3. Monthly seasonality
 
@@ -148,7 +148,7 @@ Stores error summaries by forecast horizon.
 
 **File:** `data/processed/forecasting/series_model_winners.csv`
 
-**Current size:** 130 rows.
+**Current size:** 122 rows.
 
 | Field | Meaning |
 |---|---|
@@ -170,7 +170,7 @@ The research winner is selected primarily by lowest sMAPE, with MAE and RMSE as 
 
 **File:** `data/processed/forecasting/final_forward_forecasts.csv`
 
-**Current size:** 780 rows, 130 series, six horizons per series.
+**Current size:** 732 rows, 122 series, six horizons per series.
 
 | Field | Meaning |
 |---|---|

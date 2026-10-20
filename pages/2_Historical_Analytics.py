@@ -948,9 +948,7 @@ with st.container(
             return "color: #7b88a4"
 
         try:
-            numeric_value = float(
-                value_text.replace("%", "").replace(",", "")
-            )
+            numeric_value = float(value_text.replace("%", "").replace(",", ""))
         except ValueError:
             return "color: #7b88a4"
 

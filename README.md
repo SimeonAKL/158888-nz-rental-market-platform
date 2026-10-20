@@ -25,15 +25,15 @@ Current analytical scope:
 64,956 monthly observations
 164 analytical series
 132 initially forecast-eligible series
-130 final modelling / production forecast series
+122 final modelling / production forecast series
 February 1993 to July 2026
 ```
 
 The final production scope contains:
 
 ```text
-65 median_rent series
-65 bonds_lodged series
+61 median_rent series
+61 bonds_lodged series
 6 forecast months per series
 780 forward forecast rows
 ```
@@ -377,23 +377,23 @@ Detailed policy evidence is in:
 
 ## Forecasting Results
 
-The full rolling-origin research comparison uses 65 series per metric.
+The full rolling-origin research comparison uses 61 modelled series per metric.
 
 ### Bonds lodged
 
 | Model | MAE | RMSE | sMAPE |
 |---|---:|---:|---:|
-| ETS additive damped | 28.77 | 64.98 | 13.41% |
-| XGBoost pooled recursive | 47.50 | 107.01 | 20.51% |
-| Seasonal Naive | 50.05 | 125.16 | 22.79% |
+| ETS additive damped | 29.73 | 66.93 | 13.36% |
+| XGBoost pooled recursive | 49.43 | 109.16 | 20.59% |
+| Seasonal Naive | 51.85 | 129.01 | 22.66% |
 
 ### Median rent
 
 | Model | MAE | RMSE | sMAPE |
 |---|---:|---:|---:|
-| XGBoost pooled recursive | 17.37 | 23.19 | 3.13% |
-| ETS additive damped | 17.99 | 23.49 | 3.24% |
-| Seasonal Naive | 21.76 | 30.17 | 4.01% |
+| XGBoost pooled recursive | 17.44 | 23.57 | 3.16% |
+| ETS additive damped | 17.83 | 23.31 | 3.23% |
+| Seasonal Naive | 21.88 | 30.45 | 4.05% |
 
 These are research comparison results. They do not directly determine the production model.
 
@@ -405,12 +405,12 @@ Overall held-out sMAPE:
 
 | Policy | sMAPE |
 |---|---:|
-| Fixed ETS additive damped | 7.9592 |
-| Fixed Seasonal Naive | 10.3561 |
-| Per-series model selection | 11.3618 |
-| Fixed XGBoost pooled recursive | 13.5553 |
+| Fixed ETS additive damped | 7.9263 |
+| Fixed Seasonal Naive | 10.3273 |
+| Per-series model selection | 11.6361 |
+| Fixed XGBoost pooled recursive | 13.6779 |
 
-The production model is therefore fixed ETS for all 130 forecast series.
+The production model is therefore fixed ETS for all 122 modelled forecast series.
 
 ---
 

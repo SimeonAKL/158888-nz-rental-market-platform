@@ -61,20 +61,11 @@ OVERVIEW_HERO_PATH = PROJECT_ROOT / "assets" / "auckland_skyline.jpg"
 def hero_image_source() -> str:
     """Return the selected local hero image as a data URI."""
 
-    image_path = (
-        OVERVIEW_HERO_PATH
-        if OVERVIEW_HERO_PATH.exists()
-        else HOME_HERO_IMAGE_PATH
-    )
+    image_path = OVERVIEW_HERO_PATH if OVERVIEW_HERO_PATH.exists() else HOME_HERO_IMAGE_PATH
 
-    encoded = base64.b64encode(
-        image_path.read_bytes()
-    ).decode("ascii")
+    encoded = base64.b64encode(image_path.read_bytes()).decode("ascii")
 
-    return (
-        "data:image/jpeg;base64,"
-        f"{encoded}"
-    )
+    return f"data:image/jpeg;base64,{encoded}"
 
 
 OVERVIEW_HERO_IMAGE = hero_image_source()
@@ -844,13 +835,9 @@ geography_display = (
 
 historical_series_count = int(panel["series_id"].nunique())
 
-forecast_eligible_series_count = int(
-    series_catalog["eligible_for_forecasting"].fillna(False).sum()
-)
+forecast_eligible_series_count = int(series_catalog["eligible_for_forecasting"].fillna(False).sum())
 
-production_series_count = int(
-    final_forecasts["series_id"].nunique()
-)
+production_series_count = int(final_forecasts["series_id"].nunique())
 
 production_model = (
     str(final_forecasts["model"].dropna().iloc[0])
@@ -864,9 +851,7 @@ forecast_policy = (
     else "Unavailable"
 )
 
-source_snapshot_is_provisional = bool(
-    panel["source_snapshot_provisional"].fillna(False).any()
-)
+source_snapshot_is_provisional = bool(panel["source_snapshot_provisional"].fillna(False).any())
 
 
 # ---------------------------------------------------------------------
@@ -1437,9 +1422,7 @@ with st.container(
             return "color: #7b88a4"
 
         try:
-            number = float(
-                text.replace("%", "").replace(",", "")
-            )
+            number = float(text.replace("%", "").replace(",", ""))
         except ValueError:
             return "color: #7b88a4"
 
@@ -1469,7 +1452,7 @@ with st.container(
 
 # Reduce the gap between the final Overview card and the footer.
 st.html(
-    '''
+    """
     <style>
     .st-key-overview_recent_card {
         margin-bottom: 0 !important;
@@ -1483,7 +1466,7 @@ st.html(
         margin-top: 0.9rem !important;
     }
     </style>
-    '''
+    """
 )
 
 render_footer()

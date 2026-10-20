@@ -88,6 +88,64 @@ def test_selects_only_eligible_nonduplicate_series() -> None:
     assert "territorial_authority_18_bonds_lodged" not in set(result["series_id"])
 
 
+def test_excludes_all_reviewed_duplicate_ta_series() -> None:
+    """Reviewed Region-equivalent TA series must not enter modelling."""
+
+    dates = pd.date_range(
+        "2020-01-01",
+        periods=3,
+        freq="MS",
+    )
+
+    excluded_series = [
+        "territorial_authority_28_bonds_lodged",
+        "territorial_authority_28_median_rent",
+        "territorial_authority_51_bonds_lodged",
+        "territorial_authority_51_median_rent",
+        "territorial_authority_52_bonds_lodged",
+        "territorial_authority_52_median_rent",
+        "territorial_authority_53_bonds_lodged",
+        "territorial_authority_53_median_rent",
+        "territorial_authority_76_bonds_lodged",
+        "territorial_authority_76_median_rent",
+    ]
+
+    retained_series = "territorial_authority_3_bonds_lodged"
+    all_series = excluded_series + [retained_series]
+
+    rows = []
+
+    for series_id in all_series:
+        for i, period in enumerate(dates):
+            rows.append(
+                {
+                    "period_date": period,
+                    "series_id": series_id,
+                    "value": float(i + 1),
+                }
+            )
+
+    panel = pd.DataFrame(rows)
+
+    catalog = pd.DataFrame(
+        {
+            "series_id": all_series,
+            "continuous_start": ["2020-01-01"] * len(all_series),
+            "continuous_months": [120] * len(all_series),
+            "eligible_for_forecasting": [True] * len(all_series),
+        }
+    )
+
+    result = select_forecasting_series(
+        panel,
+        catalog,
+    )
+
+    assert set(result["series_id"]) == {retained_series}
+
+    assert set(result["series_id"]).isdisjoint(excluded_series)
+
+
 def test_truncates_to_continuous_start() -> None:
     """Eligible series should begin at their continuous start."""
 
@@ -131,7 +189,7 @@ def test_rejects_when_no_series_are_eligible() -> None:
 
     with pytest.raises(
         ValueError,
-        match="No forecast-eligible series",
+        match="No modelled series remain after forecasting selection",
     ):
         select_forecasting_series(
             panel,

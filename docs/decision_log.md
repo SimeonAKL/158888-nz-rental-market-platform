@@ -85,8 +85,8 @@ from the modelling scope.
 **Consequences**
 
 - 132 series are initially forecast-eligible.
-- 130 unique series enter research and production forecasting.
-- The final scope contains 65 series per metric.
+- 122 unique series enter research and production forecasting.
+- The final scope contains 61 series per metric.
 
 ---
 
@@ -143,7 +143,7 @@ forecast_policy = fixed_ets_v1
 model = ets_additive_damped
 ```
 
-for all 130 production series.
+for all 122 production series.
 
 **Rationale:** Held-out policy validation showed that fixed ETS gave the strongest overall production performance and avoided unstable per-series switching.
 

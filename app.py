@@ -14,6 +14,7 @@ from rmp.dashboard.layout import (
     render_footer,
     render_top_navigation,
 )
+from rmp.forecasting.selection import EXCLUDED_FORECAST_SERIES
 
 st.set_page_config(
     page_title="Home",
@@ -30,8 +31,15 @@ anomalies = load_anomaly_summary()
 
 total_series = catalog["series_id"].nunique()
 historical_observations = len(anomalies)
-overall_alerts = int(anomalies["overall_dashboard_alert"].sum())
-both_detectors_flagged = int((anomalies["overall_status"] == "confirmed_anomaly").sum())
+
+# Historical browsing retains all valid Region and Territorial Authority
+# series. Platform-level anomaly headline counts exclude reviewed TA series
+# whose values duplicate their corresponding Region series, avoiding
+# double-counting the same observations across geography levels.
+headline_anomalies = anomalies.loc[~anomalies["series_id"].isin(EXCLUDED_FORECAST_SERIES)].copy()
+
+overall_alerts = int(headline_anomalies["overall_dashboard_alert"].sum())
+both_detectors_flagged = int((headline_anomalies["overall_status"] == "confirmed_anomaly").sum())
 
 final_forecasts = load_final_forward_forecasts()
 
@@ -111,7 +119,7 @@ with kpi3:
     <div class="metric-label">Forecast-Covered Series</div>
     <div class="metric-value">{forecast_text}</div>
     <div class="metric-note">
-        Series included in the forecast-eligible modelling subset for final forward forecasting.
+        Series included in the final modelling scope for production forecasting.
     </div>
 </div>
         """,
@@ -177,7 +185,7 @@ with row1_col3, st.container(border=True):
     st.markdown("### 🔮 Forecasting")
     st.write(
         "View six-month forward forecasts produced using the fixed "
-        "ETS production model for each forecast-eligible series."
+        "ETS production model for each modelled series."
     )
     st.page_link(
         "pages/3_Forecasting.py",
@@ -294,8 +302,8 @@ with note2:
     <div class="small-heading">🚨 Analytical Alerts</div>
     <div class="small-text">
         The current anomaly pipeline contains <strong>{overall_alerts:,}</strong>
-        dashboard alerts, including periods highlighted by historical and
-        forecast-residual detector logic.
+        unique-scope dashboard alerts, excluding reviewed TA series that
+        duplicate their corresponding Region series.
     </div>
 </div>
         """,

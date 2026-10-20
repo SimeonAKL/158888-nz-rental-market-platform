@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from rmp.anomaly.evaluation import (
+    build_transition_evaluation_scope,
     evaluate_historical_threshold_sensitivity,
     evaluate_synthetic_historical_injection,
     evaluate_transition_period,
@@ -38,15 +39,23 @@ def test_threshold_sensitivity_is_valid() -> None:
         4.0,
     ]
 
-    assert result["injection_recovery_rate"].between(
-        0.0,
-        1.0,
-    ).all()
+    assert (
+        result["injection_recovery_rate"]
+        .between(
+            0.0,
+            1.0,
+        )
+        .all()
+    )
 
-    assert result["background_alert_rate"].between(
-        0.0,
-        1.0,
-    ).all()
+    assert (
+        result["background_alert_rate"]
+        .between(
+            0.0,
+            1.0,
+        )
+        .all()
+    )
 
     assert result["background_alerts"].is_monotonic_decreasing
 
@@ -127,3 +136,36 @@ def test_transition_evaluation_uses_equal_length_windows() -> None:
         pd.Timestamp("2024-12-01"),
         pd.Timestamp("2026-07-01"),
     ]
+
+
+def test_transition_evaluation_scope_excludes_reviewed_duplicate_ta_series() -> None:
+    """Aggregate transition evaluation must not double-count Region/TA twins."""
+    duplicate_series = [
+        "territorial_authority_28_bonds_lodged",
+        "territorial_authority_28_median_rent",
+        "territorial_authority_51_bonds_lodged",
+        "territorial_authority_51_median_rent",
+        "territorial_authority_52_bonds_lodged",
+        "territorial_authority_52_median_rent",
+        "territorial_authority_53_bonds_lodged",
+        "territorial_authority_53_median_rent",
+        "territorial_authority_76_bonds_lodged",
+        "territorial_authority_76_median_rent",
+    ]
+
+    retained_series = [
+        "region_2_bonds_lodged",
+        "region_2_median_rent",
+    ]
+
+    frame = pd.DataFrame(
+        {
+            "series_id": duplicate_series + retained_series,
+            "period_date": pd.Timestamp("2026-01-01"),
+        }
+    )
+
+    result = build_transition_evaluation_scope(frame)
+
+    assert set(result["series_id"]) == set(retained_series)
+    assert not set(duplicate_series).intersection(result["series_id"])

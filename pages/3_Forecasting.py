@@ -164,7 +164,7 @@ render_page_hero(
     (
         "Six-month forward forecasts generated from "
         "the fixed ETS production model for each "
-        "forecast-eligible rental-market series."
+        "modelled rental-market series."
     ),
     HERO_IMAGE_PATH,
 )
@@ -338,8 +338,8 @@ if series_forecast.empty or series_winner.empty:
     else:
         st.info(
             "This series is available for historical analysis "
-            "but is not included in the forecast-eligible "
-            "modelling subset. Forecast availability is determined "
+            "but is not included in the final modelling "
+            "scope. Forecast availability is determined "
             "during modelling preparation using data continuity, "
             "quality requirements, and defined modelling-scope rules."
         )
@@ -841,12 +841,7 @@ with st.container(
         value_text = str(value).strip()
 
         try:
-            numeric_value = float(
-                value_text
-                .replace("%", "")
-                .replace(",", "")
-                .replace("−", "-")
-            )
+            numeric_value = float(value_text.replace("%", "").replace(",", "").replace("−", "-"))
         except ValueError:
             return "color: #7b88a4"
 
@@ -858,16 +853,12 @@ with st.container(
 
         return "color: #7b88a4"
 
-    styled_forecast = (
-        display_forecast.style
-        .map(
-            lambda _: "color: #1769ff; font-weight: 600",
-            subset=["Predicted Value"],
-        )
-        .map(
-            forecast_change_color,
-            subset=["Change vs Latest"],
-        )
+    styled_forecast = display_forecast.style.map(
+        lambda _: "color: #1769ff; font-weight: 600",
+        subset=["Predicted Value"],
+    ).map(
+        forecast_change_color,
+        subset=["Change vs Latest"],
     )
 
     forecast_table_height = min(
@@ -1181,16 +1172,12 @@ if not winner_backtest.empty:
         )
 
         # Distinguish observed values, predictions and error magnitudes.
-        styled_backtest = (
-            backtest_table.style
-            .map(
-                lambda _: "color: #1769ff; font-weight: 600",
-                subset=["Predicted"],
-            )
-            .map(
-                lambda _: "color: #a56817; font-weight: 600",
-                subset=["Absolute Error"],
-            )
+        styled_backtest = backtest_table.style.map(
+            lambda _: "color: #1769ff; font-weight: 600",
+            subset=["Predicted"],
+        ).map(
+            lambda _: "color: #a56817; font-weight: 600",
+            subset=["Absolute Error"],
         )
 
         backtest_table_height = min(
@@ -1229,13 +1216,13 @@ Models are evaluated using **rolling-origin validation** with a
 six-month forecast horizon. MAE, RMSE and sMAPE are used as
 forecast-error measures.
 
-A descriptive winner model is retained for each forecast-eligible
+A descriptive winner model is retained for each modelled
 series as part of the comparative research layer. These winner results
 summarise historical rolling-origin performance and are not used to
 select the production model for each series.
 
 For production forecasting, a fixed **ETS (Additive Damped)** policy
-is used for every forecast-eligible series. This policy was adopted
+is used for every modelled series. This policy was adopted
 after strict temporally separated validation showed better held-out
 sMAPE and greater stability than per-series model selection.
 

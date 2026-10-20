@@ -199,9 +199,9 @@ ets_additive_damped
 Final production scope:
 
 ```text
-130 series
-65 median_rent
-65 bonds_lodged
+122 series
+61 median_rent
+61 bonds_lodged
 6 forecast months per series
 780 forecast rows
 ```

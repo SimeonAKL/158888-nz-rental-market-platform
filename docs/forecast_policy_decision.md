@@ -24,9 +24,9 @@ The selection and evaluation periods do not overlap.
 
 | Model | Series |
 |---|---:|
-| XGBoost pooled recursive | 67 |
-| ETS additive damped | 44 |
-| Seasonal Naive | 19 |
+| XGBoost pooled recursive | 62 |
+| ETS additive damped | 43 |
+| Seasonal Naive | 17 |
 
 This distribution differs from the full-window descriptive winner distribution, indicating that per-series winner selection is not stable across time.
 
@@ -36,28 +36,28 @@ This distribution differs from the full-window descriptive winner distribution, 
 
 | Policy | sMAPE |
 |---|---:|
-| Fixed ETS additive damped | 7.9592 |
-| Fixed Seasonal Naive | 10.3561 |
-| Per-series model selection | 11.3618 |
-| Fixed XGBoost pooled recursive | 13.5553 |
+| Fixed ETS additive damped | 7.9263 |
+| Fixed Seasonal Naive | 10.3273 |
+| Per-series model selection | 11.6361 |
+| Fixed XGBoost pooled recursive | 13.6779 |
 
 ### Bonds lodged
 
 | Policy | sMAPE |
 |---|---:|
-| Fixed ETS additive damped | 13.0104 |
-| Fixed Seasonal Naive | 16.9544 |
-| Per-series model selection | 19.6499 |
-| Fixed XGBoost pooled recursive | 24.1731 |
+| Fixed ETS additive damped | 12.9626 |
+| Fixed Seasonal Naive | 16.8461 |
+| Per-series model selection | 20.1527 |
+| Fixed XGBoost pooled recursive | 24.4284 |
 
 ### Median rent
 
 | Policy | sMAPE |
 |---|---:|
-| Fixed ETS additive damped | 2.9081 |
-| Fixed XGBoost pooled recursive | 2.9376 |
-| Per-series model selection | 3.0737 |
-| Fixed Seasonal Naive | 3.7577 |
+| Fixed ETS additive damped | 2.8900 |
+| Fixed XGBoost pooled recursive | 2.9273 |
+| Per-series model selection | 3.1194 |
+| Fixed Seasonal Naive | 3.8085 |
 
 ## Production policy
 

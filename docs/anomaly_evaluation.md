@@ -75,10 +75,12 @@ The analytical dataset ends in July 2026. Two equal 19-month windows were compar
 - pre-transition comparison: June 2023 to December 2024;
 - Bond Hub transition: January 2025 to July 2026.
 
+For this aggregate comparison, the evaluation uses the 154-series unique analytical scope. The 10 reviewed Territorial Authority metric series that duplicate their corresponding Region series are excluded from the aggregate transition-period calculation to avoid double-counting, while remaining available in the 164-series historical anomaly dataset for series-level analysis.
+
 | Period | Scored observations | Statistical anomalies | Statistical anomaly rate | Dashboard alerts | Dashboard alert rate |
 |---|---:|---:|---:|---:|---:|
-| Pre-transition comparison | 3,082 | 146 | 4.74% | 124 | 4.02% |
-| Bond Hub transition | 3,099 | 249 | 8.03% | 200 | 6.45% |
+| Pre-transition comparison | 2,892 | 140 | 4.84% | 118 | 4.08% |
+| Bond Hub transition | 2,909 | 236 | 8.11% | 187 | 6.43% |
 
 Both statistical anomaly flags and dashboard alerts were more frequent during the transition window.
 

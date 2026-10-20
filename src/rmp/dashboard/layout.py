@@ -9,11 +9,7 @@ from pathlib import Path
 
 import streamlit as st
 
-HOME_HERO_IMAGE_PATH = (
-    Path(__file__).resolve().parents[3]
-    / "assets"
-    / "auckland_skyline.jpg"
-)
+HOME_HERO_IMAGE_PATH = Path(__file__).resolve().parents[3] / "assets" / "auckland_skyline.jpg"
 
 PAGE_MAX_WIDTH = "1280px"
 PAGE_MAX_WIDTH_XL = "1500px"
@@ -891,10 +887,7 @@ div[data-testid="stPageLink"] a:hover {
 def inject_home_styles() -> None:
     """Inject shared CSS for all dashboard pages."""
 
-    home_hero_image = (
-        _image_data_uri(str(HOME_HERO_IMAGE_PATH))
-        or ""
-    )
+    home_hero_image = _image_data_uri(str(HOME_HERO_IMAGE_PATH)) or ""
 
     css = (
         _BASE_CSS.replace("__HERO_IMAGE__", home_hero_image)
@@ -906,6 +899,7 @@ def inject_home_styles() -> None:
         css,
         unsafe_allow_html=True,
     )
+
 
 NAV_ITEMS = [
     ("Home", "app.py"),
@@ -1005,11 +999,7 @@ def render_page_hero(
     Uses the local image when it exists, otherwise the Home hero image.
     """
     source = _image_data_uri(str(image_path)) if image_path else None
-    source = (
-        source
-        or _image_data_uri(str(HOME_HERO_IMAGE_PATH))
-        or ""
-    )
+    source = source or _image_data_uri(str(HOME_HERO_IMAGE_PATH)) or ""
 
     render_html(
         f"""
@@ -1103,6 +1093,7 @@ def render_legend(items: list[tuple[str, str, int]]) -> None:
         for label, color, height in items
     )
     render_html(f'<div class="chart-legend">{spans}</div>')
+
 
 def render_footer() -> None:
     """Render the shared dashboard footer."""

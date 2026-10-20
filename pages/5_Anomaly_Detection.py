@@ -357,7 +357,7 @@ if not has_forecast_coverage:
         "**Historical anomaly coverage only.** "
         "This series remains available for historical "
         "anomaly detection but is outside the "
-        "forecast-eligible modelling subset, so "
+        "final modelling scope, so "
         "forecast-residual anomaly detection is not "
         "available for this series."
     )
@@ -748,13 +748,7 @@ with st.container(
 
         def deviation_style(value: object) -> str:
             """Colour signed deviations without implying severity."""
-            value_text = (
-                str(value)
-                .strip()
-                .replace("%", "")
-                .replace(",", "")
-                .replace("−", "-")
-            )
+            value_text = str(value).strip().replace("%", "").replace(",", "").replace("−", "-")
 
             try:
                 numeric_value = float(value_text)
@@ -779,6 +773,7 @@ with st.container(
             )
 
         if "Severity" in display.columns:
+
             def severity_style(value: object) -> str:
                 label = str(value).strip().lower()
 
@@ -926,7 +921,7 @@ with st.container(
         (
             "Forecast-Residual Detector",
             ("Available" if has_forecast_coverage else "Not Available"),
-            ("Depends on forecast-eligible model coverage"),
+            ("Depends on modelled-series coverage"),
         ),
         (
             "Both-Detector Flags",
@@ -1004,7 +999,7 @@ not automatically become dashboard alerts.
 
 ### Forecast-residual detector
 
-For forecast-eligible series, the forecast detector uses
+For modelled series, the forecast detector uses
 the **one-step-ahead residual** from the research-layer
 selected winner model.
 
@@ -1031,7 +1026,7 @@ coverage where the required historical information is
 available.
 
 Forecast-residual anomaly detection is available only for
-series included in the forecast-eligible modelling subset.
+series included in the final modelling scope.
 
 A historical-only series is therefore not treated as an
 error or failed series; it simply does not have the second

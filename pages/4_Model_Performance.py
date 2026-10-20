@@ -387,12 +387,7 @@ with st.container(
     def improvement_style(value: object) -> str:
         """Style MAE improvement relative to the baseline."""
         try:
-            numeric_value = float(
-                str(value)
-                .replace("%", "")
-                .replace(",", "")
-                .replace("−", "-")
-            )
+            numeric_value = float(str(value).replace("%", "").replace(",", "").replace("−", "-"))
         except (TypeError, ValueError):
             return "color: #7b88a4"
 
@@ -432,9 +427,7 @@ with st.container(
             best_value = numeric_values.min()
 
             if pd.notna(best_value):
-                best_rows = numeric_values.index[
-                    numeric_values == best_value
-                ]
+                best_rows = numeric_values.index[numeric_values == best_value]
 
                 metric_styles.loc[
                     best_rows,
@@ -447,10 +440,7 @@ with st.container(
     )
 
     styled_comparison = styled_comparison.map(
-        lambda value: (
-            "color: #1769ff; font-weight: 600"
-            if value == 1 else ""
-        ),
+        lambda value: "color: #1769ff; font-weight: 600" if value == 1 else "",
         subset=["MAE Rank"],
     )
 
@@ -660,7 +650,7 @@ with st.container(
     render_card_header(
         "Series-Level Winner Distribution",
         (
-            f"{eligible_series_count:,} forecast-eligible series "
+            f"{eligible_series_count:,} modelled series "
             f"are included for {metric_label(selected_metric)}. "
             "The chart shows how many series selected each "
             "candidate model as the lowest-sMAPE winner, "
@@ -764,7 +754,7 @@ with st.container(
                 render_stat_card(
                     short_model_label(row.model),
                     f"{row.series_count:,}",
-                    (f"{row.share_pct:.1f}% of eligible series"),
+                    (f"{row.share_pct:.1f}% of modelled series"),
                     flat=True,
                 )
 
@@ -787,7 +777,7 @@ with st.container(
         "comparing general model performance. "
         "**Series-level winner distribution** counts which "
         "model performs best for each individual "
-        "forecast-eligible geographic series. "
+        "modelled geographic series. "
         "These winners are retained as comparative research results "
         "and do not determine the final production forecast model. "
         "A model can therefore rank best overall without "
